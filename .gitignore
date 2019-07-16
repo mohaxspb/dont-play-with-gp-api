@@ -1,0 +1,9 @@
+application*.properties
+/logs/*
+/.idea/.name
+/.idea/gradle.xml
+/.idea/misc.xml
+/.idea/kotlinScripting.xml
+/.idea/workspace.xml
+/build
+/.gradle
