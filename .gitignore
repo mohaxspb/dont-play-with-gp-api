@@ -7,3 +7,4 @@ application*.properties
 /.idea/workspace.xml
 /build
 /.gradle
+/.idea/vcs.xml
