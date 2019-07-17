@@ -8,3 +8,5 @@ application*.properties
 /build
 /.gradle
 /.idea/vcs.xml
+/.idea/sqldialects.xml
+/.idea/dataSources.xml
