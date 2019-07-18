@@ -6,8 +6,7 @@ object GpConstants {
 
     object Path {
         const val AUTH = "auth"
-        const val USER = "user"
-        const val TRANSLATIONS = "translations"
+        const val USERS = "users"
     }
 
     enum class SocialProvider {

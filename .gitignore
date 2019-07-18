@@ -10,3 +10,4 @@ application*.properties
 /.idea/vcs.xml
 /.idea/sqldialects.xml
 /.idea/dataSources.xml
+/.idea/modules.xml

@@ -100,21 +100,23 @@ class WebSecurityConfiguration @Autowired constructor(
         http
             .csrf()
             .disable()
+
+        //rules for $server.servlet.context-path
+        //allow index and users controllers "/" paths
+        //require authorities for any other requests
         http
             .authorizeRequests()
-            .antMatchers("/", "/login**", "/error**")
+            .antMatchers(
+                "/",
+                "/users/"
+            )
             .permitAll()
-        http
-            .authorizeRequests()
-            .antMatchers("/quiz/all")
-            .hasAnyAuthority("ADMIN", "USER", "APP")
             .anyRequest()
             .hasAnyAuthority("ADMIN", "USER")
+
         http
             .formLogin()
             .successHandler { request, response, _ ->
-                println("angular.port: $angularServerPort")
-                println("request: ${request.localName}/${request.localAddr}/${request.localPort}/${request.serverName}")
                 DefaultRedirectStrategy().sendRedirect(
                     request,
                     response,
@@ -124,8 +126,6 @@ class WebSecurityConfiguration @Autowired constructor(
             .and()
             .logout()
             .logoutSuccessHandler { request, response, _ ->
-                println("angular.port: $angularServerPort")
-                println("request: ${request.localName}/${request.localAddr}/${request.localPort}/${request.serverName}")
                 DefaultRedirectStrategy().sendRedirect(
                     request,
                     response,
@@ -144,6 +144,8 @@ class WebSecurityConfiguration @Autowired constructor(
 
     override fun configure(web: WebSecurity) {
         web.ignoring()
-            .antMatchers("/${GpConstants.Path.AUTH}/**")
+            .antMatchers(
+                "/${GpConstants.Path.AUTH}/**"
+            )
     }
 }
