@@ -31,7 +31,8 @@ class AuthorizationServerConfiguration @Autowired constructor(
     lateinit var authenticationManager: AuthenticationManager
 
     @Bean
-    fun tokenStore(): TokenStore = JdbcTokenStore(dataSource)
+    fun tokenStore(): TokenStore =
+        JdbcTokenStore(dataSource)
 
     override fun configure(clients: ClientDetailsServiceConfigurer) {
         clients.withClientDetails(clientDetailsService)

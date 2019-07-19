@@ -22,25 +22,23 @@ import javax.persistence.*
             columns = [
                 ColumnResult(name = "id", type = Long::class),
                 ColumnResult(name = "fullName"),
-                ColumnResult(name = "avatar"),
-                ColumnResult(name = "score", type = Long::class)
+                ColumnResult(name = "avatar")
             ]
         )
     ]
 )
 @NamedNativeQuery(
-    name = "User.getOneAsUserDto",
+    name = "GpUser.getOneAsUserDto",
     resultSetMapping = "UserDtoResult",
     query = "SELECT " +
             "id, " +
             "full_name as fullName, " +
-            "avatar, " +
-            "score " +
+            "avatar " +
             "FROM users u " +
             "WHERE u.id = :userId"
 )
 
-data class User(
+data class GpUser(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -54,10 +52,10 @@ data class User(
     var fullName: String? = null,
     private val username: String,
     private val password: String,
-    var avatar: String?,
+    var avatar: String? = null,
     val enabled: Boolean = true,
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "userId", fetch = FetchType.EAGER)
-    var userAuthorities: Set<Authority>,
+    var userAuthorities: Set<UsersAuthorities> = setOf(),
     @field:CreationTimestamp
     val created: Timestamp? = null,
     @field:UpdateTimestamp
@@ -87,13 +85,13 @@ data class User(
     override fun isAccountNonLocked() = true
 }
 
-fun User.toDto() = UserDto(
+fun GpUser.toDto() = UserDto(
     id = id!!,
     avatar = avatar,
     fullName = fullNameToDto()
 )
 
-fun User.fullNameToDto(): String? {
+fun GpUser.fullNameToDto(): String? {
     if (fullName == null) {
         if (nameFirst == null && nameSecond == null && nameThird != null) {
             return nameThird

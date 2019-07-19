@@ -37,6 +37,7 @@ dependencies {
     implementation(kotlin("stdlib"))
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     //spring
     implementation("org.springframework.boot:spring-boot-starter-web")

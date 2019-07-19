@@ -6,18 +6,18 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.ResponseStatus
-import ru.kuchanov.gp.bean.auth.User
+import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.model.dto.UserDto
 
-interface UsersRepository : JpaRepository<User, Long> {
-    fun findOneByUsername(username: String): User?
-    fun findOneById(id: Long): User?
-    fun findOneByGoogleId(id: String): User?
-    fun findOneByFacebookId(id: String): User?
-    fun findOneByVkId(id: String): User?
+interface UsersRepository : JpaRepository<GpUser, Long> {
+    fun findOneByUsername(username: String): GpUser?
+    fun findOneById(id: Long): GpUser?
+    fun findOneByGoogleId(id: String): GpUser?
+    fun findOneByFacebookId(id: String): GpUser?
+    fun findOneByVkId(id: String): GpUser?
 
     @Modifying
-    @Query("UPDATE User u SET u.avatar = ?2 WHERE u.id = ?1")
+    @Query("UPDATE GpUser u SET u.avatar = ?2 WHERE u.id = ?1")
     @Transactional
     fun updateAvatarUrl(userId: Long, avatarUrl: String): Int
 

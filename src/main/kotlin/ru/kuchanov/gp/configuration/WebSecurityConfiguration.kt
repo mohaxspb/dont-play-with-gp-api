@@ -23,6 +23,7 @@ import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
+import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
 import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
 import javax.servlet.Filter
 
@@ -36,7 +37,7 @@ class WebSecurityConfiguration @Autowired constructor(
 
     //do not move to constructor - there are circular dependency error
     @Autowired
-    lateinit var gpClientDetailsDetailsService: GpClientDetailsService
+    lateinit var gpClientDetailsService: GpClientDetailsServiceImpl
 
     //do not move to constructor - there are circular dependency error
     @Autowired
@@ -54,7 +55,7 @@ class WebSecurityConfiguration @Autowired constructor(
     fun tokenServices() =
         DefaultTokenServices().apply {
             setTokenStore(tokenStore)
-            setClientDetailsService(gpClientDetailsDetailsService)
+            setClientDetailsService(gpClientDetailsService)
             setAuthenticationManager(authenticationManager())
         }
 
@@ -77,7 +78,7 @@ class WebSecurityConfiguration @Autowired constructor(
     @Bean
     fun oauth2authenticationManager(): OAuth2AuthenticationManager =
         OAuth2AuthenticationManager().apply {
-            setClientDetailsService(gpClientDetailsDetailsService)
+            setClientDetailsService(gpClientDetailsService)
             setTokenServices(tokenServices())
         }
 
@@ -110,7 +111,7 @@ class WebSecurityConfiguration @Autowired constructor(
             .antMatchers(
                 "/",
                 "/users/",
-                "/oauth/token"
+                "/oauth/token**"
             )
             .permitAll()
             .anyRequest()
@@ -147,7 +148,11 @@ class WebSecurityConfiguration @Autowired constructor(
     override fun configure(web: WebSecurity) {
         web.ignoring()
             .antMatchers(
-                "/${GpConstants.Path.AUTH}/**"
+                "/api/${GpConstants.Path.AUTH}/**",
+                "/api/oauth/token**",
+                "/api/oauth/**",
+                "/oauth/**",
+                "/oauth/token**"
             )
     }
 }

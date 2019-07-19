@@ -24,11 +24,10 @@ ALTER TABLE users
 
 CREATE TABLE IF NOT EXISTS authorities
 (
-    id        BIGSERIAL NOT NULL,
-    authority TEXT      NOT NULL,
+    authority TEXT NOT NULL,
     created   TIMESTAMP,
     updated   TIMESTAMP,
-    PRIMARY KEY (id)
+    PRIMARY KEY (authority)
 );
 
 ALTER TABLE authorities
@@ -48,23 +47,23 @@ ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS users_authorities
 (
-    id           BIGSERIAL NOT NULL,
-    authority_id INT8      NOT NULL,
-    user_id      INT8      NOT NULL,
-    created      TIMESTAMP,
-    updated      TIMESTAMP,
+    id        BIGSERIAL NOT NULL,
+    authority TEXT      NOT NULL,
+    user_id   INT8      NOT NULL,
+    created   TIMESTAMP,
+    updated   TIMESTAMP,
     PRIMARY KEY (id)
 );
 
 ALTER TABLE users_authorities
     DROP CONSTRAINT IF EXISTS unique_user_id_to_authority_id;
 ALTER TABLE users_authorities
-    ADD CONSTRAINT unique_user_id_to_authority_id UNIQUE (user_id, authority_id);
+    ADD CONSTRAINT unique_user_id_to_authority_id UNIQUE (user_id, authority);
 
 ALTER TABLE users_authorities
     DROP CONSTRAINT IF EXISTS authority_id_foreign_key_from_users;
 ALTER TABLE users_authorities
-    ADD CONSTRAINT authority_id_foreign_key_from_users FOREIGN KEY (authority_id) REFERENCES authorities (id);
+    ADD CONSTRAINT authority_id_foreign_key_from_users FOREIGN KEY (authority) REFERENCES authorities (authority);
 
 ALTER TABLE users_authorities
     DROP CONSTRAINT IF EXISTS user_id_foreign_key_from_users;

@@ -16,6 +16,4 @@ class AuthorityServiceImpl @Autowired constructor(
     override fun insert(authority: Authority): Authority = repository.save(authority)
 
     override fun insert(authorities: List<Authority>): List<Authority> = repository.saveAll(authorities)
-
-    override fun deleteByUserId(userId: Long) = repository.deleteByUserId(userId)
 }

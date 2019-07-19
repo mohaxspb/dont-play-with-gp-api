@@ -5,7 +5,4 @@ import org.springframework.stereotype.Repository
 import ru.kuchanov.gp.bean.auth.Authority
 
 @Repository
-interface AuthoritiesRepository : JpaRepository<Authority, Long> {
-
-    fun deleteByUserId(userId: Long)
-}
+interface AuthoritiesRepository : JpaRepository<Authority, Long>
