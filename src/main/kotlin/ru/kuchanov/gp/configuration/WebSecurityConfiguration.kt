@@ -108,7 +108,8 @@ class WebSecurityConfiguration @Autowired constructor(
             .authorizeRequests()
             .antMatchers(
                 "/",
-                "/users/"
+                "/users/",
+                "/oauth/token"
             )
             .permitAll()
             .anyRequest()
