@@ -38,7 +38,7 @@ class GpUserDetailsServiceImpl @Autowired constructor(
     }
 
     override fun loadUserByUsername(username: String) =
-        repository.findOneByMyUsername(username)
+        repository.findOneByUsername(username)
 
     override fun getByProviderId(id: String, provider: GpConstants.SocialProvider) =
         when (provider) {

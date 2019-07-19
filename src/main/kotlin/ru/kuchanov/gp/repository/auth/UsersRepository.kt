@@ -10,7 +10,7 @@ import ru.kuchanov.gp.bean.auth.User
 import ru.kuchanov.gp.model.dto.UserDto
 
 interface UsersRepository : JpaRepository<User, Long> {
-    fun findOneByMyUsername(username: String): User?
+    fun findOneByUsername(username: String): User?
     fun findOneById(id: Long): User?
     fun findOneByGoogleId(id: String): User?
     fun findOneByFacebookId(id: String): User?

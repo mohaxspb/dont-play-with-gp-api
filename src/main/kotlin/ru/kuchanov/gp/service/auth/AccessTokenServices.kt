@@ -26,7 +26,7 @@ class AccessTokenServices @Autowired constructor(
         clients.forEach {
             val accessTokens = tokenStore.findTokensByClientIdAndUserName(
                 it.clientId,
-                user.myUsername
+                user.username
             )
             accessTokens.forEach { accessToken ->
                 val refreshToken = accessToken.refreshToken
