@@ -17,15 +17,13 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.util.Base64Utils
 import ru.kuchanov.gp.bean.auth.*
 import ru.kuchanov.gp.repository.auth.ClientDetailsRepository
 import ru.kuchanov.gp.service.auth.AuthService
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
-import org.springframework.util.Base64Utils
-
-
 
 
 @RunWith(SpringRunner::class)
