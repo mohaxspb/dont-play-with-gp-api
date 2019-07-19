@@ -13,7 +13,6 @@ import ru.kuchanov.gp.repository.auth.ClientDetailsRepository
 
 @RunWith(SpringRunner::class)
 @DataJpaTest
-
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class AuthIntegrationTest {
 
