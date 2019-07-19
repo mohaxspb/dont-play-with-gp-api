@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service
 @Service
 class AccessTokenServices @Autowired constructor(
     val tokenStore: TokenStore,
-    val userService: UserService,
-    val clientService: ClientService
+    val gpUserDetailsService: GpUserDetailsService,
+    val gpClientDetailsService: GpClientDetailsService
 ) : ResourceServerTokenServices {
 
     override fun loadAuthentication(accessToken: String): OAuth2Authentication =
@@ -21,11 +21,11 @@ class AccessTokenServices @Autowired constructor(
         tokenStore.readAccessToken(accessToken)
 
     fun deleteAllTokensByUserId(userId: Long) {
-        val user = userService.getById(userId)
-        val clients = clientService.findAll()
+        val user = gpUserDetailsService.getById(userId)
+        val clients = gpClientDetailsService.findAll()
         clients.forEach {
             val accessTokens = tokenStore.findTokensByClientIdAndUserName(
-                it.client_id,
+                it.clientId,
                 user.myUsername
             )
             accessTokens.forEach { accessToken ->

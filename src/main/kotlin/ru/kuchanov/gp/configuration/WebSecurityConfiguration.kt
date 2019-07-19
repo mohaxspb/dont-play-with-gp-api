@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
@@ -21,8 +22,8 @@ import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import ru.kuchanov.gp.GpConstants
-import ru.kuchanov.gp.service.auth.ClientServiceImpl
-import ru.kuchanov.gp.service.auth.UserServiceImpl
+import ru.kuchanov.gp.service.auth.GpClientDetailsService
+import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
 import javax.servlet.Filter
 
 
@@ -30,12 +31,12 @@ import javax.servlet.Filter
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 class WebSecurityConfiguration @Autowired constructor(
-    var userDetailsService: UserServiceImpl
+    var userDetailsService: GpUserDetailsServiceImpl
 ) : WebSecurityConfigurerAdapter() {
 
     //do not move to constructor - there are circular dependency error
     @Autowired
-    lateinit var clientDetailsService: ClientServiceImpl
+    lateinit var gpClientDetailsDetailsService: GpClientDetailsService
 
     //do not move to constructor - there are circular dependency error
     @Autowired
@@ -53,12 +54,12 @@ class WebSecurityConfiguration @Autowired constructor(
     fun tokenServices() =
         DefaultTokenServices().apply {
             setTokenStore(tokenStore)
-            setClientDetailsService(clientDetailsService)
+            setClientDetailsService(gpClientDetailsDetailsService)
             setAuthenticationManager(authenticationManager())
         }
 
     @Bean
-    fun passwordEncoder() =
+    fun passwordEncoder(): PasswordEncoder =
         BCryptPasswordEncoder()
 
     @Bean
@@ -76,7 +77,7 @@ class WebSecurityConfiguration @Autowired constructor(
     @Bean
     fun oauth2authenticationManager(): OAuth2AuthenticationManager =
         OAuth2AuthenticationManager().apply {
-            setClientDetailsService(clientDetailsService)
+            setClientDetailsService(gpClientDetailsDetailsService)
             setTokenServices(tokenServices())
         }
 

@@ -10,9 +10,9 @@ import ru.kuchanov.gp.repository.auth.UsersRepository
 
 
 @Service
-class UserServiceImpl @Autowired constructor(
+class GpUserDetailsServiceImpl @Autowired constructor(
     val repository: UsersRepository
-) : UserService {
+) : GpUserDetailsService {
 
     override fun findAll() =
         repository.findAll().toList()

@@ -5,6 +5,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.provider.ClientDetails
 import java.sql.Timestamp
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
@@ -13,7 +14,8 @@ import javax.persistence.Table
 @Table(name = "oauth_client_details")
 data class OAuthClientDetails(
     @Id
-    val client_id: String,
+    @Column(name = "client_id")
+    private val clientId: String,
     val resource_ids: String,
     val client_secret: String,
     val scope: String,
@@ -37,7 +39,7 @@ data class OAuthClientDetails(
 
     override fun getResourceIds(): MutableSet<String> = mutableSetOf()
 
-    override fun getClientId() = client_id
+    override fun getClientId() = clientId
 
     override fun isAutoApprove(scope: String?) = true
 

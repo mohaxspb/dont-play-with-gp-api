@@ -10,16 +10,16 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore
-import ru.kuchanov.gp.service.auth.ClientServiceImpl
-import ru.kuchanov.gp.service.auth.UserServiceImpl
+import ru.kuchanov.gp.service.auth.GpClientDetailsService
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import javax.sql.DataSource
 
 
 @Configuration
 @EnableAuthorizationServer
 class AuthorizationServerConfiguration @Autowired constructor(
-    val clientDetailsService: ClientServiceImpl,
-    val userDetailsService: UserServiceImpl
+    val clientDetailsService: GpClientDetailsService,
+    val gpUserDetailsDetailsService: GpUserDetailsService
 ) : AuthorizationServerConfigurerAdapter() {
 
     //do not move to constructor - there are circular dependency error
@@ -42,6 +42,6 @@ class AuthorizationServerConfiguration @Autowired constructor(
             .prefix("/api")
             .tokenStore(tokenStore())
             .authenticationManager(authenticationManager)
-            .userDetailsService(userDetailsService)
+            .userDetailsService(gpUserDetailsDetailsService)
     }
 }

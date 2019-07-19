@@ -6,6 +6,7 @@
       <w>postgre</w>
       <w>postgresql</w>
       <w>testtest</w>
+      <w>unexisting</w>
     </words>
   </dictionary>
 </component>

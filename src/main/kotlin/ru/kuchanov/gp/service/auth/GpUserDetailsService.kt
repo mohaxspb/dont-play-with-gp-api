@@ -6,7 +6,7 @@ import ru.kuchanov.gp.bean.auth.User
 import ru.kuchanov.gp.model.dto.UserDto
 import javax.transaction.Transactional
 
-interface UserService : UserDetailsService {
+interface GpUserDetailsService : UserDetailsService {
     override fun loadUserByUsername(username: String): User?
 
     fun findAll(): List<User>
