@@ -22,7 +22,6 @@ import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import ru.kuchanov.gp.GpConstants
-import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
 import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
 import javax.servlet.Filter
@@ -111,6 +110,7 @@ class WebSecurityConfiguration @Autowired constructor(
             .antMatchers(
                 "/",
                 "/users/",
+//                "/users/testAccessToken",
                 "/oauth/token**"
             )
             .permitAll()
@@ -146,13 +146,8 @@ class WebSecurityConfiguration @Autowired constructor(
     }
 
     override fun configure(web: WebSecurity) {
-        web.ignoring()
-            .antMatchers(
-                "/api/${GpConstants.Path.AUTH}/**",
-                "/api/oauth/token**",
-                "/api/oauth/**",
-                "/oauth/**",
-                "/oauth/token**"
-            )
+        web.ignoring().antMatchers(
+            "/api/${GpConstants.Path.AUTH}/**"
+        )
     }
 }

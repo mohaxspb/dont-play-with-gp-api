@@ -40,7 +40,6 @@ class AuthorizationServerConfiguration @Autowired constructor(
 
     override fun configure(endpoints: AuthorizationServerEndpointsConfigurer) {
         endpoints
-            .prefix("/api")
             .tokenStore(tokenStore())
             .authenticationManager(authenticationManager)
             .userDetailsService(gpUserDetailsDetailsService)
