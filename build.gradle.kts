@@ -49,6 +49,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     //oauth2
     implementation("org.springframework.security.oauth:spring-security-oauth2:2.3.0.RELEASE")
+    //testing
+    implementation("org.springframework.boot:spring-boot-starter-test")
     //spring END
 
     //DB
