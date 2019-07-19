@@ -52,12 +52,8 @@ data class User(
     var nameThird: String? = null,
     @Column(name = "full_name")
     var fullName: String? = null,
-    //todo fix name clash
-    @Column(name = "username", unique = true)
-    var myUsername: String,
-    //todo fix name clash
-    @Column(name = "password")
-    var myPassword: String,
+    private val username: String,
+    private val password: String,
     var avatar: String?,
     val enabled: Boolean = true,
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "userId", fetch = FetchType.EAGER)
@@ -80,11 +76,11 @@ data class User(
 
     override fun isEnabled() = enabled
 
-    override fun getUsername() = myUsername
+    override fun getUsername() = username
 
     override fun isCredentialsNonExpired() = true
 
-    override fun getPassword() = myPassword
+    override fun getPassword() = password
 
     override fun isAccountNonExpired() = true
 
