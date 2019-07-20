@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+import org.springframework.security.web.savedrequest.SavedRequest
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
 import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
@@ -110,7 +111,7 @@ class WebSecurityConfiguration @Autowired constructor(
             .antMatchers(
                 "/",
                 "/users/",
-//                "/users/testAccessToken",
+                "/error",
                 "/oauth/token**"
             )
             .permitAll()
@@ -120,10 +121,14 @@ class WebSecurityConfiguration @Autowired constructor(
         http
             .formLogin()
             .successHandler { request, response, _ ->
+                val savedRequest = request
+                    ?.getSession(false)
+                    ?.getAttribute("SPRING_SECURITY_SAVED_REQUEST")as? SavedRequest
                 DefaultRedirectStrategy().sendRedirect(
                     request,
                     response,
-                    "${request.scheme}://${request.serverName}$angularServerPort$angularServerHref"
+                    savedRequest?.let { savedRequest.redirectUrl }
+                        ?: "${request.scheme}://${request.serverName}$angularServerPort$angularServerHref"
                 )
             }
             .and()
