@@ -14,8 +14,8 @@ class GpUserDetailsServiceImpl @Autowired constructor(
     val repository: UsersRepository
 ) : GpUserDetailsService {
 
-    override fun findAll() =
-        repository.findAll().toList()
+    override fun findAll(): List<GpUser> =
+        repository.findAll()
 
     override fun getById(id: Long) =
         repository.getOne(id) ?: throw UserNotFoundException()

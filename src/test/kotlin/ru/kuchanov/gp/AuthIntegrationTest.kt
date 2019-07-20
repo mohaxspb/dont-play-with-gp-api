@@ -2,6 +2,7 @@ package ru.kuchanov.gp
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
+import org.hamcrest.CoreMatchers.`is`
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,12 +12,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.common.OAuth2AccessToken
 import org.springframework.security.oauth2.common.OAuth2AccessToken.REFRESH_TOKEN
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.util.Base64Utils
 import ru.kuchanov.gp.bean.auth.*
 import ru.kuchanov.gp.repository.auth.ClientDetailsRepository
@@ -117,10 +119,36 @@ class AuthIntegrationTest {
     fun getAccessTokenByPassword_returnsAccessToken() {
         val accessToken = authService.getAccessTokenForUsernameAndClientId(TEST_USERNAME, TEST_CLIENT_ID)
 
+//        println("accessToken: $accessToken")
+
+        val accessTokenValue = accessToken?.value
+
+        accessTokenRequest()
+            .andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("access_token", `is`(accessTokenValue)))
+    }
+
+    @Test
+    fun securedUrlWithAccessToken_answersOK() {
+        val accessToken = objectMapper.readValue(
+            accessTokenRequest().andReturn().response.contentAsString,
+            OAuth2AccessToken::class.java
+        )
         println("accessToken: $accessToken")
 
-        val accessTokenAsJson = objectMapper.writeValueAsString(accessToken)
+        val userJson = objectMapper.writeValueAsString(userDetailsService.loadUserByUsername(TEST_USERNAME)!!.toDto())
 
+        mvc.perform(
+            get("/users/me")
+                .header(AUTHORIZATION, "Bearer ${accessToken.value}")
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(content().json(userJson))
+    }
+
+    private fun accessTokenRequest() =
         mvc.perform(
             post("/oauth/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -132,10 +160,6 @@ class AuthIntegrationTest {
                 .param("username", TEST_USERNAME)
                 .param("password", TEST_USERNAME)
         )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(content().json(accessTokenAsJson))
-    }
 
     companion object {
         const val TEST_USERNAME = "test@test.ru"
