@@ -148,6 +148,15 @@ class AuthIntegrationTest {
             .andExpect(content().json(userJson))
     }
 
+    @Test
+    fun securedUrlWithoutAccessToken_redirectsToLogin() {
+        mvc.perform(
+            get("/users/me")
+        )
+            .andExpect(status().is3xxRedirection)
+            .andExpect(redirectedUrlPattern("**/login"))
+    }
+
     private fun accessTokenRequest() =
         mvc.perform(
             post("/oauth/token")
