@@ -169,8 +169,6 @@ class AuthIntegrationTest {
             .andExpect(redirectedUrlPattern("**/login"))
     }
 
-    //todo test token refreshing
-
     @Test
     fun expiredTokenRequest_failsWithUnauthorizedError() {
         val accessToken = objectMapper.readValue(
@@ -185,6 +183,32 @@ class AuthIntegrationTest {
             .andExpect(status().isUnauthorized)
     }
 
+    @Test
+    fun refreshingExpiredToken_justWorks() {
+        val accessToken = objectMapper.readValue(
+            accessTokenRequest(FAST_TOKEN_EXPIRES_CLIENT_ID).andReturn().response.contentAsString,
+            OAuth2AccessToken::class.java
+        )
+        Thread.sleep(2000)
+        mvc.perform(
+            get("/users/me")
+                .header(AUTHORIZATION, "Bearer ${accessToken.value}")
+        )
+            .andDo { println(it.response.contentAsString) }
+            .andExpect(status().isUnauthorized)
+
+        val refreshedAccessToken = objectMapper.readValue(
+            refreshAccessTokenRequest(accessToken.refreshToken.value).andReturn().response.contentAsString,
+            OAuth2AccessToken::class.java
+        )
+        mvc.perform(
+            get("/users/me")
+                .header(AUTHORIZATION, "Bearer ${refreshedAccessToken.value}")
+        )
+            .andDo { println(it.response.contentAsString) }
+            .andExpect(status().isOk)
+    }
+
     private fun accessTokenRequest(clientId: String) =
         mvc.perform(
             post("/oauth/token")
@@ -196,6 +220,18 @@ class AuthIntegrationTest {
                 .param("grant_type", "password")
                 .param("username", TEST_USERNAME)
                 .param("password", TEST_USERNAME)
+        )
+
+    private fun refreshAccessTokenRequest(refreshToken: String) =
+        mvc.perform(
+            post("/oauth/token")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .header(
+                    AUTHORIZATION,
+                    "Basic " + String(Base64Utils.encode("$FAST_TOKEN_EXPIRES_CLIENT_ID:$TEST_CLIENT_SECRET".toByteArray()))
+                )
+                .param("grant_type", "refresh_token")
+                .param("refresh_token", refreshToken)
         )
 
     companion object {
