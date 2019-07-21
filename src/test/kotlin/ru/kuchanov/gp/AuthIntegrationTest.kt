@@ -74,6 +74,20 @@ class AuthIntegrationTest {
         )
         clientDetailsRepository.save(oAuthClientDetails)
 
+        val oAuthClientDetailsWithFastTokenExpiration = OAuthClientDetails(
+            clientId = FAST_TOKEN_EXPIRES_CLIENT_ID,
+            resource_ids = "",
+            client_secret = passwordEncoder.encode(TEST_CLIENT_SECRET),
+            scope = "read,write",
+            authorized_grant_types = "client_credentials,password,$REFRESH_TOKEN",
+            web_server_redirect_uri = "",
+            authorities = "USER,ADMIN",
+            access_token_validity = 1,
+            refresh_token_validity = 0,
+            additional_information = "",
+            autoapprove = "true"
+        )
+        clientDetailsRepository.save(oAuthClientDetailsWithFastTokenExpiration)
 
         val inDbUser = userDetailsService.loadUserByUsername(TEST_USERNAME) ?: userDetailsService.insert(
             GpUser(
@@ -119,11 +133,9 @@ class AuthIntegrationTest {
     fun getAccessTokenByPassword_returnsAccessToken() {
         val accessToken = authService.getAccessTokenForUsernameAndClientId(TEST_USERNAME, TEST_CLIENT_ID)
 
-//        println("accessToken: $accessToken")
-
         val accessTokenValue = accessToken?.value
 
-        accessTokenRequest()
+        accessTokenRequest(TEST_CLIENT_ID)
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("access_token", `is`(accessTokenValue)))
@@ -132,10 +144,10 @@ class AuthIntegrationTest {
     @Test
     fun securedUrlWithAccessToken_answersOK() {
         val accessToken = objectMapper.readValue(
-            accessTokenRequest().andReturn().response.contentAsString,
+            accessTokenRequest(TEST_CLIENT_ID).andReturn().response.contentAsString,
             OAuth2AccessToken::class.java
         )
-        println("accessToken: $accessToken")
+//        println("accessToken: $accessToken")
 
         val userJson = objectMapper.writeValueAsString(userDetailsService.loadUserByUsername(TEST_USERNAME)!!.toDto())
 
@@ -157,13 +169,29 @@ class AuthIntegrationTest {
             .andExpect(redirectedUrlPattern("**/login"))
     }
 
-    private fun accessTokenRequest() =
+    //todo test token refreshing
+
+    @Test
+    fun expiredTokenRequest_failsWithUnauthorizedError() {
+        val accessToken = objectMapper.readValue(
+            accessTokenRequest(FAST_TOKEN_EXPIRES_CLIENT_ID).andReturn().response.contentAsString,
+            OAuth2AccessToken::class.java
+        )
+        Thread.sleep(2000)
+        mvc.perform(
+            get("/users/me")
+                .header(AUTHORIZATION, "Bearer ${accessToken.value}")
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    private fun accessTokenRequest(clientId: String) =
         mvc.perform(
             post("/oauth/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .header(
                     AUTHORIZATION,
-                    "Basic " + String(Base64Utils.encode("$TEST_CLIENT_ID:$TEST_CLIENT_SECRET".toByteArray()))
+                    "Basic " + String(Base64Utils.encode("$clientId:$TEST_CLIENT_SECRET".toByteArray()))
                 )
                 .param("grant_type", "password")
                 .param("username", TEST_USERNAME)
@@ -173,6 +201,7 @@ class AuthIntegrationTest {
     companion object {
         const val TEST_USERNAME = "test@test.ru"
         const val TEST_CLIENT_ID = "test_client_id"
+        const val FAST_TOKEN_EXPIRES_CLIENT_ID = "fast_token_expires_client_id"
         const val TEST_CLIENT_SECRET = "test_client_secret"
     }
 }
