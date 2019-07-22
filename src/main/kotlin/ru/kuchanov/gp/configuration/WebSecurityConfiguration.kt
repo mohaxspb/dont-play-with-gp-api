@@ -128,7 +128,7 @@ class WebSecurityConfiguration @Autowired constructor(
                     request,
                     response,
                     savedRequest?.let { savedRequest.redirectUrl }
-                        ?: "${request.scheme}://${request.serverName}$angularServerPort$angularServerHref"
+                        ?: "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
                 )
             }
             .and()
@@ -137,7 +137,7 @@ class WebSecurityConfiguration @Autowired constructor(
                 DefaultRedirectStrategy().sendRedirect(
                     request,
                     response,
-                    "${request.scheme}://${request.serverName}$angularServerPort$angularServerHref"
+                    "${request.scheme}://${request.serverName}$angularServerPort:$angularServerHref"
                 )
             }
             .permitAll()

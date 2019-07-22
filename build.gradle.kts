@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootWar
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 //updated at 16.07.2019
 val flywayVersion = "5.2.4"
@@ -22,6 +24,8 @@ plugins {
 
     val flywayVersion = "5.2.4"
     id("org.flywaydb.flyway") version flywayVersion
+
+    id("war")
 }
 
 group = "ru.kuchanov.gp"
@@ -63,4 +67,17 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+//to be able to run with task args to define correct properties file
+//i.e. `bootRun -Dspring.profiles.active=dev`
+tasks.withType<BootRun> {
+    systemProperties(System.getProperties() as Map<String, Any?>)
+}
+
+//artifact
+tasks.withType<BootWar> {
+    project.logger.lifecycle("property " + project.hasProperty("suffix"))
+    baseName = "dont-play-with-google-play"
+    version = ""
 }
