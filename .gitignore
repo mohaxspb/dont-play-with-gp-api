@@ -1,9 +1,17 @@
-application*.properties
+#ignore prod properties
+/src/main/resources/application.properties
+
+/build
+/.gradle
+
 /logs/*
+
 /.idea/.name
 /.idea/gradle.xml
 /.idea/misc.xml
 /.idea/kotlinScripting.xml
 /.idea/workspace.xml
-/build
-/.gradle
+/.idea/vcs.xml
+/.idea/sqldialects.xml
+/.idea/dataSources.xml
+/.idea/modules.xml
