@@ -51,4 +51,9 @@ class GpUserDetailsServiceImpl @Autowired constructor(
         repository.deleteById(id)
         return true
     }
+
+    override fun deleteByUsername(username: String): Boolean {
+        repository.deleteByUsername(username)
+        return true;
+    }
 }

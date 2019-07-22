@@ -112,7 +112,8 @@ class WebSecurityConfiguration @Autowired constructor(
                 "/",
                 "/users/",
                 "/error",
-                "/oauth/token**"
+                "/oauth/token**",
+                "/auth/**"
             )
             .permitAll()
             .anyRequest()
