@@ -54,6 +54,6 @@ class GpUserDetailsServiceImpl @Autowired constructor(
 
     override fun deleteByUsername(username: String): Boolean {
         repository.deleteByUsername(username)
-        return true;
+        return true
     }
 }
