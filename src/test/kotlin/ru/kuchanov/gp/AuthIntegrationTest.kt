@@ -97,7 +97,7 @@ class AuthIntegrationTest {
             )
         )
 
-        if (usersAuthorityService.findByUserIdAndAuthority(inDbUser.id!!, AuthorityType.USER).isNullOrEmpty()) {
+        if (usersAuthorityService.findByUserIdAndAuthority(inDbUser.id!!, AuthorityType.USER) == null) {
             usersAuthorityService.insert(
                 UsersAuthorities(
                     userId = inDbUser.id!!, authority = AuthorityType.USER
@@ -211,7 +211,7 @@ class AuthIntegrationTest {
     }
 
     @Test
-    fun registerUser_returnsAccessToken() {
+    fun registerUser_createsUserAndReturnsAccessToken() {
         val registerResponse = mvc.perform(
             post("/auth/register")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -228,13 +228,23 @@ class AuthIntegrationTest {
         val parsedResponse = objectMapper.readValue(registerResponse, OAuth2AccessToken::class.java)
         @Suppress("UsePropertyAccessSyntax")
         assertThat(parsedResponse.value).isNotEmpty()
+
+        val registeredUser = userDetailsService.loadUserByUsername(TEST_REGISTER_USERNAME)
+        assertThat(registeredUser).isNotNull
+
+        val registeredUserAuthorities = usersAuthorityService.findAllByUserId(registeredUser!!.id!!)
+        assertThat(registeredUserAuthorities).isNotEmpty
     }
 
     @After
     fun clearData() {
         //todo clear all, that we insert in DB
 
-        userDetailsService.deleteByUsername(TEST_REGISTER_USERNAME)
+        val registeredUser = userDetailsService.loadUserByUsername(TEST_REGISTER_USERNAME)
+        registeredUser?.let {
+            userDetailsService.deleteByUsername(TEST_REGISTER_USERNAME)
+            usersAuthorityService.deleteByUserId(it.id!!)
+        }
     }
 
     private fun accessTokenRequest(clientId: String) =
