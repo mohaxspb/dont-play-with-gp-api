@@ -226,6 +226,7 @@ class AuthIntegrationTest {
             .andReturn().response.contentAsString
 
         val parsedResponse = objectMapper.readValue(registerResponse, OAuth2AccessToken::class.java)
+        @Suppress("UsePropertyAccessSyntax")
         assertThat(parsedResponse.value).isNotEmpty()
     }
 

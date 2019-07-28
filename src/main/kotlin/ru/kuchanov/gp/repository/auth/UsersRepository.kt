@@ -25,6 +25,7 @@ interface UsersRepository : JpaRepository<GpUser, Long> {
     @Query(nativeQuery = true)
     fun getOneAsUserDto(userId: Long): UserDto?
 
+    @Transactional
     fun deleteByUsername(username: String)
 }
 
