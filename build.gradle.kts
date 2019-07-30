@@ -53,7 +53,7 @@ dependencies {
     //security
     implementation("org.springframework.boot:spring-boot-starter-security")
     //oauth2
-    implementation("org.springframework.security.oauth:spring-security-oauth2:2.3.0.RELEASE")
+    implementation("org.springframework.security.oauth:spring-security-oauth2:2.3.6.RELEASE")
     //testing
     implementation("org.springframework.boot:spring-boot-starter-test")
     //spring END
@@ -72,6 +72,7 @@ tasks.withType<KotlinCompile> {
 //to be able to run with task args to define correct properties file
 //i.e. `bootRun -Dspring.profiles.active=dev`
 tasks.withType<BootRun> {
+    @Suppress("UNCHECKED_CAST")
     systemProperties(System.getProperties() as Map<String, Any?>)
 }
 

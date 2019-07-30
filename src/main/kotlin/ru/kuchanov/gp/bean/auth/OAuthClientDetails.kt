@@ -10,6 +10,7 @@ import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
 
+//todo refactor it with database table
 @Entity
 @Table(name = "oauth_client_details")
 data class OAuthClientDetails(
@@ -22,7 +23,13 @@ data class OAuthClientDetails(
     val authorized_grant_types: String,
     val web_server_redirect_uri: String,
     val authorities: String,
+    /**
+     * Token expiration in seconds
+     */
     val access_token_validity: Int,
+    /**
+     * Token expiration in seconds
+     */
     val refresh_token_validity: Int,
     val additional_information: String,
     val autoapprove: String,
