@@ -63,6 +63,19 @@ dependencies {
     implementation("org.postgresql:postgresql:42.2.6")
     //DB migration
     implementation("org.flywaydb:flyway-core:$flywayVersion")
+
+    //rx
+    implementation("io.reactivex.rxjava2:rxjava:2.2.1")
+    implementation("io.reactivex.rxjava2:rxkotlin:2.2.0")
+
+    //Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.4.0") { exclude(module = "okhttp") }
+    implementation("com.squareup.okhttp3:okhttp:3.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:3.11.0")
+    implementation("com.squareup.retrofit2:converter-jackson:2.4.0")
+    implementation("com.squareup.retrofit2:adapter-rxjava2:2.4.0")
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.6")
 }
 
 tasks.withType<KotlinCompile> {

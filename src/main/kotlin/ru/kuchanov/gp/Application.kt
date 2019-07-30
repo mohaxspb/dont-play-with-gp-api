@@ -25,12 +25,12 @@ class Application : SpringBootServletInitializer() {
         return LoggerFactory.getLogger("application")
     }
 
-    @Bean
-    fun objectMapper(): ObjectMapper =
-        ObjectMapper()
-            .registerKotlinModule()
-            .enable(SerializationFeature.INDENT_OUTPUT)
-            .setDateFormat(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
+//    @Bean
+//    fun objectMapper(): ObjectMapper =
+//        ObjectMapper()
+//            .registerKotlinModule()
+//            .enable(SerializationFeature.INDENT_OUTPUT)
+//            .setDateFormat(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
 }
 
 fun main(args: Array<String>) {

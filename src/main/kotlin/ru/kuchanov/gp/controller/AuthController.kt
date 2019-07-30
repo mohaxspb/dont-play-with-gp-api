@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.controller
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -18,11 +19,14 @@ import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.UserAlreadyExistsException
 import ru.kuchanov.gp.bean.auth.UsersAuthorities
+import ru.kuchanov.gp.model.facebook.FacebookAccessToken
+import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.repository.auth.UserNotFoundException
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
 import java.io.Serializable
+import java.lang.NullPointerException
 import java.util.*
 
 @RestController
@@ -32,8 +36,16 @@ class AuthController @Autowired constructor(
     val tokenServices: DefaultTokenServices,
     val gpClientDetailsService: GpClientDetailsService,
     val usersService: GpUserDetailsService,
-    val usersAuthoritiesService: UsersAuthoritiesService
+    val usersAuthoritiesService: UsersAuthoritiesService,
+    val facebookApi: FacebookApi
 ) {
+
+    @Value("\${facebook.clientId}")
+    private lateinit var facebookClientId: String
+    @Value("\${facebook.clientSecret}")
+    private lateinit var facebookClientSecret: String
+    @Value("\${facebook.redirectUri}")
+    private lateinit var facebookRedirectUri: String
 
     @PostMapping("register")
     fun register(
@@ -67,7 +79,31 @@ class AuthController @Autowired constructor(
         return getAccessToken(email, clientId)
     }
 
-    fun getAccessToken(email: String, clientId: String): OAuth2AccessToken {
+    @PostMapping("login/facebook")
+    fun loginWithFacebook(
+        @RequestParam(value = "code") code: String
+    )
+//            : OAuth2AccessToken
+            : FacebookAccessToken {
+        val graphApiAccessToken = "AA|$facebookClientId|$facebookClientSecret"
+        println("facebookClientId: $facebookClientId")
+        println("facebookClientSecret: $facebookClientSecret")
+//        println("graphApiAccessToken: $graphApiAccessToken")
+        val accessToken = facebookApi
+            .accessTokenFromAuthCode(
+                code,
+                facebookRedirectUri,
+                facebookClientId,
+                facebookClientSecret,
+                FacebookApi.GRANT_TYPE
+            ).execute().body() ?: throw NullPointerException("Body is null")
+
+        println("accessToken: $accessToken")
+
+        return accessToken
+    }
+
+    private fun getAccessToken(email: String, clientId: String): OAuth2AccessToken {
         val clientDetails: ClientDetails = gpClientDetailsService.loadClientByClientId(clientId)
 
         val requestParameters = mapOf<String, String>()
