@@ -97,6 +97,7 @@ class AuthController @Autowired constructor(
                 facebookClientSecret,
                 FacebookApi.GRANT_TYPE
             ).execute().body() ?: throw NullPointerException("Body is null")
+        //todo wrap in Wrapper
 
         println("accessToken: $accessToken")
 

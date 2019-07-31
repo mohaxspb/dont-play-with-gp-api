@@ -41,5 +41,5 @@ interface FacebookApi {
     ): Single<DebugTokenResponse>
 
     @GET("me?fields=email,name,first_name,middle_name,last_name,picture.width(500).height(500){url,height,width}")
-    fun profile(@Query("access_token") accessToken: String): Single<FacebookProfileResponse>
+    fun profile(@Query("access_token") accessToken: String): Call<FacebookProfileResponse>
 }

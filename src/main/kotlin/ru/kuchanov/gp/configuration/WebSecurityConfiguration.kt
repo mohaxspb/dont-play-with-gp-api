@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
@@ -30,9 +32,14 @@ import javax.servlet.Filter
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+@EnableOAuth2Client
+@EnableGlobalMethodSecurity(
+    prePostEnabled = true,
+    securedEnabled = true
+)
 class WebSecurityConfiguration @Autowired constructor(
-    var userDetailsService: GpUserDetailsServiceImpl
+    val userDetailsService: GpUserDetailsServiceImpl,
+    val defaultOAuth2UserService: DefaultOAuth2UserService
 ) : WebSecurityConfigurerAdapter() {
 
     //do not move to constructor - there are circular dependency error
@@ -77,18 +84,20 @@ class WebSecurityConfiguration @Autowired constructor(
 
     @Bean
     fun oauth2authenticationManager(): OAuth2AuthenticationManager =
-        OAuth2AuthenticationManager().apply {
-            setClientDetailsService(gpClientDetailsService)
-            setTokenServices(tokenServices())
-        }
+        OAuth2AuthenticationManager()
+            .apply {
+                setClientDetailsService(gpClientDetailsService)
+                setTokenServices(tokenServices())
+            }
 
     @Bean
     fun myOAuth2Filter(): Filter =
-        OAuth2AuthenticationProcessingFilter().apply {
-            setAuthenticationManager(oauth2authenticationManager())
-            //allow auth with cookies (not only with access_token)
-            setStateless(false)
-        }
+        OAuth2AuthenticationProcessingFilter()
+            .apply {
+                setAuthenticationManager(oauth2authenticationManager())
+                //allow auth with cookies (not only with access_token)
+                setStateless(false)
+            }
 
     @Value("\${angular.port}")
     lateinit var angularServerPort: String
@@ -110,10 +119,12 @@ class WebSecurityConfiguration @Autowired constructor(
             .authorizeRequests()
             .antMatchers(
                 "/",
-                "/users/",
                 "/error",
+                "/users/",
+                "/login**",
                 "/oauth/token**",
-                "/auth/**"
+                "/auth/**",
+                "/oauth2/**"
             )
             .permitAll()
             .anyRequest()
@@ -122,15 +133,17 @@ class WebSecurityConfiguration @Autowired constructor(
         http
             .formLogin()
             .successHandler { request, response, _ ->
+                println("formLogin successHandler: $request")
                 val savedRequest = request
                     ?.getSession(false)
                     ?.getAttribute("SPRING_SECURITY_SAVED_REQUEST")as? SavedRequest
-                DefaultRedirectStrategy().sendRedirect(
-                    request,
-                    response,
-                    savedRequest?.let { savedRequest.redirectUrl }
-                        ?: "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
-                )
+                DefaultRedirectStrategy()
+                    .sendRedirect(
+                        request,
+                        response,
+                        savedRequest?.let { savedRequest.redirectUrl }
+                            ?: "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
+                    )
             }
             .and()
             .logout()
@@ -142,6 +155,17 @@ class WebSecurityConfiguration @Autowired constructor(
                 )
             }
             .permitAll()
+
+        http
+            .oauth2Login()
+            .authorizationEndpoint()
+            .baseUri("/oauth2/authorize")
+            .and()
+            .redirectionEndpoint()
+            .baseUri("/oauth2/callback/*")
+            .and()
+            .userInfoEndpoint()
+            .userService(defaultOAuth2UserService)
 
         //filter to allow both access_token auth and cookie auth
         http
