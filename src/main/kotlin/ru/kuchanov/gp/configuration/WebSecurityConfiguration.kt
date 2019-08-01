@@ -18,13 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.savedrequest.SavedRequest
 import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
 import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
 import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
 import javax.servlet.Filter
@@ -92,7 +92,7 @@ class WebSecurityConfiguration @Autowired constructor(
 
     @Bean
     fun myOAuth2Filter(): Filter =
-        OAuth2AuthenticationProcessingFilter()
+        GpOAuth2AuthenticationProcessingFilter()
             .apply {
                 setAuthenticationManager(oauth2authenticationManager())
                 //allow auth with cookies (not only with access_token)

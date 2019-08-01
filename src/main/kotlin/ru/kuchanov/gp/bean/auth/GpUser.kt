@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.web.bind.annotation.ResponseStatus
 import ru.kuchanov.gp.model.dto.UserDto
 import java.sql.Timestamp
@@ -67,7 +68,7 @@ data class GpUser(
     var googleId: String? = null,
     @Column(name = "vk_id")
     var vkId: String? = null
-) : UserDetails {
+) : UserDetails, OAuth2User {
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
         userAuthorities.map { SimpleGrantedAuthority(it.authority.name) }.toMutableList()
@@ -83,6 +84,10 @@ data class GpUser(
     override fun isAccountNonExpired() = true
 
     override fun isAccountNonLocked() = true
+
+    override fun getAttributes() = mutableMapOf<String, Any>()
+
+    override fun getName() = fullNameToDto()
 }
 
 fun GpUser.toDto() = UserDto(
