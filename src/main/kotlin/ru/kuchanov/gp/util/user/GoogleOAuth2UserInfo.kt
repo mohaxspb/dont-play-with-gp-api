@@ -1,8 +1,11 @@
 package ru.kuchanov.gp.util.user
 
+import ru.kuchanov.gp.GpConstants
+
 class GoogleOAuth2UserInfo(
-    override val attributes: Map<String, Any>
-) : OAuth2UserInfo(attributes) {
+    override val attributes: Map<String, Any>,
+    override val providerToken: String?
+) : OAuth2UserInfo(attributes, providerToken) {
 
     override fun getId(): String =
         attributes["sub"] as String
@@ -15,4 +18,7 @@ class GoogleOAuth2UserInfo(
 
     override fun getImageUrl(): String? =
         attributes["picture"] as? String
+
+    override fun getProvider() =
+        GpConstants.SocialProvider.GOOGLE
 }

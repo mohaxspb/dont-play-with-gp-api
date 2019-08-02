@@ -45,6 +45,7 @@ class GpUserDetailsServiceImpl @Autowired constructor(
             GpConstants.SocialProvider.GOOGLE -> repository.findOneByGoogleId(id)
             GpConstants.SocialProvider.FACEBOOK -> repository.findOneByFacebookId(id)
             GpConstants.SocialProvider.VK -> repository.findOneByVkId(id)
+            GpConstants.SocialProvider.GITHUB -> repository.findOneByGithubId(id)
             else -> throw NotImplementedError()
         }
 

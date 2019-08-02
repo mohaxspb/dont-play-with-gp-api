@@ -38,13 +38,15 @@ import javax.servlet.Filter
     securedEnabled = true
 )
 class WebSecurityConfiguration @Autowired constructor(
-    val userDetailsService: GpUserDetailsServiceImpl,
-    val defaultOAuth2UserService: DefaultOAuth2UserService
+    val userDetailsService: GpUserDetailsServiceImpl
 ) : WebSecurityConfigurerAdapter() {
 
     //do not move to constructor - there are circular dependency error
     @Autowired
     lateinit var gpClientDetailsService: GpClientDetailsServiceImpl
+
+    @Autowired
+    private lateinit var defaultOAuth2UserService: DefaultOAuth2UserService
 
     //do not move to constructor - there are circular dependency error
     @Autowired
@@ -148,6 +150,8 @@ class WebSecurityConfiguration @Autowired constructor(
             .and()
             .logout()
             .logoutSuccessHandler { request, response, _ ->
+                //todo logout from providers
+
                 DefaultRedirectStrategy().sendRedirect(
                     request,
                     response,

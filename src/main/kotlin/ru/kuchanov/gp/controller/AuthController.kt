@@ -73,7 +73,7 @@ class AuthController @Autowired constructor(
 
         usersAuthoritiesService.insert(UsersAuthorities(userId = newUserInDb.id!!, authority = AuthorityType.USER))
 
-        //todo
+        //todo send email with password
 //        emailService.sendEmail(email, REGISTRATION_EMAIL_SUBJECT, "Your password is:\n$password")
 
         return getAccessToken(email, clientId)

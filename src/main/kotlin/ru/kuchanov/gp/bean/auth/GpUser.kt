@@ -67,7 +67,17 @@ data class GpUser(
     @Column(name = "google_id")
     var googleId: String? = null,
     @Column(name = "vk_id")
-    var vkId: String? = null
+    var vkId: String? = null,
+    @Column(name = "github_id")
+    var githubId: String? = null,
+    @Column(name = "facebook_token")
+    var facebookToken: String? = null,
+    @Column(name = "google_token")
+    var googleToken: String? = null,
+    @Column(name = "vk_token")
+    var vkToken: String? = null,
+    @Column(name = "github_token")
+    var githubToken: String? = null
 ) : UserDetails, OAuth2User {
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
