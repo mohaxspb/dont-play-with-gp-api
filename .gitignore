@@ -1,5 +1,6 @@
 #ignore prod properties
 /src/main/resources/application.*
+#use git update-index --assume-unchanged <filename> to ignore changes in config files
 /src/main/resources/application-dev.*
 
 /build
