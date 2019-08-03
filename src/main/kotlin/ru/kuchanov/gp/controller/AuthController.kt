@@ -36,16 +36,8 @@ class AuthController @Autowired constructor(
     val tokenServices: DefaultTokenServices,
     val gpClientDetailsService: GpClientDetailsService,
     val usersService: GpUserDetailsService,
-    val usersAuthoritiesService: UsersAuthoritiesService,
-    val facebookApi: FacebookApi
+    val usersAuthoritiesService: UsersAuthoritiesService
 ) {
-
-    @Value("\${facebook.clientId}")
-    private lateinit var facebookClientId: String
-    @Value("\${facebook.clientSecret}")
-    private lateinit var facebookClientSecret: String
-    @Value("\${facebook.redirectUri}")
-    private lateinit var facebookRedirectUri: String
 
     @PostMapping("register")
     fun register(
@@ -77,31 +69,6 @@ class AuthController @Autowired constructor(
 //        emailService.sendEmail(email, REGISTRATION_EMAIL_SUBJECT, "Your password is:\n$password")
 
         return getAccessToken(email, clientId)
-    }
-
-    @PostMapping("login/facebook")
-    fun loginWithFacebook(
-        @RequestParam(value = "code") code: String
-    )
-//            : OAuth2AccessToken
-            : FacebookAccessToken {
-        val graphApiAccessToken = "AA|$facebookClientId|$facebookClientSecret"
-        println("facebookClientId: $facebookClientId")
-        println("facebookClientSecret: $facebookClientSecret")
-//        println("graphApiAccessToken: $graphApiAccessToken")
-        val accessToken = facebookApi
-            .accessTokenFromAuthCode(
-                code,
-                facebookRedirectUri,
-                facebookClientId,
-                facebookClientSecret,
-                FacebookApi.GRANT_TYPE
-            ).execute().body() ?: throw NullPointerException("Body is null")
-        //todo wrap in Wrapper
-
-        println("accessToken: $accessToken")
-
-        return accessToken
     }
 
     private fun getAccessToken(email: String, clientId: String): OAuth2AccessToken {

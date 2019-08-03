@@ -44,9 +44,9 @@ class WebSecurityConfiguration @Autowired constructor(
     val facebookApi: FacebookApi
 ) : WebSecurityConfigurerAdapter() {
 
-    @Value("\${facebook.clientId}")
+    @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
     private lateinit var facebookClientId: String
-    @Value("\${facebook.clientSecret}")
+    @Value("\${spring.security.oauth2.client.registration.facebook.clientSecret}")
     private lateinit var facebookClientSecret: String
 
     //do not move to constructor - there are circular dependency error

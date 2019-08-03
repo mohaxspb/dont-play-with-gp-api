@@ -25,9 +25,9 @@ class GpOAuth2UserService @Autowired constructor(
     val facebookApi: FacebookApi
 ) : DefaultOAuth2UserService() {
 
-    @Value("\${facebook.clientId}")
+    @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
     private lateinit var facebookClientId: String
-    @Value("\${facebook.clientSecret}")
+    @Value("\${spring.security.oauth2.client.registration.facebook.clientSecret}")
     private lateinit var facebookClientSecret: String
 
     override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
