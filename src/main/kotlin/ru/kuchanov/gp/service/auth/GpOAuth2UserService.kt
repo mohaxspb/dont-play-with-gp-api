@@ -54,7 +54,9 @@ class GpOAuth2UserService @Autowired constructor(
         if (email.isNullOrEmpty()) {
             //logout from every provider to request email again
             when (provider) {
-                GOOGLE -> TODO()
+                GOOGLE -> {
+                    //should not happen
+                }
                 FACEBOOK -> {
                     val facebookLogoutResult =
                         facebookApi
@@ -146,12 +148,5 @@ class GpOAuth2UserService @Autowired constructor(
                 return usersService.loadUserByUsername(oAuth2UserInfo.getEmail()!!)!!
             }
         }
-
-        //fixme test
-//        email = "test@test.ru"
-//
-//        val gpUser = usersService.loadUserByUsername(email)!!
-//        println("GpOAuth2UserService gpUser: $gpUser")
-//        return gpUser
     }
 }

@@ -178,9 +178,7 @@ class WebSecurityConfiguration @Autowired constructor(
                 gpUser.vkId?.let {
                     TODO()
                 }
-                gpUser.googleId?.let {
-                    TODO()
-                }
+                // nothing to do for google
                 gpUser.githubId?.let {
                     TODO()
                 }
