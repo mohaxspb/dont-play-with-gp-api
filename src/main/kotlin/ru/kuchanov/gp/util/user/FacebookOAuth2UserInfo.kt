@@ -13,8 +13,8 @@ class FacebookOAuth2UserInfo(
     override fun getName(): String =
         attributes["name"] as String
 
-    override fun getEmail(): String =
-        attributes["email"] as String
+    override fun getEmail(): String? =
+        attributes["email"] as String?
 
     override fun getImageUrl(): String? {
         if (attributes.containsKey("picture")) {

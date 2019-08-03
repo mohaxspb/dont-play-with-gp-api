@@ -24,7 +24,9 @@ import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.savedrequest.SavedRequest
 import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
+import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
 import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
 import javax.servlet.Filter
@@ -38,8 +40,14 @@ import javax.servlet.Filter
     securedEnabled = true
 )
 class WebSecurityConfiguration @Autowired constructor(
-    val userDetailsService: GpUserDetailsServiceImpl
+    val userDetailsService: GpUserDetailsServiceImpl,
+    val facebookApi: FacebookApi
 ) : WebSecurityConfigurerAdapter() {
+
+    @Value("\${facebook.clientId}")
+    private lateinit var facebookClientId: String
+    @Value("\${facebook.clientSecret}")
+    private lateinit var facebookClientSecret: String
 
     //do not move to constructor - there are circular dependency error
     @Autowired
@@ -149,8 +157,45 @@ class WebSecurityConfiguration @Autowired constructor(
             }
             .and()
             .logout()
+            //todo move to separate class
+            .addLogoutHandler { _, _, authentication ->
+                //logout from providers
+                val gpUser = authentication.principal as GpUser
+
+                gpUser.facebookId?.let {
+                    val facebookLogoutResult =
+                        facebookApi
+                            .logout(
+                                it,
+                                "$facebookClientId|$facebookClientSecret"
+                            )
+                            .execute()
+                            .body()
+
+                    println("facebookLogoutResult: $facebookLogoutResult")
+                }
+
+                gpUser.vkId?.let {
+                    TODO()
+                }
+                gpUser.googleId?.let {
+                    TODO()
+                }
+                gpUser.githubId?.let {
+                    TODO()
+                }
+
+                //also clear accessToken in DB
+                userDetailsService.insert(gpUser.apply {
+                    facebookToken = null
+                    vkToken = null
+                    googleToken = null
+                    githubToken = null
+                })
+            }
+            .permitAll()
             .logoutSuccessHandler { request, response, _ ->
-                //todo logout from providers
+
 
                 DefaultRedirectStrategy().sendRedirect(
                     request,

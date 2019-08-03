@@ -11,7 +11,7 @@ abstract class OAuth2UserInfo(
 
     abstract fun getName(): String
 
-    abstract fun getEmail(): String
+    abstract fun getEmail(): String?
 
     abstract fun getImageUrl(): String?
 

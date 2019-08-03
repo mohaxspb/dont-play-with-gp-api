@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.service.auth
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
@@ -12,6 +13,7 @@ import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.UsersAuthorities
 import ru.kuchanov.gp.exception.OAuth2AuthenticationProcessingException
+import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.util.user.OAuth2UserInfoFactory
 
 @Service
@@ -19,8 +21,14 @@ class GpOAuth2UserService @Autowired constructor(
     val usersService: GpUserDetailsService,
     val usersAuthoritiesService: UsersAuthoritiesService,
     val passwordGenerator: RandomValueStringGenerator,
-    val passwordEncoder: PasswordEncoder
+    val passwordEncoder: PasswordEncoder,
+    val facebookApi: FacebookApi
 ) : DefaultOAuth2UserService() {
+
+    @Value("\${facebook.clientId}")
+    private lateinit var facebookClientId: String
+    @Value("\${facebook.clientSecret}")
+    private lateinit var facebookClientSecret: String
 
     override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
         println(
@@ -37,16 +45,35 @@ class GpOAuth2UserService @Autowired constructor(
             user.attributes,
             userRequest.accessToken?.tokenValue
         )
-        if (oAuth2UserInfo.getEmail().isEmpty()) {
-            throw OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider")
-        }
-
-//        println("user.attributes: ${user.attributes.entries}")
 
         val provider = oAuth2UserInfo.getProvider()
         val idInProvidersSystem = oAuth2UserInfo.getId()
         val tokenInProvidersSystem = oAuth2UserInfo.providerToken
         val email = oAuth2UserInfo.getEmail()
+
+        if (email.isNullOrEmpty()) {
+            //logout from every provider to request email again
+            when (provider) {
+                GOOGLE -> TODO()
+                FACEBOOK -> {
+                    val facebookLogoutResult =
+                        facebookApi
+                            .logout(
+                                idInProvidersSystem,
+                                "$facebookClientId|$facebookClientSecret"
+                            )
+                            .execute()
+                            .body()
+
+                    println("facebookLogoutResult: $facebookLogoutResult")
+                }
+                VK -> TODO()
+                GITHUB -> TODO()
+            }
+            throw OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider")
+        }
+
+//        println("user.attributes: ${user.attributes.entries}")
 
         val inDbUser = usersService.loadUserByUsername(email)
         if (inDbUser != null) {
@@ -116,7 +143,7 @@ class GpOAuth2UserService @Autowired constructor(
 
                 //todo send email
 
-                return usersService.loadUserByUsername(oAuth2UserInfo.getEmail())!!
+                return usersService.loadUserByUsername(oAuth2UserInfo.getEmail()!!)!!
             }
         }
 
