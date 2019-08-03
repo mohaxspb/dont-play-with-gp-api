@@ -1,8 +1,5 @@
 package ru.kuchanov.gp.configuration
 
-//import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
-//import com.google.api.client.http.javanet.NetHttpTransport
-//import com.google.api.client.json.jackson2.JacksonFactory
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
@@ -12,6 +9,7 @@ import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
 import ru.kuchanov.gp.network.FacebookApi
+import ru.kuchanov.gp.network.GitHubApi
 import java.security.SecureRandom
 
 @Configuration
@@ -19,22 +17,10 @@ class SocialAuthConfiguration {
 
     @Bean
     fun passwordGenerator(): RandomValueStringGenerator =
-            RandomValueStringGenerator().apply {
-                setLength(10)
-                setRandom(SecureRandom())
-            }
-
-    //google auth
-//    @Value("\${my.api.admin.google.client_id}")
-//    private lateinit var googleClientIdAdmin: String
-//    @Value("\${my.api.game.google.client_id}")
-//    private lateinit var googleClientIdGame: String
-
-//    @Bean
-//    fun googleIdTokenVerifier(): GoogleIdTokenVerifier =
-//            GoogleIdTokenVerifier.Builder(NetHttpTransport(), JacksonFactory())
-//                    .setAudience(listOf(googleClientIdAdmin, googleClientIdGame))
-//                    .build()
+        RandomValueStringGenerator().apply {
+            setLength(10)
+            setRandom(SecureRandom())
+        }
 
     //facebook
     @Autowired
@@ -44,14 +30,24 @@ class SocialAuthConfiguration {
     @Autowired
     private lateinit var callAdapterFactory: CallAdapter.Factory
 
-    @Bean
-    fun retrofit(): Retrofit = Retrofit.Builder()
-            .baseUrl(FacebookApi.BASE_API_URL)
-            .client(okHttpClient)
-            .addConverterFactory(converterFactory)
-            .addCallAdapterFactory(callAdapterFactory)
-            .build()
+    private fun facebookRetrofit(): Retrofit = Retrofit.Builder()
+        .baseUrl(FacebookApi.BASE_API_URL)
+        .client(okHttpClient)
+        .addConverterFactory(converterFactory)
+        .addCallAdapterFactory(callAdapterFactory)
+        .build()
 
     @Bean
-    fun facebookApi(): FacebookApi = retrofit().create(FacebookApi::class.java)
+    fun facebookApi(): FacebookApi = facebookRetrofit().create(FacebookApi::class.java)
+
+    //github
+    private fun githubRetrofit(): Retrofit = Retrofit.Builder()
+        .baseUrl(GitHubApi.BASE_API_URL)
+        .client(okHttpClient)
+        .addConverterFactory(converterFactory)
+        .addCallAdapterFactory(callAdapterFactory)
+        .build()
+
+    @Bean
+    fun gitHubApi(): GitHubApi = githubRetrofit().create(GitHubApi::class.java)
 }

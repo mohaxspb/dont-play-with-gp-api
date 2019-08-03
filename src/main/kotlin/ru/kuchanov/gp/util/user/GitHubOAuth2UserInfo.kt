@@ -8,7 +8,7 @@ class GitHubOAuth2UserInfo(
 ) : OAuth2UserInfo(attributes, providerToken) {
 
     override fun getId(): String =
-        attributes["id"] as String
+        attributes["id"].toString()
 
     override fun getName(): String =
         attributes["name"] as String

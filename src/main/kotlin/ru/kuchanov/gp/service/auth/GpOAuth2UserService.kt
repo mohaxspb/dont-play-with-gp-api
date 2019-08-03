@@ -8,12 +8,14 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
 import org.springframework.security.oauth2.common.util.RandomValueStringGenerator
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
+import org.springframework.util.Base64Utils
 import ru.kuchanov.gp.GpConstants.SocialProvider.*
 import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.UsersAuthorities
 import ru.kuchanov.gp.exception.OAuth2AuthenticationProcessingException
 import ru.kuchanov.gp.network.FacebookApi
+import ru.kuchanov.gp.network.GitHubApi
 import ru.kuchanov.gp.util.user.OAuth2UserInfoFactory
 
 @Service
@@ -22,13 +24,19 @@ class GpOAuth2UserService @Autowired constructor(
     val usersAuthoritiesService: UsersAuthoritiesService,
     val passwordGenerator: RandomValueStringGenerator,
     val passwordEncoder: PasswordEncoder,
-    val facebookApi: FacebookApi
+    val facebookApi: FacebookApi,
+    val githubApi: GitHubApi
 ) : DefaultOAuth2UserService() {
 
     @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
     private lateinit var facebookClientId: String
     @Value("\${spring.security.oauth2.client.registration.facebook.clientSecret}")
     private lateinit var facebookClientSecret: String
+
+    @Value("\${spring.security.oauth2.client.registration.github.clientId}")
+    private lateinit var githubClientId: String
+    @Value("\${spring.security.oauth2.client.registration.github.clientSecret}")
+    private lateinit var githubClientSecret: String
 
     override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
         println(
@@ -50,6 +58,7 @@ class GpOAuth2UserService @Autowired constructor(
         val idInProvidersSystem = oAuth2UserInfo.getId()
         val tokenInProvidersSystem = oAuth2UserInfo.providerToken
         val email = oAuth2UserInfo.getEmail()
+        val image = oAuth2UserInfo.getImageUrl()
 
         if (email.isNullOrEmpty()) {
             //logout from every provider to request email again
@@ -70,7 +79,22 @@ class GpOAuth2UserService @Autowired constructor(
                     println("facebookLogoutResult: $facebookLogoutResult")
                 }
                 VK -> TODO()
-                GITHUB -> TODO()
+                GITHUB -> {
+                    //nothing to do
+                    val authorization =
+                        "Basic " + String(Base64Utils.encode("$githubClientId:$githubClientSecret".toByteArray()))
+                    val githubLogoutResult = githubApi.logout(
+                        authorization,
+                        githubClientId,
+                        tokenInProvidersSystem!!
+                    )
+                        .execute()
+
+                    println("githubLogoutResult: $githubLogoutResult")
+                    val message =
+                        """Email not found in GitHub response. You can add it at GitHub profile (https://github.com/settings/profile). See "Public email" option."""
+                    throw OAuth2AuthenticationProcessingException(message)
+                }
             }
             throw OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider")
         }
@@ -79,7 +103,7 @@ class GpOAuth2UserService @Autowired constructor(
 
         val inDbUser = usersService.loadUserByUsername(email)
         if (inDbUser != null) {
-            //update users providers ID and token
+            //update users providers ID and token and image
             inDbUser.apply {
                 when (provider) {
                     GOOGLE -> {
@@ -99,6 +123,7 @@ class GpOAuth2UserService @Autowired constructor(
                         githubToken = tokenInProvidersSystem
                     }
                 }
+                image?.let { avatar = it }
             }
             return usersService.insert(inDbUser)
         } else {
