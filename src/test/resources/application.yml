@@ -1,0 +1,91 @@
+# controllers prefix
+server:
+  servlet:
+    context-path: /api
+
+# db properties
+spring:
+  datasource:
+    password: testtest
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/${my.db.name}
+    username: postgres
+  flyway:
+    baseline-on-migrate: true
+    password: ${spring.datasource.password}
+    url: ${spring.datasource.url}
+    user: ${spring.datasource.username}
+  http:
+    log-request-details: true
+  jackson:
+    serialization:
+      indent_output: true
+  jmx:
+    default-domain: ${my.db.name}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        connection:
+          charSet: UTF-8
+        temp:
+          use_jdbc_metadata_defaults: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: PASTE_HERE_YOUR_OWN_GOOGLE_API_CLIENT_ID
+            clientSecret: PASTE_HERE_YOUR_OWN_GOOGLE_API_CLIENT_SECRET
+            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - profile
+          facebook:
+            clientId: PASTE_HERE_YOUR_OWN_FACEBOOK_API_CLIENT_ID
+            clientSecret: PASTE_HERE_YOUR_OWN_FACEBOOK_API_CLIENT_SECRET
+            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - public_profile
+          #todo
+          github:
+            clientId: PASTE_HERE_YOUR_OWN_GITHUB_API_CLIENT_ID
+            clientSecret: PASTE_HERE_YOUR_OWN_GITHUB_API_CLIENT_SECRET
+            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - user:email
+              - read:user
+        provider:
+          facebook:
+            authorizationUri: https://www.facebook.com/v4.0/dialog/oauth
+            tokenUri: https://graph.facebook.com/v4.0/oauth/access_token
+            userInfoUri: https://graph.facebook.com/v4.0/me?fields=id,first_name,middle_name,last_name,name,email,verified,is_verified,picture.width(250).height(250)
+
+# logging properties
+logging:
+  file: logs/myLog.log
+  level:
+    org:
+      flywaydb: ERROR
+      hibernate: ERROR
+      hibernate.SQL: ERROR
+      hibernate.type: ERROR
+      springframework: ERROR
+      springframework.web: ERROR
+      springframework.web.filter.CommonsRequestLoggingFilter: ERROR
+    root: ERROR
+  pattern:
+    console: '%d{HH:mm:ss.SSS} %msg%n'
+
+# misc
+my:
+  db:
+    name: gp_test_db
+
+# front settings
+angular:
+  href: /
+  port: 4200
