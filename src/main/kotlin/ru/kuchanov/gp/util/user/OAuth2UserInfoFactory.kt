@@ -7,7 +7,7 @@ object OAuth2UserInfoFactory {
 
     fun getOAuth2UserInfo(
         registrationId: String,
-        attributes: Map<String, Any>,
+        attributes: Map<String, Any?>,
         providerToken: String?
     ): OAuth2UserInfo {
         return when {

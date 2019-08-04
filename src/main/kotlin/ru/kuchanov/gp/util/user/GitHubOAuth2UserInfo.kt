@@ -3,7 +3,7 @@ package ru.kuchanov.gp.util.user
 import ru.kuchanov.gp.GpConstants
 
 class GitHubOAuth2UserInfo(
-    override val attributes: Map<String, Any>,
+    override val attributes: Map<String, Any?>,
     override val providerToken: String?
 ) : OAuth2UserInfo(attributes, providerToken) {
 

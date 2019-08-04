@@ -2,26 +2,13 @@ package ru.kuchanov.gp.service.auth
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.*
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler
-import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequestEntityConverter
 import org.springframework.security.oauth2.common.util.RandomValueStringGenerator
-import org.springframework.security.oauth2.core.AuthenticationMethod
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
 import org.springframework.util.Base64Utils
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
-import org.springframework.web.client.RequestCallback
-import org.springframework.web.client.ResponseExtractor
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.util.UriComponentsBuilder
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.GpConstants.SocialProvider.*
 import ru.kuchanov.gp.bean.auth.AuthorityType
@@ -31,7 +18,6 @@ import ru.kuchanov.gp.exception.OAuth2AuthenticationProcessingException
 import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.network.GitHubApi
 import ru.kuchanov.gp.util.user.OAuth2UserInfoFactory
-import java.net.URI
 
 @Service
 class GpOAuth2UserService @Autowired constructor(
@@ -42,71 +28,6 @@ class GpOAuth2UserService @Autowired constructor(
     val facebookApi: FacebookApi,
     val githubApi: GitHubApi
 ) : DefaultOAuth2UserService() {
-
-    init {
-        val oAuth2UserRequestEntityConverter = object : OAuth2UserRequestEntityConverter() {
-            override fun convert(userRequest: OAuth2UserRequest): RequestEntity<*>? {
-                println("oAuth2UserRequestEntityConverter convert: ${userRequest.clientRegistration.registrationId}")
-                if (userRequest.clientRegistration.registrationId == GpConstants.SocialProvider.VK.name.toLowerCase()) {
-//                    val request = super.convert(userRequest)
-//                    request.headers["Authorization"] = "Bearer ${userRequest.accessToken}"
-//                    println("oAuth2UserRequestEntityConverter: ${request.headers.entries}")
-//                    request.url.query.plus()
-
-                    val clientRegistration = userRequest.clientRegistration
-
-                    val httpMethod = HttpMethod.GET
-//                    if (AuthenticationMethod.FORM == clientRegistration.providerDetails.userInfoEndpoint.authenticationMethod) {
-//                        httpMethod = HttpMethod.POST
-//                    }
-                    val headers = HttpHeaders()
-                    headers.accept = listOf(MediaType.APPLICATION_JSON)
-                    val uri =
-                        UriComponentsBuilder.fromUriString(clientRegistration.providerDetails.userInfoEndpoint.uri)
-//                            .query("access_token")
-                            .queryParam(OAuth2ParameterNames.ACCESS_TOKEN, userRequest.accessToken.tokenValue)
-                            .build()
-                            .toUri()
-
-//                    val request: RequestEntity<*>
-//                        headers.contentType = MediaType.valueOf(APPLICATION_FORM_URLENCODED_VALUE + ";charset=UTF-8");
-//                        val formParameters = LinkedMultiValueMap<String, String>()
-//                        formParameters.add(OAuth2ParameterNames.ACCESS_TOKEN, userRequest.accessToken.tokenValue)
-                    val request = RequestEntity<MultiValueMap<String, String>>(headers, httpMethod, uri)
-
-
-//                    val request = RequestEntity(formParameters, headers, httpMethod, uri)
-                    return request
-                } else {
-                    return super.convert(userRequest)
-                }
-            }
-        }
-        setRequestEntityConverter(oAuth2UserRequestEntityConverter)
-//        val PARAMETERIZED_RESPONSE_TYPE = object : ParameterizedTypeReference<Map<String, String>>() {}
-//        val restTemplate = object : RestTemplate() {
-//            override fun <T : Any?> exchange(
-//                requestEntity: RequestEntity<*>,
-//                responseType: Class<T>
-//            ): ResponseEntity<T> {
-//                println("RestTemplate 0: ${requestEntity.url}")
-//                val result = super.exchange(requestEntity, responseType)
-//                println("result: ${result.body}")
-//                return result
-//            }
-//
-//            override fun <T : Any?> doExecute(
-//                url: URI,
-//                method: HttpMethod?,
-//                requestCallback: RequestCallback?,
-//                responseExtractor: ResponseExtractor<T>?
-//            ): T? {
-//                return super.doExecute(url, method, requestCallback, responseExtractor)
-//            }
-//        }
-//        restTemplate.errorHandler = OAuth2ErrorResponseErrorHandler()
-//        setRestOperations(restTemplate)
-    }
 
     @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
     private lateinit var facebookClientId: String
@@ -126,14 +47,30 @@ class GpOAuth2UserService @Autowired constructor(
 
         val user = super.loadUser(userRequest)
         println("GpOAuth2UserService user: $user")
+        val userAttributes = user.attributes as Map<String, Any?>
+        println("GpOAuth2UserService user: ${userAttributes.entries}")
 
-        val params = userRequest.additionalParameters
+        val additionalParams: Map<String, Any?>
+        if (userRequest.clientRegistration.registrationId == GpConstants.SocialProvider.VK.name.toLowerCase()) {
+            val response = userAttributes["response"]
+            println("GpOAuth2UserService response: ${response?.javaClass?.name}")
+            val responseTyped = response as? ArrayList<LinkedHashMap<String, Any?>?>
+            println("GpOAuth2UserService response: ${responseTyped?.get(0)?.javaClass}")
+
+            additionalParams = LinkedHashMap(userRequest.additionalParameters)
+            val vkParamsMap = responseTyped?.get(0)
+            val name = "${vkParamsMap?.get("first_name")} ${vkParamsMap?.get("last_name")}"
+            additionalParams["name"] = name
+        } else {
+            additionalParams = user.attributes
+        }
 
         val oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(
             userRequest.clientRegistration.registrationId,
-            if (userRequest.clientRegistration.registrationId == GpConstants.SocialProvider.VK.name.toLowerCase()) params else user.attributes,
+            additionalParams,
             userRequest.accessToken?.tokenValue
         )
+        println("oAuth2UserInfo: $oAuth2UserInfo")
 
         val provider = oAuth2UserInfo.getProvider()
         val idInProvidersSystem = oAuth2UserInfo.getId()
