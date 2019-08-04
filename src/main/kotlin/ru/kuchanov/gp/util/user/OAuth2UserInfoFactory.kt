@@ -23,6 +23,10 @@ object OAuth2UserInfoFactory {
                 GpConstants.SocialProvider.GITHUB.toString(),
                 ignoreCase = true
             ) -> GitHubOAuth2UserInfo(attributes, providerToken)
+            registrationId.equals(
+                GpConstants.SocialProvider.VK.toString(),
+                ignoreCase = true
+            ) -> VkOAuth2UserInfo(attributes, providerToken)
             else -> throw OAuth2AuthenticationProcessingException("Sorry! Login with $registrationId is not supported yet.")
         }
     }
