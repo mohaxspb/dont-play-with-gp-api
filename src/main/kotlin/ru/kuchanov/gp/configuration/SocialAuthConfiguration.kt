@@ -50,4 +50,7 @@ class SocialAuthConfiguration {
 
     @Bean
     fun gitHubApi(): GitHubApi = githubRetrofit().create(GitHubApi::class.java)
+
+    //vk
+
 }

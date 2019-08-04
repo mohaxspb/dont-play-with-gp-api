@@ -61,6 +61,7 @@ class GpOAuth2UserService @Autowired constructor(
             val vkParamsMap = responseTyped?.get(0)
             val name = "${vkParamsMap?.get("first_name")} ${vkParamsMap?.get("last_name")}"
             additionalParams["name"] = name
+            additionalParams["picture"] = vkParamsMap?.get("photo_max")
         } else {
             additionalParams = user.attributes
         }
