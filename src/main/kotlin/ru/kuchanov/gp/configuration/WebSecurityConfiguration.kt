@@ -20,14 +20,10 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequestEntityConverter
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client
 import org.springframework.security.oauth2.core.OAuth2AccessToken
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
@@ -46,7 +42,6 @@ import ru.kuchanov.gp.network.GitHubApi
 import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
 import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
 import javax.servlet.Filter
-import javax.servlet.http.HttpServletRequest
 
 
 @Configuration
@@ -199,6 +194,7 @@ class WebSecurityConfiguration @Autowired constructor(
                     println("facebookLogoutResult: $facebookLogoutResult")
                 }
                 // nothing to do for google
+                // nothing to do for vk
                 gpUser.githubToken?.let {
                     val authorization =
                         "Basic " + String(Base64Utils.encode("$githubClientId:$githubClientSecret".toByteArray()))
@@ -212,17 +208,14 @@ class WebSecurityConfiguration @Autowired constructor(
                     println("githubLogoutResult: $githubLogoutResult")
                 }
 
-                gpUser.vkId?.let {
-                    //                    TODO()
-                }
-
                 //also clear accessToken in DB
-                userDetailsService.insert(gpUser.apply {
-                    facebookToken = null
-                    vkToken = null
-                    googleToken = null
-                    githubToken = null
-                })
+                userDetailsService.insert(
+                    gpUser.apply {
+                        facebookToken = null
+                        vkToken = null
+                        googleToken = null
+                        githubToken = null
+                    })
             }
             .permitAll()
             .logoutSuccessHandler { request, response, _ ->
@@ -242,6 +235,7 @@ class WebSecurityConfiguration @Autowired constructor(
         val oAuth2AuthorizationCodeGrantRequestEntityConverter = OAuth2AuthorizationCodeGrantRequestEntityConverter()
         accessTokenResponseClient.setRequestEntityConverter(oAuth2AuthorizationCodeGrantRequestEntityConverter)
 
+        //todo use only for VK
         val tokenResponseConverter = object : Converter<Map<String, String>, OAuth2AccessTokenResponse> {
             override fun convert(source: Map<String, String>): OAuth2AccessTokenResponse? {
                 println("tokenResponseConverter convert: $source")
