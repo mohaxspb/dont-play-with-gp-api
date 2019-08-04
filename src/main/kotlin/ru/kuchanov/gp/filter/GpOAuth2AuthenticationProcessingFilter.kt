@@ -10,9 +10,9 @@ class GpOAuth2AuthenticationProcessingFilter: OAuth2AuthenticationProcessingFilt
 
     override fun doFilter(req: ServletRequest, res: ServletResponse, chain: FilterChain) {
         val httpRequest = req as HttpServletRequest
-        println("GpOAuth2AuthenticationProcessingFilter httpRequest: $httpRequest")
+        println("GpOAuth2AuthenticationProcessingFilter httpRequest: ${httpRequest.requestURL}")
 //        println("GpOAuth2AuthenticationProcessingFilter httpRequest.cookies: ${httpRequest.cookies.asList()}")
-        httpRequest.cookies.asList().forEach {
+        httpRequest.cookies?.asList()?.forEach {
             println("Cookie ${it.name}: ${it.value}")
         }
         println("GpOAuth2AuthenticationProcessingFilter httpRequest.headerNames: ${httpRequest.headerNames.toList()}")
