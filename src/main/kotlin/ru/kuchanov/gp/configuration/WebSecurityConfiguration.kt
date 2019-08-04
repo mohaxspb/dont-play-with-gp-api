@@ -242,8 +242,8 @@ class WebSecurityConfiguration @Autowired constructor(
 
                 val vkAccessToken = source[OAuth2ParameterNames.ACCESS_TOKEN]
                 val params = mutableMapOf<String, Any?>()
-                params["email"] = source["email"] as String
-                params["id"] = source["user_id"] as String
+                params["email"] = source["email"]
+                params["id"] = source["user_id"]
 
                 return OAuth2AccessTokenResponse
                     .withToken(vkAccessToken)

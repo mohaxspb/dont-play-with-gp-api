@@ -54,7 +54,7 @@ class GpOAuth2UserService @Autowired constructor(
         if (userRequest.clientRegistration.registrationId == GpConstants.SocialProvider.VK.name.toLowerCase()) {
             val response = userAttributes["response"]
             println("GpOAuth2UserService response: ${response?.javaClass?.name}")
-            val responseTyped = response as? ArrayList<LinkedHashMap<String, Any?>?>
+            val responseTyped = response as? List<LinkedHashMap<String, Any?>?>
             println("GpOAuth2UserService response: ${responseTyped?.get(0)?.javaClass}")
 
             additionalParams = LinkedHashMap(userRequest.additionalParameters)
@@ -85,6 +85,9 @@ class GpOAuth2UserService @Autowired constructor(
                 GOOGLE -> {
                     //should not happen
                 }
+                VK -> {
+                    //nothing to do
+                }
                 FACEBOOK -> {
                     val facebookLogoutResult =
                         facebookApi
@@ -97,9 +100,7 @@ class GpOAuth2UserService @Autowired constructor(
 
                     println("facebookLogoutResult: $facebookLogoutResult")
                 }
-                VK -> TODO()
                 GITHUB -> {
-                    //nothing to do
                     val authorization =
                         "Basic " + String(Base64Utils.encode("$githubClientId:$githubClientSecret".toByteArray()))
                     val githubLogoutResult = githubApi.logout(
@@ -115,7 +116,7 @@ class GpOAuth2UserService @Autowired constructor(
                     throw OAuth2AuthenticationProcessingException(message)
                 }
             }
-            throw OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider")
+            throw OAuth2AuthenticationProcessingException("Email not found. Add it to your profile and enable access to it while login.")
         }
 
 //        println("user.attributes: ${user.attributes.entries}")
