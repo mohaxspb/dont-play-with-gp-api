@@ -103,19 +103,21 @@ class SocialAuthConfiguration {
              * you can override [fun convert(it: OAuth2AuthorizationCodeGrantRequest): RequestEntity<*>?]
              * and use [requestEntity.body as? MultiValueMap<String, String>] to add params to access_token by auth_code request
              */
-            val oAuth2AuthCodeGrantRequestEntityConverter = OAuth2AuthorizationCodeGrantRequestEntityConverter()
-            setRequestEntityConverter(oAuth2AuthCodeGrantRequestEntityConverter)
+            setRequestEntityConverter(OAuth2AuthorizationCodeGrantRequestEntityConverter())
 
-            val oAuth2AccessTokenResponseHttpMessageConverter = OAuth2AccessTokenResponseHttpMessageConverter()
-            oAuth2AccessTokenResponseHttpMessageConverter.setTokenResponseConverter(socialTokenResponseConverter())
-            val restTemplate =
+            val oAuth2AccessTokenResponseHttpMessageConverter = OAuth2AccessTokenResponseHttpMessageConverter().apply {
+                setTokenResponseConverter(socialTokenResponseConverter())
+            }
+
+            setRestOperations(
                 RestTemplate(
                     listOf(
                         FormHttpMessageConverter(),
                         oAuth2AccessTokenResponseHttpMessageConverter
                     )
-                )
-            restTemplate.errorHandler = OAuth2ErrorResponseErrorHandler()
-            setRestOperations(restTemplate)
+                ).apply {
+                    errorHandler = OAuth2ErrorResponseErrorHandler()
+                }
+            )
         }
 }
