@@ -15,6 +15,7 @@ interface UsersRepository : JpaRepository<GpUser, Long> {
     fun findOneByGoogleId(id: String): GpUser?
     fun findOneByFacebookId(id: String): GpUser?
     fun findOneByVkId(id: String): GpUser?
+    fun findOneByGithubId(id: String): GpUser?
 
     @Modifying
     @Query("UPDATE GpUser u SET u.avatar = ?2 WHERE u.id = ?1")
@@ -24,6 +25,9 @@ interface UsersRepository : JpaRepository<GpUser, Long> {
     //see https://stackoverflow.com/a/50968131/3212712
     @Query(nativeQuery = true)
     fun getOneAsUserDto(userId: Long): UserDto?
+
+    @Transactional
+    fun deleteByUsername(username: String)
 }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such user")

@@ -15,29 +15,47 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
+import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.savedrequest.SavedRequest
 import ru.kuchanov.gp.GpConstants
-import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
-import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
+import ru.kuchanov.gp.bean.auth.AuthorityType
+import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
+import ru.kuchanov.gp.service.auth.GpClientDetailsService
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import javax.servlet.Filter
 
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+@EnableOAuth2Client
+@EnableGlobalMethodSecurity(
+    prePostEnabled = true,
+    securedEnabled = true
+)
 class WebSecurityConfiguration @Autowired constructor(
-    var userDetailsService: GpUserDetailsServiceImpl
+    val userDetailsService: GpUserDetailsService,
+    val logoutHandler: LogoutHandler
 ) : WebSecurityConfigurerAdapter() {
+
+    @Autowired
+    private lateinit var accessTokenResponseClient: OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+    //social auth END
 
     //do not move to constructor - there are circular dependency error
     @Autowired
-    lateinit var gpClientDetailsService: GpClientDetailsServiceImpl
+    lateinit var gpClientDetailsService: GpClientDetailsService
+
+    @Autowired
+    private lateinit var defaultOAuth2UserService: DefaultOAuth2UserService
 
     //do not move to constructor - there are circular dependency error
     @Autowired
@@ -77,18 +95,23 @@ class WebSecurityConfiguration @Autowired constructor(
 
     @Bean
     fun oauth2authenticationManager(): OAuth2AuthenticationManager =
-        OAuth2AuthenticationManager().apply {
-            setClientDetailsService(gpClientDetailsService)
-            setTokenServices(tokenServices())
-        }
+        OAuth2AuthenticationManager()
+            .apply {
+                setClientDetailsService(gpClientDetailsService)
+                setTokenServices(tokenServices())
+            }
 
+    /**
+     * filter to allow both access_token auth and cookie auth
+     */
     @Bean
     fun myOAuth2Filter(): Filter =
-        OAuth2AuthenticationProcessingFilter().apply {
-            setAuthenticationManager(oauth2authenticationManager())
-            //allow auth with cookies (not only with access_token)
-            setStateless(false)
-        }
+        GpOAuth2AuthenticationProcessingFilter()
+            .apply {
+                setAuthenticationManager(oauth2authenticationManager())
+                //allow auth with cookies (not only with access_token)
+                setStateless(false)
+            }
 
     @Value("\${angular.port}")
     lateinit var angularServerPort: String
@@ -110,39 +133,64 @@ class WebSecurityConfiguration @Autowired constructor(
             .authorizeRequests()
             .antMatchers(
                 "/",
-                "/users/",
                 "/error",
-                "/oauth/token**"
+                "/users/",
+                "/login**",
+                "/oauth/token**",
+                "/auth/**",
+                "/oauth2/**"
             )
             .permitAll()
             .anyRequest()
-            .hasAnyAuthority("ADMIN", "USER")
+            .hasAnyAuthority(*AuthorityType.values().map { it.name }.toTypedArray())
 
         http
             .formLogin()
             .successHandler { request, response, _ ->
+                println("formLogin successHandler: $request")
                 val savedRequest = request
                     ?.getSession(false)
                     ?.getAttribute("SPRING_SECURITY_SAVED_REQUEST")as? SavedRequest
-                DefaultRedirectStrategy().sendRedirect(
-                    request,
-                    response,
-                    savedRequest?.let { savedRequest.redirectUrl }
-                        ?: "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
-                )
+                DefaultRedirectStrategy()
+                    .sendRedirect(
+                        request,
+                        response,
+                        savedRequest?.let { savedRequest.redirectUrl }
+                            ?: "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
+                    )
             }
             .and()
             .logout()
+            .addLogoutHandler(logoutHandler)
+            .permitAll()
             .logoutSuccessHandler { request, response, _ ->
                 DefaultRedirectStrategy().sendRedirect(
                     request,
                     response,
-                    "${request.scheme}://${request.serverName}$angularServerPort:$angularServerHref"
+                    "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
                 )
             }
             .permitAll()
 
-        //filter to allow both access_token auth and cookie auth
+        http
+            .oauth2Login()
+            .tokenEndpoint()
+            .accessTokenResponseClient(accessTokenResponseClient)
+            .and()
+            .authorizationEndpoint()
+            .baseUri("/oauth2/authorize")
+            //if you need to add parameter to auth request (providers site for get auth code)
+            //you can override OAuth2AuthorizationRequestResolver and add params to OAuth2AuthorizationRequest.additionalParameters
+            //see https://docs.spring.io/spring-security/site/docs/5.1.1.RELEASE/reference/htmlsingle/#oauth2Client-authorization-request-resolver
+            //see [authorizationRequestResolver(resolver: OAuth2AuthorizationRequestResolver)]
+            .and()
+            .redirectionEndpoint()
+            .baseUri("/oauth2/callback/*")
+            .and()
+            .userInfoEndpoint()
+            .userService(defaultOAuth2UserService)
+
+
         http
             .addFilterBefore(
                 myOAuth2Filter(),

@@ -6,11 +6,13 @@ import ru.kuchanov.gp.bean.auth.UsersAuthorities
 
 interface UsersAuthoritiesService {
     fun findAll(): List<UsersAuthorities>
+
+    fun findAllByUserId(userId: Long): List<UsersAuthorities>
+    fun findByUserIdAndAuthority(userId: Long, authorityType: AuthorityType): UsersAuthorities?
+
     fun insert(usersAuthorities: UsersAuthorities): UsersAuthorities?
     fun insert(usersAuthorities: List<UsersAuthorities>): List<UsersAuthorities>
 
     @Transactional
     fun deleteByUserId(userId: Long)
-
-    fun findByUserIdAndAuthority(userId: Long, authorityType: AuthorityType): List<UsersAuthorities>?
 }

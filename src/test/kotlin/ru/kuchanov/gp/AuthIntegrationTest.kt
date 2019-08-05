@@ -3,6 +3,7 @@ package ru.kuchanov.gp
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.CoreMatchers.`is`
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,14 +90,14 @@ class AuthIntegrationTest {
         )
         clientDetailsRepository.save(oAuthClientDetailsWithFastTokenExpiration)
 
-        val inDbUser = userDetailsService.loadUserByUsername(TEST_USERNAME) ?: userDetailsService.insert(
+        val inDbUser = userDetailsService.loadUserByUsername(TEST_USERNAME) ?: userDetailsService.save(
             GpUser(
                 username = TEST_USERNAME,
                 password = passwordEncoder.encode(TEST_USERNAME)
             )
         )
 
-        if (usersAuthorityService.findByUserIdAndAuthority(inDbUser.id!!, AuthorityType.USER).isNullOrEmpty()) {
+        if (usersAuthorityService.findByUserIdAndAuthority(inDbUser.id!!, AuthorityType.USER) == null) {
             usersAuthorityService.insert(
                 UsersAuthorities(
                     userId = inDbUser.id!!, authority = AuthorityType.USER
@@ -209,6 +210,43 @@ class AuthIntegrationTest {
             .andExpect(status().isOk)
     }
 
+    @Test
+    fun registerUser_createsUserAndReturnsAccessToken() {
+        val registerResponse = mvc.perform(
+            post("/auth/register")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("email", TEST_REGISTER_USERNAME)
+                .param("password", TEST_REGISTER_USERNAME)
+                .param("fullName", TEST_REGISTER_FULL_NAME)
+                .param("avatarUrl", "")
+                .param("clientId", TEST_CLIENT_ID)
+                .param("clientSecret", TEST_CLIENT_SECRET)
+        )
+            .andExpect(status().isOk)
+            .andReturn().response.contentAsString
+
+        val parsedResponse = objectMapper.readValue(registerResponse, OAuth2AccessToken::class.java)
+        @Suppress("UsePropertyAccessSyntax")
+        assertThat(parsedResponse.value).isNotEmpty()
+
+        val registeredUser = userDetailsService.loadUserByUsername(TEST_REGISTER_USERNAME)
+        assertThat(registeredUser).isNotNull
+
+        val registeredUserAuthorities = usersAuthorityService.findAllByUserId(registeredUser!!.id!!)
+        assertThat(registeredUserAuthorities).isNotEmpty
+    }
+
+    @After
+    fun clearData() {
+        //todo clear all, that we insert in DB
+
+        val registeredUser = userDetailsService.loadUserByUsername(TEST_REGISTER_USERNAME)
+        registeredUser?.let {
+            userDetailsService.deleteByUsername(TEST_REGISTER_USERNAME)
+            usersAuthorityService.deleteByUserId(it.id!!)
+        }
+    }
+
     private fun accessTokenRequest(clientId: String) =
         mvc.perform(
             post("/oauth/token")
@@ -236,6 +274,8 @@ class AuthIntegrationTest {
 
     companion object {
         const val TEST_USERNAME = "test@test.ru"
+        const val TEST_REGISTER_USERNAME = "test-register@test.ru"
+        const val TEST_REGISTER_FULL_NAME = "test register fullName"
         const val TEST_CLIENT_ID = "test_client_id"
         const val FAST_TOKEN_EXPIRES_CLIENT_ID = "fast_token_expires_client_id"
         const val TEST_CLIENT_SECRET = "test_client_secret"

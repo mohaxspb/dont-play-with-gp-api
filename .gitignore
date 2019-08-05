@@ -1,17 +1,13 @@
 #ignore prod properties
-/src/main/resources/application.properties
+/src/main/resources/application.*
+#use git update-index --assume-unchanged <filename> to ignore changes in config files
+/src/main/resources/application-dev.*
 
 /build
 /.gradle
+/out
 
 /logs/*
 
-/.idea/.name
-/.idea/gradle.xml
-/.idea/misc.xml
-/.idea/kotlinScripting.xml
-/.idea/workspace.xml
-/.idea/vcs.xml
-/.idea/sqldialects.xml
-/.idea/dataSources.xml
-/.idea/modules.xml
+/.idea/*
+!/.idea/dictionaries
