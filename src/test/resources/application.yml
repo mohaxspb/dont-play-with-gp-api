@@ -50,7 +50,6 @@ spring:
             scope:
               - email
               - public_profile
-          #todo
           github:
             clientId: PASTE_HERE_YOUR_OWN_GITHUB_API_CLIENT_ID
             clientSecret: PASTE_HERE_YOUR_OWN_GITHUB_API_CLIENT_SECRET
@@ -58,11 +57,32 @@ spring:
             scope:
               - user:email
               - read:user
+          vk:
+            clientName: VK
+            clientId: PASTE_HERE_YOUR_OWN_VK_API_CLIENT_ID
+            clientSecret: PASTE_HERE_YOUR_OWN_VK_API_CLIENT_SECRET
+            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            tokenName: code
+            authenticationScheme: query
+            clientAuthenticationScheme: form
+            #use post, as vk needs clientId and clientSecret as request params and does not accepts Basic auth
+            clientAuthenticationMethod: post
+            authorization-grant-type: authorization_code
+            userNameAttribute: name
+            scope:
+              - email
         provider:
           facebook:
             authorizationUri: https://www.facebook.com/v4.0/dialog/oauth
             tokenUri: https://graph.facebook.com/v4.0/oauth/access_token
             userInfoUri: https://graph.facebook.com/v4.0/me?fields=id,first_name,middle_name,last_name,name,email,verified,is_verified,picture.width(250).height(250)
+          vk:
+            #revoke=1 needs to always show vk dialog
+            authorizationUri: https://oauth.vk.com/authorize?revoke=1
+            tokenUri: https://oauth.vk.com/access_token
+            userInfoUri: https://api.vk.com/method/users.get?v=5.52&fields=photo_max
+            userNameAttribute: response
+            userInfoAuthenticationMethod: form
 
 # logging properties
 logging:
