@@ -23,17 +23,13 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
+import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.savedrequest.SavedRequest
-import org.springframework.util.Base64Utils
 import ru.kuchanov.gp.GpConstants
-import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
-import ru.kuchanov.gp.network.FacebookApi
-import ru.kuchanov.gp.network.GitHubApi
-import ru.kuchanov.gp.network.GoogleApi
 import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
-import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import javax.servlet.Filter
 
 
@@ -45,23 +41,9 @@ import javax.servlet.Filter
     securedEnabled = true
 )
 class WebSecurityConfiguration @Autowired constructor(
-    val userDetailsService: GpUserDetailsServiceImpl,
-    val facebookApi: FacebookApi,
-    val githubApi: GitHubApi,
-    val googleApi: GoogleApi
+    val userDetailsService: GpUserDetailsService,
+    val logoutHandler: LogoutHandler
 ) : WebSecurityConfigurerAdapter() {
-
-    //facebook
-    @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
-    private lateinit var facebookClientId: String
-    @Value("\${spring.security.oauth2.client.registration.facebook.clientSecret}")
-    private lateinit var facebookClientSecret: String
-
-    //google
-    @Value("\${spring.security.oauth2.client.registration.github.clientId}")
-    private lateinit var githubClientId: String
-    @Value("\${spring.security.oauth2.client.registration.github.clientSecret}")
-    private lateinit var githubClientSecret: String
 
     @Autowired
     private lateinit var accessTokenResponseClient: OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
@@ -178,54 +160,7 @@ class WebSecurityConfiguration @Autowired constructor(
             }
             .and()
             .logout()
-            //todo move to separate class
-            .addLogoutHandler { _, _, authentication ->
-                //logout from providers
-                val gpUser = authentication?.principal as? GpUser ?: return@addLogoutHandler
-
-                gpUser.facebookId?.let {
-                    val facebookLogoutResult =
-                        facebookApi
-                            .logout(
-                                it,
-                                "$facebookClientId|$facebookClientSecret"
-                            )
-                            .execute()
-                            .body()
-
-                    println("facebookLogoutResult: $facebookLogoutResult")
-                }
-                // nothing to do for google
-                // nothing to do for vk
-                gpUser.githubToken?.let {
-                    val authorization =
-                        "Basic " + String(Base64Utils.encode("$githubClientId:$githubClientSecret".toByteArray()))
-                    val githubLogoutResult =
-                        githubApi
-                            .logout(
-                                authorization,
-                                githubClientId,
-                                it
-                            )
-                            .execute()
-
-                    println("githubLogoutResult: $githubLogoutResult")
-                }
-                gpUser.googleToken?.let {
-                    googleApi
-                        .logout(it)
-                        .execute()
-                }
-
-                //also clear accessToken in DB
-                userDetailsService.save(
-                    gpUser.apply {
-                        facebookToken = null
-                        vkToken = null
-                        googleToken = null
-                        githubToken = null
-                    })
-            }
+            .addLogoutHandler(logoutHandler)
             .permitAll()
             .logoutSuccessHandler { request, response, _ ->
                 DefaultRedirectStrategy().sendRedirect(
