@@ -14,6 +14,7 @@ import ru.kuchanov.gp.GpConstants.SocialProvider.*
 import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.UsersAuthorities
+import ru.kuchanov.gp.bean.auth.setSocialProviderData
 import ru.kuchanov.gp.exception.OAuth2AuthenticationProcessingException
 import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.network.GitHubApi
@@ -75,7 +76,7 @@ class GpOAuth2UserService @Autowired constructor(
 
         val provider = oAuth2UserInfo.getProvider()
         val idInProvidersSystem = oAuth2UserInfo.getId()
-        val tokenInProvidersSystem = oAuth2UserInfo.providerToken
+        val tokenInProvidersSystem = oAuth2UserInfo.providerToken!!
         val email = oAuth2UserInfo.getEmail()
         val image = oAuth2UserInfo.getImageUrl()
 
@@ -106,7 +107,7 @@ class GpOAuth2UserService @Autowired constructor(
                     val githubLogoutResult = githubApi.logout(
                         authorization,
                         githubClientId,
-                        tokenInProvidersSystem!!
+                        tokenInProvidersSystem
                     )
                         .execute()
 
@@ -124,28 +125,12 @@ class GpOAuth2UserService @Autowired constructor(
         val inDbUser = usersService.loadUserByUsername(email)
         if (inDbUser != null) {
             //update users providers ID and token and image
-            inDbUser.apply {
-                when (provider) {
-                    GOOGLE -> {
-                        googleId = idInProvidersSystem
-                        googleToken = tokenInProvidersSystem
-                    }
-                    FACEBOOK -> {
-                        facebookId = idInProvidersSystem
-                        facebookToken = tokenInProvidersSystem
-                    }
-                    VK -> {
-                        vkId = idInProvidersSystem
-                        vkToken = tokenInProvidersSystem
-                    }
-                    GITHUB -> {
-                        githubId = idInProvidersSystem
-                        githubToken = tokenInProvidersSystem
-                    }
+            return usersService.save(
+                inDbUser.apply {
+                    setSocialProviderData(provider, idInProvidersSystem, tokenInProvidersSystem)
+                    image?.let { avatar = it }
                 }
-                image?.let { avatar = it }
-            }
-            return usersService.insert(inDbUser)
+            )
         } else {
             //check if user registered with this provider ID, but with another email
             val sameUserWithAnotherEmail =
@@ -156,33 +141,13 @@ class GpOAuth2UserService @Autowired constructor(
             } else {
                 //register new user
                 val password = passwordGenerator.generate()
-                val newUser = usersService.insert(
+                val newUser = usersService.save(
                     GpUser(
                         fullName = oAuth2UserInfo.getName(),
                         username = email,
                         password = passwordEncoder.encode(password),
                         avatar = oAuth2UserInfo.getImageUrl()
-                    )
-                        .apply {
-                            when (provider) {
-                                GOOGLE -> {
-                                    googleId = idInProvidersSystem
-                                    googleToken = tokenInProvidersSystem
-                                }
-                                FACEBOOK -> {
-                                    facebookId = idInProvidersSystem
-                                    facebookToken = tokenInProvidersSystem
-                                }
-                                VK -> {
-                                    vkId = idInProvidersSystem
-                                    vkToken = tokenInProvidersSystem
-                                }
-                                GITHUB -> {
-                                    githubId = idInProvidersSystem
-                                    githubToken = tokenInProvidersSystem
-                                }
-                            }
-                        }
+                    ).apply { setSocialProviderData(provider, idInProvidersSystem, tokenInProvidersSystem) }
                 )
                 println("newUser: $newUser")
 

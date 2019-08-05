@@ -218,7 +218,7 @@ class WebSecurityConfiguration @Autowired constructor(
                 }
 
                 //also clear accessToken in DB
-                userDetailsService.insert(
+                userDetailsService.save(
                     gpUser.apply {
                         facebookToken = null
                         vkToken = null

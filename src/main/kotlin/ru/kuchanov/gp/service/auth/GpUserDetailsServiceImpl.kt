@@ -23,10 +23,10 @@ class GpUserDetailsServiceImpl @Autowired constructor(
     override fun getByIdDto(id: Long): UserDto =
         repository.getOneAsUserDto(id) ?: throw UserNotFoundException()
 
-    override fun insert(user: GpUser): GpUser =
+    override fun save(user: GpUser): GpUser =
         repository.save(user)
 
-    override fun insert(users: List<GpUser>): List<GpUser> =
+    override fun save(users: List<GpUser>): List<GpUser> =
         repository.saveAll(users)
 
     override fun update(user: GpUser): GpUser =

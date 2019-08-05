@@ -1,7 +1,6 @@
 package ru.kuchanov.gp.controller
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -19,14 +18,11 @@ import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.UserAlreadyExistsException
 import ru.kuchanov.gp.bean.auth.UsersAuthorities
-import ru.kuchanov.gp.model.facebook.FacebookAccessToken
-import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.repository.auth.UserNotFoundException
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
 import java.io.Serializable
-import java.lang.NullPointerException
 import java.util.*
 
 @RestController
@@ -53,7 +49,7 @@ class AuthController @Autowired constructor(
         if (userInDb != null) {
             throw UserAlreadyExistsException()
         }
-        val newUserInDb = usersService.insert(
+        val newUserInDb = usersService.save(
             GpUser(
                 username = email,
                 password = passwordEncoder.encode(password),

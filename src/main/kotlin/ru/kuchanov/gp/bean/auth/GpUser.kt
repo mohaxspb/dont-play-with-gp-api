@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.web.bind.annotation.ResponseStatus
+import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.model.dto.UserDto
 import java.sql.Timestamp
 import javax.persistence.*
@@ -133,6 +134,31 @@ fun GpUser.fullNameToDto(): String? {
         }
     } else {
         return fullName
+    }
+}
+
+fun GpUser.setSocialProviderData(
+    provider: GpConstants.SocialProvider,
+    idInProvidersSystem: String,
+    tokenInProvidersSystem: String
+) {
+    when (provider) {
+        GpConstants.SocialProvider.GOOGLE -> {
+            googleId = idInProvidersSystem
+            googleToken = tokenInProvidersSystem
+        }
+        GpConstants.SocialProvider.FACEBOOK -> {
+            facebookId = idInProvidersSystem
+            facebookToken = tokenInProvidersSystem
+        }
+        GpConstants.SocialProvider.VK -> {
+            vkId = idInProvidersSystem
+            vkToken = tokenInProvidersSystem
+        }
+        GpConstants.SocialProvider.GITHUB -> {
+            githubId = idInProvidersSystem
+            githubToken = tokenInProvidersSystem
+        }
     }
 }
 
