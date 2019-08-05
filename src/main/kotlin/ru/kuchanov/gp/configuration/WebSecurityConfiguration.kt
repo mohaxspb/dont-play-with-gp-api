@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
-import org.springframework.core.convert.converter.Converter
-import org.springframework.http.converter.FormHttpMessageConverter
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
@@ -17,15 +15,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient
-import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequestEntityConverter
-import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client
-import org.springframework.security.oauth2.core.OAuth2AccessToken
-import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
-import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
@@ -33,7 +26,6 @@ import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.savedrequest.SavedRequest
 import org.springframework.util.Base64Utils
-import org.springframework.web.client.RestTemplate
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
@@ -57,15 +49,21 @@ class WebSecurityConfiguration @Autowired constructor(
     val githubApi: GitHubApi
 ) : WebSecurityConfigurerAdapter() {
 
+    //facebook
     @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
     private lateinit var facebookClientId: String
     @Value("\${spring.security.oauth2.client.registration.facebook.clientSecret}")
     private lateinit var facebookClientSecret: String
 
+    //google
     @Value("\${spring.security.oauth2.client.registration.github.clientId}")
     private lateinit var githubClientId: String
     @Value("\${spring.security.oauth2.client.registration.github.clientSecret}")
     private lateinit var githubClientSecret: String
+
+    @Autowired
+    private lateinit var accessTokenResponseClient : OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+    //social auth END
 
     //do not move to constructor - there are circular dependency error
     @Autowired
@@ -118,6 +116,9 @@ class WebSecurityConfiguration @Autowired constructor(
                 setTokenServices(tokenServices())
             }
 
+    /**
+     * filter to allow both access_token auth and cookie auth
+     */
     @Bean
     fun myOAuth2Filter(): Filter =
         GpOAuth2AuthenticationProcessingFilter()
@@ -187,7 +188,6 @@ class WebSecurityConfiguration @Autowired constructor(
                                 it,
                                 "$facebookClientId|$facebookClientSecret"
                             )
-                            //todo no internet handle.
                             .execute()
                             .body()
 
@@ -227,41 +227,6 @@ class WebSecurityConfiguration @Autowired constructor(
             }
             .permitAll()
 
-        val accessTokenResponseClient = DefaultAuthorizationCodeTokenResponseClient()
-        /**
-         * you can override [fun convert(it: OAuth2AuthorizationCodeGrantRequest): RequestEntity<*>?]
-         * and use [requestEntity.body as? MultiValueMap<String, String>] to add params to access_token by auth_code request
-         */
-        val oAuth2AuthorizationCodeGrantRequestEntityConverter = OAuth2AuthorizationCodeGrantRequestEntityConverter()
-        accessTokenResponseClient.setRequestEntityConverter(oAuth2AuthorizationCodeGrantRequestEntityConverter)
-
-        //todo use only for VK
-        val tokenResponseConverter = object : Converter<Map<String, String>, OAuth2AccessTokenResponse> {
-            override fun convert(source: Map<String, String>): OAuth2AccessTokenResponse? {
-                println("tokenResponseConverter convert: $source")
-
-                val vkAccessToken = source[OAuth2ParameterNames.ACCESS_TOKEN]
-                val params = mutableMapOf<String, Any?>()
-                params["email"] = source["email"]
-                params["id"] = source["user_id"]
-
-                return OAuth2AccessTokenResponse
-                    .withToken(vkAccessToken)
-                    .tokenType(OAuth2AccessToken.TokenType.BEARER)
-                    .additionalParameters(params)
-                    .build()
-            }
-        }
-
-        val oAuth2AccessTokenResponseHttpMessageConverter = OAuth2AccessTokenResponseHttpMessageConverter()
-        oAuth2AccessTokenResponseHttpMessageConverter.setTokenResponseConverter(tokenResponseConverter)
-
-        val restTemplate =
-            RestTemplate(listOf(FormHttpMessageConverter(), oAuth2AccessTokenResponseHttpMessageConverter))
-        restTemplate.errorHandler = OAuth2ErrorResponseErrorHandler()
-
-        accessTokenResponseClient.setRestOperations(restTemplate)
-
         http
             .oauth2Login()
             .tokenEndpoint()
@@ -280,7 +245,7 @@ class WebSecurityConfiguration @Autowired constructor(
             .userInfoEndpoint()
             .userService(defaultOAuth2UserService)
 
-        //filter to allow both access_token auth and cookie auth
+
         http
             .addFilterBefore(
                 myOAuth2Filter(),
