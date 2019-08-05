@@ -79,8 +79,7 @@ class SocialAuthConfiguration {
     /**
      * we need it, as vk returns email with access_token, so we must pass it to additional params
      */
-    @Bean
-    fun socialTokenResponseConverter() =
+    private fun socialTokenResponseConverter() =
         Converter<Map<String, String>, OAuth2AccessTokenResponse> { source ->
             println("tokenResponseConverter convert: $source")
 

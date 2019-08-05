@@ -27,8 +27,9 @@ import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.savedrequest.SavedRequest
 import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
-import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
+import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import javax.servlet.Filter
 
@@ -51,7 +52,7 @@ class WebSecurityConfiguration @Autowired constructor(
 
     //do not move to constructor - there are circular dependency error
     @Autowired
-    lateinit var gpClientDetailsService: GpClientDetailsServiceImpl
+    lateinit var gpClientDetailsService: GpClientDetailsService
 
     @Autowired
     private lateinit var defaultOAuth2UserService: DefaultOAuth2UserService
@@ -141,7 +142,7 @@ class WebSecurityConfiguration @Autowired constructor(
             )
             .permitAll()
             .anyRequest()
-            .hasAnyAuthority("ADMIN", "USER")
+            .hasAnyAuthority(*AuthorityType.values().map { it.name }.toTypedArray())
 
         http
             .formLogin()
