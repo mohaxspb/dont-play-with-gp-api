@@ -21,6 +21,7 @@ import retrofit2.CallAdapter
 import retrofit2.Retrofit
 import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.network.GitHubApi
+import ru.kuchanov.gp.network.GoogleApi
 import java.security.SecureRandom
 import retrofit2.Converter as RetrofitConverter
 
@@ -63,8 +64,18 @@ class SocialAuthConfiguration {
     @Bean
     fun gitHubApi(): GitHubApi = githubRetrofit().create(GitHubApi::class.java)
 
-    //vk
+    //google
+    private fun googleRetrofit(): Retrofit = Retrofit.Builder()
+        .baseUrl(GoogleApi.BASE_API_URL)
+        .client(okHttpClient)
+        .addConverterFactory(converterFactory)
+        .addCallAdapterFactory(callAdapterFactory)
+        .build()
 
+    @Bean
+    fun googleApi(): GoogleApi = googleRetrofit().create(GoogleApi::class.java)
+
+    //vk
     /**
      * we need it, as vk returns email with access_token, so we must pass it to additional params
      */

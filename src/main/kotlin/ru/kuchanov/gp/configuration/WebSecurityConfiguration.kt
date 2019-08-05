@@ -31,6 +31,7 @@ import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
 import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.network.GitHubApi
+import ru.kuchanov.gp.network.GoogleApi
 import ru.kuchanov.gp.service.auth.GpClientDetailsServiceImpl
 import ru.kuchanov.gp.service.auth.GpUserDetailsServiceImpl
 import javax.servlet.Filter
@@ -46,7 +47,8 @@ import javax.servlet.Filter
 class WebSecurityConfiguration @Autowired constructor(
     val userDetailsService: GpUserDetailsServiceImpl,
     val facebookApi: FacebookApi,
-    val githubApi: GitHubApi
+    val githubApi: GitHubApi,
+    val googleApi: GoogleApi
 ) : WebSecurityConfigurerAdapter() {
 
     //facebook
@@ -62,7 +64,7 @@ class WebSecurityConfiguration @Autowired constructor(
     private lateinit var githubClientSecret: String
 
     @Autowired
-    private lateinit var accessTokenResponseClient : OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+    private lateinit var accessTokenResponseClient: OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
     //social auth END
 
     //do not move to constructor - there are circular dependency error
@@ -198,14 +200,21 @@ class WebSecurityConfiguration @Autowired constructor(
                 gpUser.githubToken?.let {
                     val authorization =
                         "Basic " + String(Base64Utils.encode("$githubClientId:$githubClientSecret".toByteArray()))
-                    val githubLogoutResult = githubApi.logout(
-                        authorization,
-                        githubClientId,
-                        it
-                    )
-                        .execute()
+                    val githubLogoutResult =
+                        githubApi
+                            .logout(
+                                authorization,
+                                githubClientId,
+                                it
+                            )
+                            .execute()
 
                     println("githubLogoutResult: $githubLogoutResult")
+                }
+                gpUser.googleToken?.let {
+                    googleApi
+                        .logout(it)
+                        .execute()
                 }
 
                 //also clear accessToken in DB
