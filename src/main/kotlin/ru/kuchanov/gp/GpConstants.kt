@@ -10,6 +10,6 @@ object GpConstants {
     }
 
     enum class SocialProvider {
-        GOOGLE, FACEBOOK, VK
+        GOOGLE, FACEBOOK, VK, GITHUB
     }
 }

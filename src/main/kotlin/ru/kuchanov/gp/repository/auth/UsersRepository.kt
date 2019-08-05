@@ -15,6 +15,7 @@ interface UsersRepository : JpaRepository<GpUser, Long> {
     fun findOneByGoogleId(id: String): GpUser?
     fun findOneByFacebookId(id: String): GpUser?
     fun findOneByVkId(id: String): GpUser?
+    fun findOneByGithubId(id: String): GpUser?
 
     @Modifying
     @Query("UPDATE GpUser u SET u.avatar = ?2 WHERE u.id = ?1")

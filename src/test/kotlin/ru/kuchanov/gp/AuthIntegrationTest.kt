@@ -90,7 +90,7 @@ class AuthIntegrationTest {
         )
         clientDetailsRepository.save(oAuthClientDetailsWithFastTokenExpiration)
 
-        val inDbUser = userDetailsService.loadUserByUsername(TEST_USERNAME) ?: userDetailsService.insert(
+        val inDbUser = userDetailsService.loadUserByUsername(TEST_USERNAME) ?: userDetailsService.save(
             GpUser(
                 username = TEST_USERNAME,
                 password = passwordEncoder.encode(TEST_USERNAME)

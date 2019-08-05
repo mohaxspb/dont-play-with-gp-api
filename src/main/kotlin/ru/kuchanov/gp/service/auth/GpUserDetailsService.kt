@@ -15,9 +15,9 @@ interface GpUserDetailsService : UserDetailsService {
     fun getByProviderId(id: String, provider: GpConstants.SocialProvider): GpUser?
 
     @Transactional
-    fun insert(user: GpUser): GpUser
+    fun save(user: GpUser): GpUser
 
-    fun insert(users: List<GpUser>): List<GpUser>
+    fun save(users: List<GpUser>): List<GpUser>
 
     fun update(user: GpUser): GpUser
 
