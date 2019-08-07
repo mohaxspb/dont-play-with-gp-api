@@ -189,7 +189,15 @@ class WebSecurityConfiguration @Autowired constructor(
             .and()
             .userInfoEndpoint()
             .userService(defaultOAuth2UserService)
-
+            .and()
+            .successHandler { request, response, authentication ->
+                DefaultRedirectStrategy()
+                    .sendRedirect(
+                        request,
+                        response,
+                        "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
+                    )
+            }
 
         http
             .addFilterBefore(
