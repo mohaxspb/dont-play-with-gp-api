@@ -37,7 +37,7 @@ class UsersController {
     @GetMapping("all")
     fun all() = gpUserDetailsService.findAll()
 
-    @GetMapping("/me")
+    @GetMapping("me")
     fun showMeClient(
         @AuthenticationPrincipal user: GpUser
     ): UserDto = gpUserDetailsService.getByIdDto(user.id!!)

@@ -18,7 +18,6 @@ class GpWebMvcConfig : WebMvcConfigurer {
                         "http://localhost:443"
                         //todo add domains
                 )
-                .allowedHeaders("*")
                 .allowCredentials(true)
     }
 }
