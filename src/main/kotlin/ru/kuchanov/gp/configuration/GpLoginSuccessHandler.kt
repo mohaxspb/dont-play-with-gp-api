@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class GpFromLoginSuccessHandler : SavedRequestAwareAuthenticationSuccessHandler() {
+class GpLoginSuccessHandler : SavedRequestAwareAuthenticationSuccessHandler() {
 
     @Value("\${angular.port}")
     lateinit var angularServerPort: String

@@ -1,7 +1,6 @@
 package ru.kuchanov.gp.configuration
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -22,7 +21,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
-import org.springframework.security.web.DefaultRedirectStrategy
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
@@ -44,8 +43,8 @@ import javax.servlet.Filter
 )
 class WebSecurityConfiguration @Autowired constructor(
     val userDetailsService: GpUserDetailsService,
-    val logoutHandler: LogoutHandler,
-    val formLoginSuccessHandler: GpFromLoginSuccessHandler
+    val loginSuccessHandler: SimpleUrlAuthenticationSuccessHandler,
+    val logoutHandler: LogoutHandler
 ) : WebSecurityConfigurerAdapter() {
 
     @Autowired
@@ -115,15 +114,10 @@ class WebSecurityConfiguration @Autowired constructor(
                 setStateless(false)
             }
 
-    @Value("\${angular.port}")
-    lateinit var angularServerPort: String
-
-    @Value("\${angular.href}")
-    lateinit var angularServerHref: String
-
     override fun configure(http: HttpSecurity) {
         http
             .cors()
+
         http
             .csrf()
             .disable()
@@ -149,7 +143,7 @@ class WebSecurityConfiguration @Autowired constructor(
         http
             .formLogin()
             .successHandler(
-                formLoginSuccessHandler.apply {
+                loginSuccessHandler.apply {
                     setTargetUrlParameter(TARGET_URL_PARAMETER)
                 }
             )
@@ -180,15 +174,7 @@ class WebSecurityConfiguration @Autowired constructor(
             .userInfoEndpoint()
             .userService(defaultOAuth2UserService)
             .and()
-            .successHandler { request, response, _ ->
-                //todo handle for angular without redirection
-                DefaultRedirectStrategy()
-                    .sendRedirect(
-                        request,
-                        response,
-                        "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
-                    )
-            }
+            .successHandler(loginSuccessHandler)
 
         http
             .addFilterBefore(
