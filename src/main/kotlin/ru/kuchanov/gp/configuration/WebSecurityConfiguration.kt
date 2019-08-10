@@ -200,17 +200,6 @@ class WebSecurityConfiguration @Autowired constructor(
             }
 
         http
-            //todo move to separate class
-            .addFilterBefore(object : Filter {
-                override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
-                    request.parameterMap.entries.toList().forEach {
-                        println("filterBefore request ${it.key}: ${it.value.toList()}")
-                        val httpRequest = request as HttpServletRequest
-                        httpRequest.session.setAttribute(it.key, it.value.firstOrNull())
-                    }
-                    chain.doFilter(request, response)
-                }
-            }, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(
                 myOAuth2Filter(),
                 BasicAuthenticationFilter::class.java
