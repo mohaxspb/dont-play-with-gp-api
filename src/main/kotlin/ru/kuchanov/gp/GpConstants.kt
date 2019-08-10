@@ -4,6 +4,8 @@ object GpConstants {
 
     const val DEFAULT_FULL_NAME = "N/A"
 
+    const val TARGET_URL_PARAMETER = "targetUrlParameter"
+
     object Path {
         const val AUTH = "auth"
         const val USERS = "users"

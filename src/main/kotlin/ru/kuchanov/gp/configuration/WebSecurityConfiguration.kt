@@ -27,6 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.GpConstants.TARGET_URL_PARAMETER
 import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
@@ -151,7 +152,11 @@ class WebSecurityConfiguration @Autowired constructor(
 
         http
             .formLogin()
-            .successHandler(formLoginSuccessHandler)
+            .successHandler(
+                formLoginSuccessHandler.apply {
+                    setTargetUrlParameter(TARGET_URL_PARAMETER)
+                }
+            )
             .and()
             .logout()
             .addLogoutHandler(logoutHandler)
