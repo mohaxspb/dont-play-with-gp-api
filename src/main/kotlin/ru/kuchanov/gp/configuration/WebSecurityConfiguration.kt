@@ -23,8 +23,8 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.authentication.logout.LogoutHandler
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.GpConstants.TARGET_URL_PARAMETER
@@ -33,10 +33,6 @@ import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import javax.servlet.Filter
-import javax.servlet.FilterChain
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
-import javax.servlet.http.HttpServletRequest
 
 
 @Configuration
@@ -161,14 +157,9 @@ class WebSecurityConfiguration @Autowired constructor(
             .logout()
             .addLogoutHandler(logoutHandler)
             .permitAll()
-            .logoutSuccessHandler { request, response, _ ->
-                //todo handling for angular without redirection
-                DefaultRedirectStrategy().sendRedirect(
-                    request,
-                    response,
-                    "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
-                )
-            }
+            .logoutSuccessHandler(SimpleUrlLogoutSuccessHandler().apply {
+                setTargetUrlParameter(TARGET_URL_PARAMETER)
+            })
             .permitAll()
 
         http
