@@ -23,15 +23,19 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.DefaultRedirectStrategy
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
-import org.springframework.security.web.savedrequest.SavedRequest
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import javax.servlet.Filter
+import javax.servlet.FilterChain
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
+import javax.servlet.http.HttpServletRequest
 
 
 @Configuration
@@ -43,7 +47,8 @@ import javax.servlet.Filter
 )
 class WebSecurityConfiguration @Autowired constructor(
     val userDetailsService: GpUserDetailsService,
-    val logoutHandler: LogoutHandler
+    val logoutHandler: LogoutHandler,
+    val formLoginSuccessHandler: GpFromLoginSuccessHandler
 ) : WebSecurityConfigurerAdapter() {
 
     @Autowired
@@ -146,24 +151,13 @@ class WebSecurityConfiguration @Autowired constructor(
 
         http
             .formLogin()
-            .successHandler { request, response, _ ->
-                println("formLogin successHandler: $request")
-                val savedRequest = request
-                    ?.getSession(false)
-                    ?.getAttribute("SPRING_SECURITY_SAVED_REQUEST")as? SavedRequest
-                DefaultRedirectStrategy()
-                    .sendRedirect(
-                        request,
-                        response,
-                        savedRequest?.let { savedRequest.redirectUrl }
-                            ?: "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
-                    )
-            }
+            .successHandler(formLoginSuccessHandler)
             .and()
             .logout()
             .addLogoutHandler(logoutHandler)
             .permitAll()
             .logoutSuccessHandler { request, response, _ ->
+                //todo handling for angular without redirection
                 DefaultRedirectStrategy().sendRedirect(
                     request,
                     response,
@@ -190,7 +184,8 @@ class WebSecurityConfiguration @Autowired constructor(
             .userInfoEndpoint()
             .userService(defaultOAuth2UserService)
             .and()
-            .successHandler { request, response, authentication ->
+            .successHandler { request, response, _ ->
+                //todo handle for angular without redirection
                 DefaultRedirectStrategy()
                     .sendRedirect(
                         request,
@@ -200,6 +195,17 @@ class WebSecurityConfiguration @Autowired constructor(
             }
 
         http
+            //todo move to separate class
+            .addFilterBefore(object : Filter {
+                override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
+                    request.parameterMap.entries.toList().forEach {
+                        println("filterBefore request ${it.key}: ${it.value.toList()}")
+                        val httpRequest = request as HttpServletRequest
+                        httpRequest.session.setAttribute(it.key, it.value.firstOrNull())
+                    }
+                    chain.doFilter(request, response)
+                }
+            }, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(
                 myOAuth2Filter(),
                 BasicAuthenticationFilter::class.java

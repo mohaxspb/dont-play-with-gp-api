@@ -12,7 +12,7 @@ import ru.kuchanov.gp.service.auth.AuthService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @RestController
-@RequestMapping("/" + GpConstants.Path.USERS + "/")
+@RequestMapping("/" + GpConstants.UsersEndpoint.PATH + "/")
 class UsersController {
 
     @Autowired
@@ -34,10 +34,10 @@ class UsersController {
             "client_id"
         )
 
-    @GetMapping("all")
+    @GetMapping(GpConstants.UsersEndpoint.Method.ALL)
     fun all() = gpUserDetailsService.findAll()
 
-    @GetMapping("me")
+    @GetMapping(GpConstants.UsersEndpoint.Method.ME)
     fun showMeClient(
         @AuthenticationPrincipal user: GpUser
     ): UserDto = gpUserDetailsService.getByIdDto(user.id!!)
