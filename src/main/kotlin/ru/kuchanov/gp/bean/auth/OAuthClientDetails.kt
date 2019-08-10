@@ -10,7 +10,7 @@ import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
 
-//todo refactor it with database table
+//todo refactor it with database table (I mean refactor table field names)
 @Entity
 @Table(name = "oauth_client_details")
 data class OAuthClientDetails(
