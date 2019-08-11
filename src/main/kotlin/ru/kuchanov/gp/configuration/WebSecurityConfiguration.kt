@@ -1,7 +1,6 @@
 package ru.kuchanov.gp.configuration
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -22,11 +21,12 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
-import org.springframework.security.web.DefaultRedirectStrategy
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.security.web.authentication.logout.LogoutHandler
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
-import org.springframework.security.web.savedrequest.SavedRequest
 import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.GpConstants.TARGET_URL_PARAMETER
 import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
@@ -43,6 +43,7 @@ import javax.servlet.Filter
 )
 class WebSecurityConfiguration @Autowired constructor(
     val userDetailsService: GpUserDetailsService,
+    val loginSuccessHandler: SimpleUrlAuthenticationSuccessHandler,
     val logoutHandler: LogoutHandler
 ) : WebSecurityConfigurerAdapter() {
 
@@ -113,15 +114,10 @@ class WebSecurityConfiguration @Autowired constructor(
                 setStateless(false)
             }
 
-    @Value("\${angular.port}")
-    lateinit var angularServerPort: String
-
-    @Value("\${angular.href}")
-    lateinit var angularServerHref: String
-
     override fun configure(http: HttpSecurity) {
         http
             .cors()
+
         http
             .csrf()
             .disable()
@@ -146,30 +142,18 @@ class WebSecurityConfiguration @Autowired constructor(
 
         http
             .formLogin()
-            .successHandler { request, response, _ ->
-                println("formLogin successHandler: $request")
-                val savedRequest = request
-                    ?.getSession(false)
-                    ?.getAttribute("SPRING_SECURITY_SAVED_REQUEST")as? SavedRequest
-                DefaultRedirectStrategy()
-                    .sendRedirect(
-                        request,
-                        response,
-                        savedRequest?.let { savedRequest.redirectUrl }
-                            ?: "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
-                    )
-            }
+            .successHandler(
+                loginSuccessHandler.apply {
+                    setTargetUrlParameter(TARGET_URL_PARAMETER)
+                }
+            )
             .and()
             .logout()
             .addLogoutHandler(logoutHandler)
             .permitAll()
-            .logoutSuccessHandler { request, response, _ ->
-                DefaultRedirectStrategy().sendRedirect(
-                    request,
-                    response,
-                    "${request.scheme}://${request.serverName}:$angularServerPort$angularServerHref"
-                )
-            }
+            .logoutSuccessHandler(SimpleUrlLogoutSuccessHandler().apply {
+                setTargetUrlParameter(TARGET_URL_PARAMETER)
+            })
             .permitAll()
 
         http
@@ -189,7 +173,8 @@ class WebSecurityConfiguration @Autowired constructor(
             .and()
             .userInfoEndpoint()
             .userService(defaultOAuth2UserService)
-
+            .and()
+            .successHandler(loginSuccessHandler)
 
         http
             .addFilterBefore(

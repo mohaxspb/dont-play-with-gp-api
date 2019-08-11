@@ -44,19 +44,13 @@ data class GpUser(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    @Column(name = "name_first")
-    var nameFirst: String? = null,
-    @Column(name = "name_second")
-    var nameSecond: String? = null,
-    @Column(name = "name_third")
-    var nameThird: String? = null,
     @Column(name = "full_name")
     var fullName: String? = null,
     private val username: String,
     private val password: String,
     var avatar: String? = null,
     val enabled: Boolean = true,
-    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "userId", fetch = FetchType.EAGER)
+    @Transient
     var userAuthorities: Set<UsersAuthorities> = setOf(),
     @field:CreationTimestamp
     val created: Timestamp? = null,
@@ -98,44 +92,14 @@ data class GpUser(
 
     override fun getAttributes() = mutableMapOf<String, Any>()
 
-    override fun getName() = fullNameToDto()
+    override fun getName() = fullName
 }
 
 fun GpUser.toDto() = UserDto(
     id = id!!,
     avatar = avatar,
-    fullName = fullNameToDto()
+    fullName = fullName
 )
-
-fun GpUser.fullNameToDto(): String? {
-    if (fullName == null) {
-        if (nameFirst == null && nameSecond == null && nameThird != null) {
-            return nameThird
-        }
-        if (nameFirst == null && nameSecond != null && nameThird != null) {
-            return "$nameSecond $nameThird"
-        }
-        if (nameFirst == null && nameSecond != null && nameThird == null) {
-            return nameSecond
-        }
-        if (nameFirst != null && nameSecond == null && nameThird == null) {
-            return nameFirst
-        }
-        if (nameFirst != null && nameSecond == null && nameThird != null) {
-            return "$nameFirst $nameThird"
-        }
-        if (nameFirst != null && nameSecond != null && nameThird == null) {
-            return "$nameFirst $nameSecond"
-        }
-        if (nameFirst != null && nameSecond != null && nameThird != null) {
-            return "$nameFirst $nameSecond $nameThird"
-        } else {
-            return null
-        }
-    } else {
-        return fullName
-    }
-}
 
 fun GpUser.setSocialProviderData(
     provider: GpConstants.SocialProvider,

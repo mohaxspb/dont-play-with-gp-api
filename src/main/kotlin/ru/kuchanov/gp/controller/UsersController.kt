@@ -8,18 +8,14 @@ import org.springframework.web.bind.annotation.RestController
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.model.dto.UserDto
-import ru.kuchanov.gp.service.auth.AuthService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @RestController
-@RequestMapping("/" + GpConstants.Path.USERS + "/")
+@RequestMapping("/" + GpConstants.UsersEndpoint.PATH + "/")
 class UsersController {
 
     @Autowired
     lateinit var gpUserDetailsService: GpUserDetailsService
-
-    @Autowired
-    lateinit var authService: AuthService
 
     @GetMapping("")
     fun index() = "Welcome to Don't play with Google Play API! Users endpoint"
@@ -27,17 +23,7 @@ class UsersController {
     @GetMapping("test")
     fun test() = "Test method called!"
 
-    @GetMapping("testAccessToken")
-    fun testAccessToken() =
-        authService.getAccessTokenForUsernameAndClientId(
-            "test@test.ru",
-            "client_id"
-        )
-
-    @GetMapping("all")
-    fun all() = gpUserDetailsService.findAll()
-
-    @GetMapping("/me")
+    @GetMapping(GpConstants.UsersEndpoint.Method.ME)
     fun showMeClient(
         @AuthenticationPrincipal user: GpUser
     ): UserDto = gpUserDetailsService.getByIdDto(user.id!!)

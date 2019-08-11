@@ -1,36 +1,27 @@
 package ru.kuchanov.gp.controller
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.common.OAuth2AccessToken
-import org.springframework.security.oauth2.provider.ClientDetails
-import org.springframework.security.oauth2.provider.OAuth2Authentication
-import org.springframework.security.oauth2.provider.OAuth2Request
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import ru.kuchanov.gp.GpConstants
-import ru.kuchanov.gp.bean.auth.AuthorityType
-import ru.kuchanov.gp.bean.auth.GpUser
-import ru.kuchanov.gp.bean.auth.UserAlreadyExistsException
-import ru.kuchanov.gp.bean.auth.UsersAuthorities
-import ru.kuchanov.gp.repository.auth.UserNotFoundException
-import ru.kuchanov.gp.service.auth.GpClientDetailsService
+import ru.kuchanov.gp.bean.auth.*
+import ru.kuchanov.gp.service.auth.AuthService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
-import java.io.Serializable
-import java.util.*
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @RestController
 @RequestMapping("/" + GpConstants.Path.AUTH + "/")
 class AuthController @Autowired constructor(
     val passwordEncoder: PasswordEncoder,
-    val tokenServices: DefaultTokenServices,
-    val gpClientDetailsService: GpClientDetailsService,
+    val clientDetailsService: ClientDetailsService,
+    val authService: AuthService,
     val usersService: GpUserDetailsService,
     val usersAuthoritiesService: UsersAuthoritiesService
 ) {
@@ -40,10 +31,19 @@ class AuthController @Autowired constructor(
         @RequestParam(value = "email") email: String,
         @RequestParam(value = "password") password: String,
         @RequestParam(value = "fullName") fullName: String,
-        @RequestParam(value = "avatarUrl") avatarUrl: String? = null,
+        //todo enum for language
+        @RequestParam(value = "primaryLanguage", defaultValue = "EN") primaryLanguage: String = "EN",
         @RequestParam(value = "clientId") clientId: String,
-        @RequestParam(value = "clientSecret") clientSecret: String
-    ): OAuth2AccessToken {
+        @RequestParam(value = "targetUrlParameter") targetUrlParameter: String?,
+        httpServletResponse: HttpServletResponse,
+        httpServletRequest: HttpServletRequest
+    ): OAuth2AccessToken? {
+        //check client existing
+        try {
+            clientDetailsService.loadClientByClientId(clientId)
+        } catch (e: ClientNotFoundError) {
+            throw e
+        }
         //check if user already exists
         val userInDb = usersService.loadUserByUsername(email)
         if (userInDb != null) {
@@ -53,8 +53,6 @@ class AuthController @Autowired constructor(
             GpUser(
                 username = email,
                 password = passwordEncoder.encode(password),
-                avatar = avatarUrl,
-                userAuthorities = setOf(),
                 fullName = fullName
             )
         )
@@ -64,42 +62,13 @@ class AuthController @Autowired constructor(
         //todo send email with password
 //        emailService.sendEmail(email, REGISTRATION_EMAIL_SUBJECT, "Your password is:\n$password")
 
-        return getAccessToken(email, clientId)
-    }
-
-    private fun getAccessToken(email: String, clientId: String): OAuth2AccessToken {
-        val clientDetails: ClientDetails = gpClientDetailsService.loadClientByClientId(clientId)
-
-        val requestParameters = mapOf<String, String>()
-        val authorities: MutableCollection<GrantedAuthority> = clientDetails.authorities
-        val approved = true
-        val scope: MutableSet<String> = clientDetails.scope
-        val resourceIds: MutableSet<String> = clientDetails.resourceIds
-        val redirectUri = null
-        val responseTypes = setOf("code")
-        val extensionProperties = HashMap<String, Serializable>()
-
-        val oAuth2Request = OAuth2Request(
-            requestParameters,
-            clientId,
-            authorities,
-            approved,
-            scope,
-            resourceIds,
-            redirectUri,
-            responseTypes,
-            extensionProperties
-        )
-
-        val user = usersService.loadUserByUsername(email) ?: throw UserNotFoundException()
-        val authenticationToken = UsernamePasswordAuthenticationToken(
-            user,
-            user.password,
-            authorities
-        )
-
-        val auth = OAuth2Authentication(oAuth2Request, authenticationToken)
-
-        return tokenServices.createAccessToken(auth)
+        val auth = authService.generateAuthenticationForUsernameAndClientId(email, clientId)
+        return if (targetUrlParameter != null) {
+            authService.authenticateRequest(auth, httpServletRequest)
+            httpServletResponse.sendRedirect(targetUrlParameter)
+            null
+        } else{
+            authService.getAccessTokenFromAuthentication(auth)
+        }
     }
 }

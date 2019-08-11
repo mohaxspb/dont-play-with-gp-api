@@ -2,15 +2,17 @@ package ru.kuchanov.gp.bean.auth
 
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.springframework.http.HttpStatus
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.web.bind.annotation.ResponseStatus
 import java.sql.Timestamp
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
 
-//todo refactor it with database table
+//todo refactor it with database table (I mean refactor table field names)
 @Entity
 @Table(name = "oauth_client_details")
 data class OAuthClientDetails(
@@ -69,6 +71,7 @@ data class OAuthClientDetails(
         .toMutableSet()
 }
 
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Client not found in db!")
 class ClientNotFoundError : RuntimeException()
 
 //create table oauth_client_details (
