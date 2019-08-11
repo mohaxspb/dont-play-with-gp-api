@@ -50,7 +50,7 @@ data class GpUser(
     private val password: String,
     var avatar: String? = null,
     val enabled: Boolean = true,
-    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "userId", fetch = FetchType.EAGER)
+    @Transient
     var userAuthorities: Set<UsersAuthorities> = setOf(),
     @field:CreationTimestamp
     val created: Timestamp? = null,

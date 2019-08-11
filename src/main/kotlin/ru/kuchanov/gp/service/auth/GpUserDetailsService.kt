@@ -9,15 +9,12 @@ import javax.transaction.Transactional
 interface GpUserDetailsService : UserDetailsService {
     override fun loadUserByUsername(username: String): GpUser?
 
-    fun findAll(): List<GpUser>
-    fun getById(id: Long): GpUser
+    fun getById(id: Long): GpUser?
     fun getByIdDto(id: Long): UserDto
     fun getByProviderId(id: String, provider: GpConstants.SocialProvider): GpUser?
 
     @Transactional
     fun save(user: GpUser): GpUser
-
-    fun save(users: List<GpUser>): List<GpUser>
 
     fun update(user: GpUser): GpUser
 
