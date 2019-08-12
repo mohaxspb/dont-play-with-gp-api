@@ -66,12 +66,13 @@ class AuthController @Autowired constructor(
             )
         )
 
-        usersAuthoritiesService.insert(UsersAuthorities(userId = newUserInDb.id!!, authority = AuthorityType.USER))
+        usersAuthoritiesService.save(UsersAuthorities(userId = newUserInDb.id!!, authority = AuthorityType.USER))
 
         //todo send email with password
 //        emailService.sendEmail(email, REGISTRATION_EMAIL_SUBJECT, "Your password is:\n$password")
 
         val auth = authService.generateAuthenticationForUsernameAndClientId(email, clientId)
+//        println("AuthController auth: $auth")
         return if (targetUrlParameter != null) {
             authService.authenticateRequest(auth, httpServletRequest)
             httpServletResponse.sendRedirect(targetUrlParameter)

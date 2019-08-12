@@ -151,7 +151,7 @@ class GpOAuth2UserService @Autowired constructor(
                 )
                 println("newUser: $newUser")
 
-                usersAuthoritiesService.insert(UsersAuthorities(userId = newUser.id!!, authority = AuthorityType.USER))
+                usersAuthoritiesService.save(UsersAuthorities(userId = newUser.id!!, authority = AuthorityType.USER))
 
                 //todo send email
 

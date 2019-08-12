@@ -24,7 +24,7 @@ class GpOAuth2AuthenticationProcessingFilter: OAuth2AuthenticationProcessingFilt
         println("GpOAuth2AuthenticationProcessingFilter req: $req")
         println("GpOAuth2AuthenticationProcessingFilter req: $req")
         println("GpOAuth2AuthenticationProcessingFilter: ${req.parameterNames.toList()}")
-        println("GpOAuth2AuthenticationProcessingFilter req.parameterMap: ${req.parameterMap.values}")
+        println("GpOAuth2AuthenticationProcessingFilter req.parameterMap: ${req.parameterMap.values.map { it.toList() }}")
         super.doFilter(req, res, chain)
     }
 }
