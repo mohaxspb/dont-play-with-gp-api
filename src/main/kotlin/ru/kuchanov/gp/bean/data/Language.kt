@@ -1,4 +1,4 @@
-package ru.kuchanov.gp.bean.auth
+package ru.kuchanov.gp.bean.data
 
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
