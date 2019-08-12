@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.configuration
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -114,6 +115,9 @@ class WebSecurityConfiguration @Autowired constructor(
                 setStateless(false)
             }
 
+    @Value("\${server.servlet.context-path}")
+    lateinit var contextPath: String
+
     override fun configure(http: HttpSecurity) {
         http
             .cors()
@@ -185,7 +189,7 @@ class WebSecurityConfiguration @Autowired constructor(
 
     override fun configure(web: WebSecurity) {
         web.ignoring().antMatchers(
-            "/api/${GpConstants.Path.AUTH}/**"
+            contextPath + "/" + GpConstants.AuthEndpoint.PATH + "/**"
         )
     }
 }

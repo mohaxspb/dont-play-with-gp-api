@@ -5,6 +5,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.provider.ClientRegistrationException
 import org.springframework.web.bind.annotation.ResponseStatus
 import java.sql.Timestamp
 import javax.persistence.Column
@@ -72,7 +73,7 @@ data class OAuthClientDetails(
 }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Client not found in db!")
-class ClientNotFoundError : RuntimeException()
+class ClientNotFoundError : ClientRegistrationException("Client not found in db!")
 
 //create table oauth_client_details (
 //client_id VARCHAR(256) PRIMARY KEY,

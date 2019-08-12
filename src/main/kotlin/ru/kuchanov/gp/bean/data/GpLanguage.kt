@@ -13,7 +13,7 @@ import javax.persistence.*
  */
 @Entity
 @Table(name = "languages")
-data class Language(
+data class GpLanguage(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -40,3 +40,6 @@ data class Language(
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Language not found in db!")
 class LanguageNotFoundError : RuntimeException()
+
+@ResponseStatus(value = HttpStatus.CONFLICT, reason = "Language with this langCode already exists")
+class LanguageAlreadyExistsError : RuntimeException()
