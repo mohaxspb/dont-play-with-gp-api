@@ -20,14 +20,17 @@ data class Language(
     /**
      * ISO 639-1: two-letter codes
      */
+    @Column(name = "lang_code")
     var langCode: String,
     /**
      * ISO language name
      */
+    @Column(name = "lang_name")
     var langName: String,
     /**
      * Native name (endonym)
      */
+    @Column(name = "native_name")
     var nativeName: String,
     @field:CreationTimestamp
     val created: Timestamp? = null,
