@@ -4,7 +4,7 @@ import retrofit2.Call
 import retrofit2.http.DELETE
 import retrofit2.http.Header
 import retrofit2.http.Path
-import ru.kuchanov.gp.model.facebook.FacebookSuccessResponse
+import ru.kuchanov.gp.model.facebook.DefaultSuccessResponse
 
 interface GitHubApi {
 
@@ -23,5 +23,5 @@ interface GitHubApi {
         @Header("Authorization") authorization: String,
         @Path("clientId") clientId: String,
         @Path("accessToken") accessToken: String
-    ): Call<FacebookSuccessResponse>
+    ): Call<DefaultSuccessResponse>
 }
