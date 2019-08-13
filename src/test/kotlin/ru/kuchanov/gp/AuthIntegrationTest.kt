@@ -27,6 +27,7 @@ import ru.kuchanov.gp.service.auth.AuthService
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
+import ru.kuchanov.gp.service.data.LanguageService
 
 
 @RunWith(SpringRunner::class)
@@ -56,6 +57,9 @@ class AuthIntegrationTest {
     lateinit var authService: AuthService
 
     @Autowired
+    lateinit var languageService: LanguageService
+
+    @Autowired
     lateinit var mvc: MockMvc
 
     @Before
@@ -67,7 +71,7 @@ class AuthIntegrationTest {
             scope = "read,write",
             authorized_grant_types = "client_credentials,password,$REFRESH_TOKEN",
             web_server_redirect_uri = "",
-            authorities = "USER,ADMIN",
+            authorities = "${AuthorityType.USER.name},${AuthorityType.ADMIN.name}",
             access_token_validity = 3600,
             refresh_token_validity = 0,
             additional_information = "",
@@ -82,7 +86,7 @@ class AuthIntegrationTest {
             scope = "read,write",
             authorized_grant_types = "client_credentials,password,$REFRESH_TOKEN",
             web_server_redirect_uri = "",
-            authorities = "USER,ADMIN",
+            authorities = "${AuthorityType.USER.name},${AuthorityType.ADMIN.name}",
             access_token_validity = 1,
             refresh_token_validity = 0,
             additional_information = "",
@@ -93,12 +97,14 @@ class AuthIntegrationTest {
         val inDbUser = userDetailsService.loadUserByUsername(TEST_USERNAME) ?: userDetailsService.save(
             GpUser(
                 username = TEST_USERNAME,
-                password = passwordEncoder.encode(TEST_USERNAME)
+                password = passwordEncoder.encode(TEST_USERNAME),
+                fullName = TEST_FULL_NAME,
+                primaryLanguageId = languageService.findByLangCode(GpConstants.DEFAULT_LANG_CODE)?.id!!
             )
         )
 
         if (usersAuthorityService.findByUserIdAndAuthority(inDbUser.id!!, AuthorityType.USER) == null) {
-            usersAuthorityService.insert(
+            usersAuthorityService.save(
                 UsersAuthorities(
                     userId = inDbUser.id!!, authority = AuthorityType.USER
                 )
@@ -108,7 +114,7 @@ class AuthIntegrationTest {
 
     @Test
     fun clientDetailsRepository_insertWorks() {
-        val authorities = "USER,ADMIN"
+        val authorities = "${AuthorityType.USER.name},${AuthorityType.ADMIN.name}"
 
         val clientId = TEST_CLIENT_ID
         val foundClient = clientDetailsRepository.getOne(clientId)
@@ -132,9 +138,11 @@ class AuthIntegrationTest {
 
     @Test
     fun getAccessTokenByPassword_returnsAccessToken() {
-        val accessToken = authService.getAccessTokenForUsernameAndClientId(TEST_USERNAME, TEST_CLIENT_ID)
+        val oauth2Authentication =
+            authService.generateAuthenticationForUsernameAndClientId(TEST_USERNAME, TEST_CLIENT_ID)
+        val accessToken = authService.getAccessTokenFromAuthentication(oauth2Authentication)
 
-        val accessTokenValue = accessToken?.value
+        val accessTokenValue = accessToken.value
 
         accessTokenRequest(TEST_CLIENT_ID)
             .andExpect(status().isOk)
@@ -153,7 +161,7 @@ class AuthIntegrationTest {
         val userJson = objectMapper.writeValueAsString(userDetailsService.loadUserByUsername(TEST_USERNAME)!!.toDto())
 
         mvc.perform(
-            get("/users/me")
+            get("/" + GpConstants.UsersEndpoint.PATH + "/" + GpConstants.UsersEndpoint.Method.ME)
                 .header(AUTHORIZATION, "Bearer ${accessToken.value}")
         )
             .andExpect(status().isOk)
@@ -164,7 +172,7 @@ class AuthIntegrationTest {
     @Test
     fun securedUrlWithoutAccessToken_redirectsToLogin() {
         mvc.perform(
-            get("/users/me")
+            get("/" + GpConstants.UsersEndpoint.PATH + "/" + GpConstants.UsersEndpoint.Method.ME)
         )
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrlPattern("**/login"))
@@ -178,7 +186,7 @@ class AuthIntegrationTest {
         )
         Thread.sleep(2000)
         mvc.perform(
-            get("/users/me")
+            get("/" + GpConstants.UsersEndpoint.PATH + "/" + GpConstants.UsersEndpoint.Method.ME)
                 .header(AUTHORIZATION, "Bearer ${accessToken.value}")
         )
             .andExpect(status().isUnauthorized)
@@ -192,7 +200,7 @@ class AuthIntegrationTest {
         )
         Thread.sleep(2000)
         mvc.perform(
-            get("/users/me")
+            get("/" + GpConstants.UsersEndpoint.PATH + "/" + GpConstants.UsersEndpoint.Method.ME)
                 .header(AUTHORIZATION, "Bearer ${accessToken.value}")
         )
             .andDo { println(it.response.contentAsString) }
@@ -203,7 +211,7 @@ class AuthIntegrationTest {
             OAuth2AccessToken::class.java
         )
         mvc.perform(
-            get("/users/me")
+            get("/" + GpConstants.UsersEndpoint.PATH + "/" + GpConstants.UsersEndpoint.Method.ME)
                 .header(AUTHORIZATION, "Bearer ${refreshedAccessToken.value}")
         )
             .andDo { println(it.response.contentAsString) }
@@ -213,14 +221,13 @@ class AuthIntegrationTest {
     @Test
     fun registerUser_createsUserAndReturnsAccessToken() {
         val registerResponse = mvc.perform(
-            post("/auth/register")
+            post("/" + GpConstants.AuthEndpoint.PATH + "/" + GpConstants.AuthEndpoint.Method.REGISTER)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("email", TEST_REGISTER_USERNAME)
                 .param("password", TEST_REGISTER_USERNAME)
                 .param("fullName", TEST_REGISTER_FULL_NAME)
-                .param("avatarUrl", "")
+                .param("primaryLanguage", GpConstants.DEFAULT_LANG_CODE)
                 .param("clientId", TEST_CLIENT_ID)
-                .param("clientSecret", TEST_CLIENT_SECRET)
         )
             .andExpect(status().isOk)
             .andReturn().response.contentAsString
@@ -242,8 +249,8 @@ class AuthIntegrationTest {
 
         val registeredUser = userDetailsService.loadUserByUsername(TEST_REGISTER_USERNAME)
         registeredUser?.let {
-            userDetailsService.deleteByUsername(TEST_REGISTER_USERNAME)
             usersAuthorityService.deleteByUserId(it.id!!)
+            userDetailsService.deleteByUsername(TEST_REGISTER_USERNAME)
         }
     }
 
@@ -268,12 +275,13 @@ class AuthIntegrationTest {
                     AUTHORIZATION,
                     "Basic " + String(Base64Utils.encode("$FAST_TOKEN_EXPIRES_CLIENT_ID:$TEST_CLIENT_SECRET".toByteArray()))
                 )
-                .param("grant_type", "refresh_token")
-                .param("refresh_token", refreshToken)
+                .param("grant_type", REFRESH_TOKEN)
+                .param(REFRESH_TOKEN, refreshToken)
         )
 
     companion object {
         const val TEST_USERNAME = "test@test.ru"
+        const val TEST_FULL_NAME = "test fullName"
         const val TEST_REGISTER_USERNAME = "test-register@test.ru"
         const val TEST_REGISTER_FULL_NAME = "test register fullName"
         const val TEST_CLIENT_ID = "test_client_id"

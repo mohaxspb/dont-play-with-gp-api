@@ -1,4 +1,4 @@
-package ru.kuchanov.gp.controller
+package ru.kuchanov.gp.controller.auth
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.annotation.AuthenticationPrincipal

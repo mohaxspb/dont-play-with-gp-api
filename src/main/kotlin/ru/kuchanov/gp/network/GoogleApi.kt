@@ -2,9 +2,8 @@ package ru.kuchanov.gp.network
 
 import retrofit2.Call
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
-import ru.kuchanov.gp.model.facebook.FacebookSuccessResponse
+import ru.kuchanov.gp.model.facebook.DefaultSuccessResponse
 
 interface GoogleApi {
 
@@ -21,5 +20,5 @@ interface GoogleApi {
     @GET("o/oauth2/revoke")
     fun logout(
         @Query("token") token: String
-    ): Call<FacebookSuccessResponse>
+    ): Call<DefaultSuccessResponse>
 }

@@ -11,9 +11,12 @@ class AuthorityServiceImpl @Autowired constructor(
     val repository: AuthoritiesRepository
 ) : AuthorityService {
 
-    override fun findAll(): List<Authority> = repository.findAll().toList()
+    override fun findAll(): List<Authority> =
+        repository.findAll().toList()
 
-    override fun insert(authority: Authority): Authority = repository.save(authority)
+    override fun save(authority: Authority): Authority =
+        repository.save(authority)
 
-    override fun insert(authorities: List<Authority>): List<Authority> = repository.saveAll(authorities)
+    override fun save(authorities: List<Authority>): List<Authority> =
+        repository.saveAll(authorities)
 }

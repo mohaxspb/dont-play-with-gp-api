@@ -19,10 +19,10 @@ class UsersAuthoritiesServiceImpl @Autowired constructor(
     override fun findByUserIdAndAuthority(userId: Long, authorityType: AuthorityType): UsersAuthorities? =
         usersAuthoritiesRepository.findByUserIdAndAuthority(userId, authorityType)
 
-    override fun insert(usersAuthorities: UsersAuthorities): UsersAuthorities? =
+    override fun save(usersAuthorities: UsersAuthorities): UsersAuthorities? =
         usersAuthoritiesRepository.save(usersAuthorities)
 
-    override fun insert(usersAuthorities: List<UsersAuthorities>): List<UsersAuthorities> =
+    override fun save(usersAuthorities: List<UsersAuthorities>): List<UsersAuthorities> =
         usersAuthoritiesRepository.saveAll(usersAuthorities)
 
     override fun deleteByUserId(userId: Long) =

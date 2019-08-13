@@ -24,7 +24,8 @@ import javax.persistence.*
             columns = [
                 ColumnResult(name = "id", type = Long::class),
                 ColumnResult(name = "fullName"),
-                ColumnResult(name = "avatar")
+                ColumnResult(name = "avatar"),
+                ColumnResult(name = "primaryLanguageId", type = Long::class)
             ]
         )
     ]
@@ -35,7 +36,8 @@ import javax.persistence.*
     query = "SELECT " +
             "id, " +
             "full_name as fullName, " +
-            "avatar " +
+            "avatar, " +
+            "primary_language_id as primaryLanguageId " +
             "FROM users u " +
             "WHERE u.id = :userId"
 )
@@ -72,8 +74,10 @@ data class GpUser(
     @Column(name = "vk_token")
     var vkToken: String? = null,
     @Column(name = "github_token")
-    var githubToken: String? = null
-) : UserDetails, OAuth2User {
+    var githubToken: String? = null,
+    @Column(name = "primary_language_id")
+    var primaryLanguageId: Long
+    ) : UserDetails, OAuth2User {
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
         userAuthorities.map { SimpleGrantedAuthority(it.authority.name) }.toMutableList()
@@ -98,7 +102,8 @@ data class GpUser(
 fun GpUser.toDto() = UserDto(
     id = id!!,
     avatar = avatar,
-    fullName = fullName
+    fullName = fullName,
+    primaryLanguageId = primaryLanguageId
 )
 
 fun GpUser.setSocialProviderData(
