@@ -27,6 +27,7 @@ import ru.kuchanov.gp.service.auth.AuthService
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
+import ru.kuchanov.gp.service.data.LanguageService
 
 
 @RunWith(SpringRunner::class)
@@ -54,6 +55,9 @@ class AuthIntegrationTest {
 
     @Autowired
     lateinit var authService: AuthService
+
+    @Autowired
+    lateinit var languageService: LanguageService
 
     @Autowired
     lateinit var mvc: MockMvc
@@ -93,7 +97,9 @@ class AuthIntegrationTest {
         val inDbUser = userDetailsService.loadUserByUsername(TEST_USERNAME) ?: userDetailsService.save(
             GpUser(
                 username = TEST_USERNAME,
-                password = passwordEncoder.encode(TEST_USERNAME)
+                password = passwordEncoder.encode(TEST_USERNAME),
+                fullName = TEST_FULL_NAME,
+                primaryLanguageId = languageService.findByLangCode(GpConstants.DEFAULT_LANG_CODE)?.id!!
             )
         )
 
@@ -275,6 +281,7 @@ class AuthIntegrationTest {
 
     companion object {
         const val TEST_USERNAME = "test@test.ru"
+        const val TEST_FULL_NAME = "test fullName"
         const val TEST_REGISTER_USERNAME = "test-register@test.ru"
         const val TEST_REGISTER_FULL_NAME = "test register fullName"
         const val TEST_CLIENT_ID = "test_client_id"

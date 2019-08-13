@@ -18,12 +18,14 @@ import ru.kuchanov.gp.bean.auth.setSocialProviderData
 import ru.kuchanov.gp.exception.OAuth2AuthenticationProcessingException
 import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.network.GitHubApi
+import ru.kuchanov.gp.service.data.LanguageService
 import ru.kuchanov.gp.util.user.OAuth2UserInfoFactory
 
 @Service
 class GpOAuth2UserService @Autowired constructor(
     val usersService: GpUserDetailsService,
     val usersAuthoritiesService: UsersAuthoritiesService,
+    val languageService: LanguageService,
     val passwordGenerator: RandomValueStringGenerator,
     val passwordEncoder: PasswordEncoder,
     val facebookApi: FacebookApi,
@@ -146,7 +148,8 @@ class GpOAuth2UserService @Autowired constructor(
                         fullName = oAuth2UserInfo.getName(),
                         username = email,
                         password = passwordEncoder.encode(password),
-                        avatar = oAuth2UserInfo.getImageUrl()
+                        avatar = oAuth2UserInfo.getImageUrl(),
+                        primaryLanguageId = languageService.findByLangCode(GpConstants.DEFAULT_LANG_CODE)?.id!!
                     ).apply { setSocialProviderData(provider, idInProvidersSystem, tokenInProvidersSystem) }
                 )
                 println("newUser: $newUser")

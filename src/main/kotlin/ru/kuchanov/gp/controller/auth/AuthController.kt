@@ -62,7 +62,8 @@ class AuthController @Autowired constructor(
             GpUser(
                 username = email,
                 password = passwordEncoder.encode(password),
-                fullName = fullName
+                fullName = fullName,
+                primaryLanguageId = language.id!!
             )
         )
 

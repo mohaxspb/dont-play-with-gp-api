@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS languages
 (
     id          BIGSERIAL  NOT NULL,
-    lang_code   varchar(2) NOT NULL,
+    lang_code   VARCHAR(2) NOT NULL,
     lang_name   TEXT       NOT NULL,
     native_name TEXT       NOT NULL,
     created     TIMESTAMP,
