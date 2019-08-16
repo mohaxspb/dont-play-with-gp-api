@@ -19,7 +19,10 @@ class GpUserDetailsServiceImpl @Autowired constructor(
         usersRepository.findOneById(id)?.withAuthorities() ?: throw UserNotFoundException()
 
     override fun getByIdDto(id: Long): UserDto =
-        usersRepository.getOneAsUserDto(id) ?: throw UserNotFoundException()
+        usersRepository
+            .getOneAsUserDto(id)
+            ?.withAuthorities()
+            ?: throw UserNotFoundException()
 
     override fun save(user: GpUser): GpUser =
         usersRepository.save(user).withAuthorities()
@@ -55,5 +58,9 @@ class GpUserDetailsServiceImpl @Autowired constructor(
 
     fun GpUser.withAuthorities() = this.apply {
         userAuthorities = usersAuthoritiesService.findAllByUserId(id!!).toSet()
+    }
+
+    fun UserDto.withAuthorities() = this.apply {
+        authorities = usersAuthoritiesService.findAllByUserIdAsDto(id)
     }
 }

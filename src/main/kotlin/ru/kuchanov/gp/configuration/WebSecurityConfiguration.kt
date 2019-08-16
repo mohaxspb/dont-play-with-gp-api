@@ -135,6 +135,8 @@ class WebSecurityConfiguration @Autowired constructor(
                 "/",
                 "/error",
                 "/users/",
+                "/language/",
+                "/language/all",
                 "/login**",
                 "/oauth/token**",
                 "/auth/**",

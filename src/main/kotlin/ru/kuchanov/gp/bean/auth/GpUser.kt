@@ -53,6 +53,7 @@ data class GpUser(
     var avatar: String? = null,
     val enabled: Boolean = true,
     @Transient
+    //todo try this https://stackoverflow.com/questions/40960835/native-query-join-in-spring-data
     var userAuthorities: Set<UsersAuthorities> = setOf(),
     @field:CreationTimestamp
     val created: Timestamp? = null,
@@ -77,7 +78,7 @@ data class GpUser(
     var githubToken: String? = null,
     @Column(name = "primary_language_id")
     var primaryLanguageId: Long
-    ) : UserDetails, OAuth2User {
+) : UserDetails, OAuth2User {
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
         userAuthorities.map { SimpleGrantedAuthority(it.authority.name) }.toMutableList()
