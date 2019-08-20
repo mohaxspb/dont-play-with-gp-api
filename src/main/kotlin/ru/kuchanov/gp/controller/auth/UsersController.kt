@@ -12,10 +12,9 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @RestController
 @RequestMapping("/" + GpConstants.UsersEndpoint.PATH + "/")
-class UsersController {
-
-    @Autowired
-    lateinit var gpUserDetailsService: GpUserDetailsService
+class UsersController @Autowired constructor(
+    val gpUserDetailsService: GpUserDetailsService
+) {
 
     @GetMapping("")
     fun index() = "Welcome to Don't play with Google Play API! Users endpoint"
@@ -24,7 +23,7 @@ class UsersController {
     fun test() = "Test method called!"
 
     @GetMapping(GpConstants.UsersEndpoint.Method.ME)
-    fun showMeClient(
+    fun showMe(
         @AuthenticationPrincipal user: GpUser
     ): UserDto = gpUserDetailsService.getByIdDto(user.id!!)
 }

@@ -7,6 +7,7 @@ import ru.kuchanov.gp.model.dto.UserDto
 import javax.transaction.Transactional
 
 interface GpUserDetailsService : UserDetailsService {
+
     override fun loadUserByUsername(username: String): GpUser?
 
     fun getById(id: Long): GpUser?
