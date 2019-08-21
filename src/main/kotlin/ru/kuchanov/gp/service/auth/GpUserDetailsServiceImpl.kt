@@ -7,6 +7,7 @@ import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.model.dto.UserDto
 import ru.kuchanov.gp.repository.auth.UserNotFoundException
 import ru.kuchanov.gp.repository.auth.UsersRepository
+import javax.transaction.Transactional
 
 
 @Service
@@ -46,7 +47,9 @@ class GpUserDetailsServiceImpl @Autowired constructor(
             GpConstants.SocialProvider.GITHUB -> usersRepository.findOneByGithubId(id)
         }?.withAuthorities()
 
+    @Transactional
     override fun deleteById(id: Long): Boolean {
+        usersAuthoritiesService.deleteByUserId(id)
         usersRepository.deleteById(id)
         return true
     }

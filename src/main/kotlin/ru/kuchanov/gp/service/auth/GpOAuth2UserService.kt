@@ -126,6 +126,7 @@ class GpOAuth2UserService @Autowired constructor(
 
         val inDbUser = usersService.loadUserByUsername(email)
         if (inDbUser != null) {
+            println("User already exists. So update it and return.")
             //update users providers ID and token and image
             return usersService.save(
                 inDbUser.apply {
@@ -138,6 +139,7 @@ class GpOAuth2UserService @Autowired constructor(
             val sameUserWithAnotherEmail =
                 usersService.getByProviderId(oAuth2UserInfo.getId(), provider)
             if (sameUserWithAnotherEmail != null) {
+                println("sameUserWithAnotherEmail exists. So return it.")
                 //todo handle it somehow. I.e. throw error and let user approve email change.
                 return sameUserWithAnotherEmail
             } else {

@@ -134,5 +134,9 @@ fun GpUser.setSocialProviderData(
     }
 }
 
+fun GpUser.isAdmin(): Boolean{
+    return authorities.find { AuthorityType.ADMIN.name.equals(it.authority, ignoreCase = true) } != null
+}
+
 @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User with this email already exists")
 class UserAlreadyExistsException : RuntimeException()

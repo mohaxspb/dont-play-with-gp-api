@@ -20,7 +20,7 @@ class GpLogoutHandler @Autowired constructor(
     val githubApi: GitHubApi,
     val googleApi: GoogleApi,
     val userDetailsService: GpUserDetailsService
-): LogoutHandler {
+) : LogoutHandler {
 
     //facebook
     @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
@@ -72,12 +72,19 @@ class GpLogoutHandler @Autowired constructor(
         }
 
         //also clear accessToken in DB
-        userDetailsService.save(
-            gpUser.apply {
-                facebookToken = null
-                vkToken = null
-                googleToken = null
-                githubToken = null
-            })
+        //user can be deleted already, so check it
+        val userInDb = try {
+            userDetailsService.getById(gpUser.id!!)
+        } catch (ignored: Exception) {
+        }
+        if (userInDb != null) {
+            userDetailsService.save(
+                gpUser.apply {
+                    facebookToken = null
+                    vkToken = null
+                    googleToken = null
+                    githubToken = null
+                })
+        }
     }
 }

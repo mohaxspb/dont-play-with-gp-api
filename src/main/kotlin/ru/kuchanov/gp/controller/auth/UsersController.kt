@@ -2,13 +2,13 @@ package ru.kuchanov.gp.controller.auth
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
+import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.model.dto.UserDto
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
+import org.springframework.security.access.AccessDeniedException as SpringAccessDeniedException
 
 @RestController
 @RequestMapping("/" + GpConstants.UsersEndpoint.PATH + "/")
@@ -26,4 +26,16 @@ class UsersController @Autowired constructor(
     fun showMe(
         @AuthenticationPrincipal user: GpUser
     ): UserDto = gpUserDetailsService.getByIdDto(user.id!!)
+
+    @DeleteMapping("delete/{id}")
+    fun deleteUserById(
+        @AuthenticationPrincipal user: GpUser,
+        @PathVariable(value = "id") id: Long
+    ): Boolean {
+        if (user.isAdmin() || user.id == id) {
+            return gpUserDetailsService.deleteById(id)
+        } else {
+            throw SpringAccessDeniedException("You not admin and given ID is not your ID");
+        }
+    }
 }

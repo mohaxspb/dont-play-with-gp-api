@@ -53,7 +53,6 @@ class AuthServiceImpl @Autowired constructor(
             extensionProperties
         )
 
-
         val user = userDetailsService.loadUserByUsername(username) ?: throw UserNotFoundException()
 
         val authenticationToken = UsernamePasswordAuthenticationToken(
