@@ -73,11 +73,9 @@ class GpLogoutHandler @Autowired constructor(
 
         //also clear accessToken in DB
         //user can be deleted already, so check it
-        val userInDb = try {
-            userDetailsService.getById(gpUser.id!!)
-        } catch (ignored: Exception) {
-        }
+        val userInDb = userDetailsService.getById(gpUser.id!!)
         if (userInDb != null) {
+            println("GpLogoutHandler. Clearing user social tokens.")
             userDetailsService.save(
                 gpUser.apply {
                     facebookToken = null

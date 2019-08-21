@@ -21,7 +21,9 @@ interface GpUserDetailsService : UserDetailsService {
 
     fun updateAvatarUrl(userId: Long, avatarUrl: String): UserDto
 
+    @Transactional
     fun deleteById(id: Long): Boolean
 
+    @Transactional
     fun deleteByUsername(username: String): Boolean
 }
