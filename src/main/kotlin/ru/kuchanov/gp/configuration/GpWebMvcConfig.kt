@@ -15,7 +15,9 @@ class GpWebMvcConfig : WebMvcConfigurer {
                 .allowedOrigins(
                         "http://localhost:4200",
                         "http://localhost:80",
-                        "http://localhost:443"
+                        "http://localhost:443",
+                    //my dev IP
+                        "http://192.168.43.235:4200"
                         //todo add domains
                 )
                 .allowCredentials(true)

@@ -7,6 +7,7 @@ import ru.kuchanov.gp.model.dto.UserDto
 import javax.transaction.Transactional
 
 interface GpUserDetailsService : UserDetailsService {
+
     override fun loadUserByUsername(username: String): GpUser?
 
     fun getById(id: Long): GpUser?
@@ -20,7 +21,9 @@ interface GpUserDetailsService : UserDetailsService {
 
     fun updateAvatarUrl(userId: Long, avatarUrl: String): UserDto
 
+    @Transactional
     fun deleteById(id: Long): Boolean
 
+    @Transactional
     fun deleteByUsername(username: String): Boolean
 }

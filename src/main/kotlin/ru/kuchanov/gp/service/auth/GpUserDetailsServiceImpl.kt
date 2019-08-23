@@ -16,7 +16,7 @@ class GpUserDetailsServiceImpl @Autowired constructor(
 ) : GpUserDetailsService {
 
     override fun getById(id: Long) =
-        usersRepository.findOneById(id)?.withAuthorities() ?: throw UserNotFoundException()
+        usersRepository.findOneById(id)?.withAuthorities()
 
     override fun getByIdDto(id: Long): UserDto =
         usersRepository
@@ -47,6 +47,7 @@ class GpUserDetailsServiceImpl @Autowired constructor(
         }?.withAuthorities()
 
     override fun deleteById(id: Long): Boolean {
+        usersAuthoritiesService.deleteByUserId(id)
         usersRepository.deleteById(id)
         return true
     }

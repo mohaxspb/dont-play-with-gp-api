@@ -23,6 +23,7 @@ import javax.persistence.*
             targetClass = UserDto::class,
             columns = [
                 ColumnResult(name = "id", type = Long::class),
+                ColumnResult(name = "email"),
                 ColumnResult(name = "fullName"),
                 ColumnResult(name = "avatar"),
                 ColumnResult(name = "primaryLanguageId", type = Long::class)
@@ -35,6 +36,7 @@ import javax.persistence.*
     resultSetMapping = "UserDtoResult",
     query = "SELECT " +
             "id, " +
+            "username as email, " +
             "full_name as fullName, " +
             "avatar, " +
             "primary_language_id as primaryLanguageId " +
@@ -130,6 +132,10 @@ fun GpUser.setSocialProviderData(
             githubToken = tokenInProvidersSystem
         }
     }
+}
+
+fun GpUser.isAdmin(): Boolean{
+    return authorities.find { AuthorityType.ADMIN.name.equals(it.authority, ignoreCase = true) } != null
 }
 
 @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User with this email already exists")
