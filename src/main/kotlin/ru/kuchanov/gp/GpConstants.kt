@@ -31,6 +31,15 @@ object GpConstants {
         }
     }
 
+    object ArticleEndpoint {
+        const val PATH = "article"
+
+        object Method {
+            const val CREATE = "create"
+            const val ALL_BY_AUTHOR_ID = "allByAuthorId"
+        }
+    }
+
     enum class SocialProvider {
         GOOGLE, FACEBOOK, VK, GITHUB
     }
