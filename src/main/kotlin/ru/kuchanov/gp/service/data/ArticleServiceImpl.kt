@@ -15,4 +15,7 @@ class ArticleServiceImpl @Autowired constructor(
 
     override fun save(article: Article): Article =
         articleRepository.save(article)
+
+    override fun getOneById(id: Long): Article? =
+        articleRepository.getOne(id)
 }

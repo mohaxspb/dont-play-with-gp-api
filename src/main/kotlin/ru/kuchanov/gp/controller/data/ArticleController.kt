@@ -30,4 +30,8 @@ class ArticleController @Autowired constructor(
     fun allArticlesByAuthorId(
         @RequestParam(value = "authorId") authorId: Long
     ) = articleService.findAllByAuthorId(authorId)
+
+    @GetMapping("{id}")
+    fun getById(@PathVariable(name = "id") id: Long) =
+        articleService.getOneById(id)
 }
