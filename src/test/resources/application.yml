@@ -101,6 +101,10 @@ logging:
     console: '%d{HH:mm:ss.SSS} %msg%n'
 
 # misc
+auth:
+  logout:
+    socialLogout: false
+
 my:
   db:
     name: gp_test_db
