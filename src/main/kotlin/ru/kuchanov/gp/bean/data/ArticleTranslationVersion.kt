@@ -23,7 +23,7 @@ data class ArticleTranslationVersion(
 
     val approved: Boolean = false,
     @Column(name = "approver_id")
-    val approverId: Long?,
+    val approverId: Long? = null,
     @Column(name = "approved_date")
     val approvedDate: Timestamp? = null,
 
