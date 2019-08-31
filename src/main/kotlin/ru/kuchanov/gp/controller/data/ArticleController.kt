@@ -28,16 +28,19 @@ class ArticleController @Autowired constructor(
     fun index() =
         "Article endpoint"
 
+    //todo check user. Do not show article if it's not published if user is not admin or author
     //todo return DTO
     @GetMapping(GpConstants.ArticleEndpoint.Method.ALL_BY_AUTHOR_ID)
     fun allArticlesByAuthorId(
         @RequestParam(value = "authorId") authorId: Long
     ): List<Article> = articleService.findAllByAuthorId(authorId)
 
+    //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("{id}")
     fun getById(@PathVariable(name = "id") id: Long): Article =
         articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
+    //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("full/{id}")
     fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleDto =
         articleService.getOneByIdAsDtoWithTranslationsAndVersions(id) ?: throw ArticleNotFoundException()
