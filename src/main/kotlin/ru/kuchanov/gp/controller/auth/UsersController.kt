@@ -7,8 +7,8 @@ import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.model.dto.UserDto
+import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
-import org.springframework.security.access.AccessDeniedException as SpringAccessDeniedException
 
 @RestController
 @RequestMapping("/" + GpConstants.UsersEndpoint.PATH + "/")
@@ -35,7 +35,7 @@ class UsersController @Autowired constructor(
         if (user.isAdmin() || user.id == id) {
             return gpUserDetailsService.deleteById(id)
         } else {
-            throw SpringAccessDeniedException("You not admin and given ID is not your ID");
+            throw GpAccessDeniedException("You not admin and given ID is not your ID");
         }
     }
 }
