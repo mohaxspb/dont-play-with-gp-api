@@ -34,6 +34,10 @@ class ArticleController @Autowired constructor(
     fun getById(@PathVariable(name = "id") id: Long) =
         articleService.getOneById(id)
 
+    @GetMapping("full/{id}")
+    fun getByIdFull(@PathVariable(name = "id") id: Long) =
+        articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)
+
     @PostMapping(GpConstants.ArticleEndpoint.Method.CREATE)
     fun createArticle(
         @RequestParam(value = "sourceTitle") sourceTitle: String?,
@@ -74,8 +78,8 @@ class ArticleController @Autowired constructor(
             articleTranslationId = articleTranslationInDb.id!!,
             text = text
         )
-        val textVersionInDb = articleTranslationVersionService.save(textVersion)
-        //todo return dto.
+        articleTranslationVersionService.save(textVersion)
+        //return dto.
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
     }
 }
