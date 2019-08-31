@@ -22,6 +22,21 @@ class ArticleTranslationServiceImpl @Autowired constructor(
     override fun save(articleTranslation: ArticleTranslation): ArticleTranslation =
         articleTranslationRepository.save(articleTranslation)
 
+    override fun deleteById(id: Long): Boolean {
+        articleTranslationVersionService.deleteAllByArticleTranslationId(id)
+        articleTranslationRepository.deleteById(id)
+        return true
+    }
+
+    override fun deleteAllByArticleId(articleId: Long): Boolean {
+        val translationsToDelete = findAllByArticleId(articleId)
+        translationsToDelete.forEach {
+            articleTranslationVersionService.deleteAllByArticleTranslationId(it.id!!)
+        }
+        articleTranslationRepository.deleteAll(translationsToDelete)
+        return true
+    }
+
     fun ArticleTranslationDto.withVersions() =
         apply {
             versions = articleTranslationVersionService.findAllByArticleTranslationIdAsDto(id)

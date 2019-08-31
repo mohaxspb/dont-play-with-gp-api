@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.service.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.data.Article
 import ru.kuchanov.gp.bean.data.toDto
@@ -14,10 +15,10 @@ class ArticleServiceImpl @Autowired constructor(
 ) : ArticleService {
 
     override fun getOneById(id: Long): Article? =
-        articleRepository.getOne(id)
+        articleRepository.findByIdOrNull(id)
 
     override fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto? =
-        articleRepository.getOne(id).toDto().withTranslations()
+        getOneById(id)?.toDto()?.withTranslations()
 
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
@@ -25,8 +26,15 @@ class ArticleServiceImpl @Autowired constructor(
     override fun save(article: Article): Article =
         articleRepository.save(article)
 
+    override fun deleteById(id: Long): Boolean {
+        //delete all dependent objects
+        articleTranslationService.deleteAllByArticleId(id)
+        articleRepository.deleteById(id)
+        return true
+    }
+
     fun ArticleDto.withTranslations() =
         apply {
             translations = articleTranslationService.findAllByArticleIdAsDtoWithVersions(id)
-    }
+        }
 }

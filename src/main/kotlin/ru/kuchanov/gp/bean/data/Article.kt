@@ -2,6 +2,8 @@ package ru.kuchanov.gp.bean.data
 
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import java.io.Serializable
 import java.sql.Timestamp
@@ -63,3 +65,6 @@ fun Article.toDto(): ArticleDto =
         sourceAuthorName = sourceAuthorName,
         sourceUrl = sourceUrl
     )
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Article not found in db!")
+class ArticleNotFoundException: RuntimeException()

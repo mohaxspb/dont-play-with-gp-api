@@ -5,10 +5,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
+import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.bean.data.Article
+import ru.kuchanov.gp.bean.data.ArticleNotFoundException
 import ru.kuchanov.gp.bean.data.ArticleTranslation
 import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
 import ru.kuchanov.gp.model.dto.data.ArticleDto
+import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
@@ -25,18 +28,31 @@ class ArticleController @Autowired constructor(
     fun index() =
         "Article endpoint"
 
+    //todo return DTO
     @GetMapping(GpConstants.ArticleEndpoint.Method.ALL_BY_AUTHOR_ID)
     fun allArticlesByAuthorId(
         @RequestParam(value = "authorId") authorId: Long
-    ) = articleService.findAllByAuthorId(authorId)
+    ): List<Article> = articleService.findAllByAuthorId(authorId)
 
     @GetMapping("{id}")
-    fun getById(@PathVariable(name = "id") id: Long) =
-        articleService.getOneById(id)
+    fun getById(@PathVariable(name = "id") id: Long): Article =
+        articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
     @GetMapping("full/{id}")
-    fun getByIdFull(@PathVariable(name = "id") id: Long) =
-        articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)
+    fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleDto =
+        articleService.getOneByIdAsDtoWithTranslationsAndVersions(id) ?: throw ArticleNotFoundException()
+
+    @DeleteMapping("delete/{id}")
+    fun deleteById(
+        @PathVariable(name = "id") id: Long,
+        @AuthenticationPrincipal user: GpUser
+    ): Boolean {
+        if (user.isAdmin() || articleService.getOneById(id)!!.authorId == user.id) {
+            return articleService.deleteById(id)
+        } else {
+            throw GpAccessDeniedException("You are not admin or author of this article!")
+        }
+    }
 
     @PostMapping(GpConstants.ArticleEndpoint.Method.CREATE)
     fun createArticle(
