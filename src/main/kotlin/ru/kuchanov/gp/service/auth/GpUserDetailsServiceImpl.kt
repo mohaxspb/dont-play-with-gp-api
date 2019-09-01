@@ -18,7 +18,7 @@ class GpUserDetailsServiceImpl @Autowired constructor(
     override fun getById(id: Long) =
         usersRepository.findOneById(id)?.withAuthorities()
 
-    override fun getByIdDto(id: Long): UserDto =
+    override fun getByIdAsDto(id: Long): UserDto =
         usersRepository
             .getOneAsUserDto(id)
             ?.withAuthorities()

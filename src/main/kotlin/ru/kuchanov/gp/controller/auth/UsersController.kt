@@ -25,7 +25,7 @@ class UsersController @Autowired constructor(
     @GetMapping(GpConstants.UsersEndpoint.Method.ME)
     fun showMe(
         @AuthenticationPrincipal user: GpUser
-    ): UserDto = gpUserDetailsService.getByIdDto(user.id!!)
+    ): UserDto = gpUserDetailsService.getByIdAsDto(user.id!!)
 
     @DeleteMapping("delete/{id}")
     fun deleteUserById(

@@ -6,14 +6,18 @@ import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 import ru.kuchanov.gp.repository.data.ArticleTranslationVersionRepository
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @Service
 class ArticleTranslationVersionServiceImpl @Autowired constructor(
-    val articleTranslationVersionRepository: ArticleTranslationVersionRepository
+    val articleTranslationVersionRepository: ArticleTranslationVersionRepository,
+    val userService: GpUserDetailsService
 ) : ArticleTranslationVersionService {
 
     override fun findAllByArticleTranslationIdAsDto(articleTranslationId: Long): List<ArticleTranslationVersionDto> =
-        articleTranslationVersionRepository.findAllByArticleTranslationId(articleTranslationId).map { it.toDto() }
+        articleTranslationVersionRepository
+            .findAllByArticleTranslationId(articleTranslationId)
+            .map { it.toDto().withUsers() }
 
     override fun findAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion> =
         articleTranslationVersionRepository.findAllByArticleTranslationId(articleTranslationId)
@@ -23,4 +27,11 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
 
     override fun deleteAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion> =
         articleTranslationVersionRepository.deleteAllByArticleTranslationId(articleTranslationId)
+
+    fun ArticleTranslationVersionDto.withUsers() =
+        apply {
+            author = authorId?.let { userService.getByIdAsDto(it) }
+            approver = approverId?.let { userService.getByIdAsDto(it) }
+            publisher = publisherId?.let { userService.getByIdAsDto(it) }
+        }
 }

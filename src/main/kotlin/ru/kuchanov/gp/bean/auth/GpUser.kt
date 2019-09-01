@@ -102,11 +102,12 @@ data class GpUser(
     override fun getName() = fullName
 }
 
-fun GpUser.toDto() = UserDto(
+fun GpUser.toDto(includeEmail: Boolean = false) = UserDto(
     id = id!!,
     avatar = avatar,
     fullName = fullName,
-    primaryLanguageId = primaryLanguageId
+    primaryLanguageId = primaryLanguageId,
+    email = if (includeEmail) username else null
 )
 
 fun GpUser.setSocialProviderData(
@@ -134,7 +135,7 @@ fun GpUser.setSocialProviderData(
     }
 }
 
-fun GpUser.isAdmin(): Boolean{
+fun GpUser.isAdmin(): Boolean {
     return authorities.find { AuthorityType.ADMIN.name.equals(it.authority, ignoreCase = true) } != null
 }
 

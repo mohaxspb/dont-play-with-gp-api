@@ -40,6 +40,7 @@ class ArticleController @Autowired constructor(
     fun getById(@PathVariable(name = "id") id: Long): Article =
         articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
+    //todo also add user dto for author and approver
     //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("full/{id}")
     fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleDto =
