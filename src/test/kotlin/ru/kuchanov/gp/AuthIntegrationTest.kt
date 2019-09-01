@@ -247,11 +247,7 @@ class AuthIntegrationTest {
     fun clearData() {
         //todo clear all, that we insert in DB
 
-        val registeredUser = userDetailsService.loadUserByUsername(TEST_REGISTER_USERNAME)
-        registeredUser?.let {
-            usersAuthorityService.deleteByUserId(it.id!!)
-            userDetailsService.deleteByUsername(TEST_REGISTER_USERNAME)
-        }
+        userDetailsService.deleteByUsername(TEST_REGISTER_USERNAME)
     }
 
     private fun accessTokenRequest(clientId: String) =

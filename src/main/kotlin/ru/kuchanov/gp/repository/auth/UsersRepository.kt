@@ -25,9 +25,6 @@ interface UsersRepository : JpaRepository<GpUser, Long> {
     //see https://stackoverflow.com/a/50968131/3212712
     @Query(nativeQuery = true)
     fun getOneAsUserDto(userId: Long): UserDto?
-
-    @Transactional
-    fun deleteByUsername(username: String)
 }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such user")

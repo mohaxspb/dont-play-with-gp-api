@@ -2,6 +2,7 @@ package ru.kuchanov.gp.bean.data
 
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import java.io.Serializable
 import java.sql.Timestamp
 import javax.persistence.*
@@ -29,7 +30,7 @@ data class ArticleTranslation(
 
     val approved: Boolean = false,
     @Column(name = "approver_id")
-    val approverId: Long?,
+    val approverId: Long? = null,
     @Column(name = "approved_date")
     val approvedDate: Timestamp? = null,
 
@@ -44,3 +45,14 @@ data class ArticleTranslation(
     @field:UpdateTimestamp
     val updated: Timestamp? = null
 ) : Serializable
+
+fun ArticleTranslation.toDto(): ArticleTranslationDto =
+    ArticleTranslationDto(
+        id = id!!,
+        langId = langId,
+        articleId = articleId,
+        authorId = authorId,
+        title = title,
+        shortDescription = shortDescription,
+        imageUrl = imageUrl
+    )

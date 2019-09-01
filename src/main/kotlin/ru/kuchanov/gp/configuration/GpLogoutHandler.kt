@@ -1,5 +1,6 @@
 package ru.kuchanov.gp.configuration
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
@@ -22,6 +23,10 @@ class GpLogoutHandler @Autowired constructor(
     val userDetailsService: GpUserDetailsService
 ) : LogoutHandler {
 
+    //common
+    @Value("\${auth.logout.socialLogout}")
+    var logoutFromSocial: Boolean? = null
+
     //facebook
     @Value("\${spring.security.oauth2.client.registration.facebook.clientId}")
     private lateinit var facebookClientId: String
@@ -34,24 +39,39 @@ class GpLogoutHandler @Autowired constructor(
     @Value("\${spring.security.oauth2.client.registration.github.clientSecret}")
     private lateinit var githubClientSecret: String
 
-    override fun logout(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
+    override fun logout(
+        request: HttpServletRequest?,
+        response: HttpServletResponse?,
+        authentication: Authentication?
+    ) {
         //logout from providers
         val gpUser = authentication?.principal as? GpUser ?: return
 
-        gpUser.facebookId?.let {
-            val facebookLogoutResult =
-                facebookApi
-                    .logout(
-                        it,
-                        "$facebookClientId|$facebookClientSecret"
-                    )
-                    .execute()
-                    .body()
-
-            println("facebookLogoutResult: $facebookLogoutResult")
+        if (logoutFromSocial == true) {
+            logoutFromFacebook(gpUser.facebookToken)
+            logoutFromVk(gpUser.vkToken)
+            logoutFromGithub(gpUser.githubToken)
+            logoutFromGoogle(gpUser.googleToken)
         }
-        // nothing to do for vk
-        gpUser.githubToken?.let {
+
+        clearTokensForUser(gpUser.id!!)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun logoutFromVk(vkToken: String?) {
+
+    }
+
+    private fun logoutFromGoogle(googleToken: String?) {
+        if (googleToken != null) {
+            googleApi
+                .logout(googleToken)
+                .execute()
+        }
+    }
+
+    private fun logoutFromGithub(githubToken: String?) {
+        if (githubToken != null) {
             val authorization =
                 "Basic " + String(Base64Utils.encode("$githubClientId:$githubClientSecret".toByteArray()))
             val githubLogoutResult =
@@ -59,25 +79,39 @@ class GpLogoutHandler @Autowired constructor(
                     .logout(
                         authorization,
                         githubClientId,
-                        it
+                        githubToken
                     )
                     .execute()
 
             println("githubLogoutResult: $githubLogoutResult")
         }
-        gpUser.googleToken?.let {
-            googleApi
-                .logout(it)
-                .execute()
-        }
+    }
 
-        //also clear accessToken in DB
-        //user can be deleted already, so check it
-        val userInDb = userDetailsService.getById(gpUser.id!!)
+    private fun logoutFromFacebook(facebookToken: String?) {
+        if (facebookToken != null) {
+            val facebookLogoutResult =
+                facebookApi
+                    .logout(
+                        facebookToken,
+                        "$facebookClientId|$facebookClientSecret"
+                    )
+                    .execute()
+                    .body()
+
+            println("facebookLogoutResult: $facebookLogoutResult")
+        }
+    }
+
+    /**
+     * also clear accessToken in DB
+     * user can be deleted already, so check it
+     */
+    private fun clearTokensForUser(userId: Long) {
+        val userInDb = userDetailsService.getById(userId)
         if (userInDb != null) {
             println("GpLogoutHandler. Clearing user social tokens.")
             userDetailsService.save(
-                gpUser.apply {
+                userInDb.apply {
                     facebookToken = null
                     vkToken = null
                     googleToken = null
