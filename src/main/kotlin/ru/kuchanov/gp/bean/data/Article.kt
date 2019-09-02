@@ -59,11 +59,19 @@ data class Article(
 fun Article.toDto(): ArticleDto =
     ArticleDto(
         id = id!!,
-        authorId = authorId,
         originalLangId = originalLangId,
         sourceTitle = sourceTitle,
         sourceAuthorName = sourceAuthorName,
-        sourceUrl = sourceUrl
+        sourceUrl = sourceUrl,
+        authorId = authorId,
+        approverId = approverId,
+        approved = approved,
+        approvedDate = approvedDate,
+        publisherId = publisherId,
+        published = published,
+        publishedDate = publishedDate,
+        created = created,
+        updated = updated
     )
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Article not found in db!")

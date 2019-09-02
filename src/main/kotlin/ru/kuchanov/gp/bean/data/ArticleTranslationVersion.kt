@@ -43,7 +43,15 @@ data class ArticleTranslationVersion(
 fun ArticleTranslationVersion.toDto(): ArticleTranslationVersionDto =
     ArticleTranslationVersionDto(
         id = id!!,
-        authorId = authorId,
         articleTranslationId = articleTranslationId,
-        text = text
+        text = text,
+        authorId = authorId,
+        approverId = approverId,
+        approved = approved,
+        approvedDate = approvedDate,
+        publisherId = publisherId,
+        published = published,
+        publishedDate = publishedDate,
+        created = created,
+        updated = updated
     )
