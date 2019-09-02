@@ -17,5 +17,8 @@ interface ArticleTranslationVersionService {
     fun save(articleTranslationVersion: ArticleTranslationVersion): ArticleTranslationVersion
 
     @Transactional
+    fun deleteById(id: Long): Boolean
+
+    @Transactional
     fun deleteAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>
 }

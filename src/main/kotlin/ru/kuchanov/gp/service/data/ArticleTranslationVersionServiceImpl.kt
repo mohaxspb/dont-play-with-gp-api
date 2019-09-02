@@ -32,6 +32,11 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
     override fun save(articleTranslationVersion: ArticleTranslationVersion): ArticleTranslationVersion =
         articleTranslationVersionRepository.save(articleTranslationVersion)
 
+    override fun deleteById(id: Long): Boolean {
+        articleTranslationVersionRepository.deleteById(id)
+        return true
+    }
+
     override fun deleteAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion> =
         articleTranslationVersionRepository.deleteAllByArticleTranslationId(articleTranslationId)
 

@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants.ArticleTranslationEndpoint
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
-import ru.kuchanov.gp.bean.data.ArticleTranslation
-import ru.kuchanov.gp.bean.data.ArticleTranslationNotFoundException
-import ru.kuchanov.gp.bean.data.VersionNotApprovedException
-import ru.kuchanov.gp.bean.data.VersionNotPublishedException
+import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleTranslationService
@@ -53,7 +50,7 @@ class ArticleTranslationController @Autowired constructor(
         if (user.isAdmin() || articleTranslationService.getOneById(id)!!.authorId == user.id) {
             return articleTranslationService.deleteById(id)
         } else {
-            throw GpAccessDeniedException("You are not admin or author of this article!")
+            throw GpAccessDeniedException("You are not admin or author of this translation!")
         }
     }
 
@@ -104,7 +101,7 @@ class ArticleTranslationController @Autowired constructor(
 
         if (publish) {
             if (!articleTranslation.approved) {
-                throw VersionNotApprovedException()
+                throw TranslationNotApprovedException()
             }
             val versions = articleTranslationVersionService
                 .findAllByArticleTranslationId(id)
