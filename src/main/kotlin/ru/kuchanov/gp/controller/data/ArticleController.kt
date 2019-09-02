@@ -13,6 +13,7 @@ import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleEndpoint.PATH + "/")
@@ -119,6 +120,8 @@ class ArticleController @Autowired constructor(
             }
         }
         article.approved = approve
+        article.approverId = user.id!!
+        article.approvedDate = Timestamp(System.currentTimeMillis())
         articleService.save(article)
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
     }
@@ -145,6 +148,8 @@ class ArticleController @Autowired constructor(
         }
 
         article.published = publish
+        article.publisherId = user.id!!
+        article.publishedDate = Timestamp(System.currentTimeMillis())
         articleService.save(article)
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
     }

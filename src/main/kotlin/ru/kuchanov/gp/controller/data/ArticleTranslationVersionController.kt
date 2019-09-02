@@ -13,6 +13,7 @@ import ru.kuchanov.gp.bean.data.VersionNotApprovedException
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleTranslationVersionEndpoint.PATH + "/")
@@ -74,6 +75,8 @@ class ArticleTranslationVersionController @Autowired constructor(
             ?: throw ArticleTranslationVersionNotFoundException()
 
         articleTranslationVersion.approved = approve
+        articleTranslationVersion.approverId = user.id!!
+        articleTranslationVersion.approvedDate = Timestamp(System.currentTimeMillis())
         articleTranslationVersionService.save(articleTranslationVersion)
         return articleTranslationVersionService.getOneByIdAsDto(id)!!
     }
@@ -95,6 +98,8 @@ class ArticleTranslationVersionController @Autowired constructor(
         }
 
         articleTranslationVersion.published = publish
+        articleTranslationVersion.publisherId = user.id!!
+        articleTranslationVersion.publishedDate = Timestamp(System.currentTimeMillis())
         articleTranslationVersionService.save(articleTranslationVersion)
         return articleTranslationVersionService.getOneByIdAsDto(id)!!
     }

@@ -12,6 +12,7 @@ import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + ArticleTranslationEndpoint.PATH + "/")
@@ -85,6 +86,8 @@ class ArticleTranslationController @Autowired constructor(
             }
         }
         articleTranslation.approved = approve
+        articleTranslation.approverId = user.id!!
+        articleTranslation.approvedDate = Timestamp(System.currentTimeMillis())
         articleTranslationService.save(articleTranslation)
         return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
     }
@@ -112,6 +115,8 @@ class ArticleTranslationController @Autowired constructor(
         }
 
         articleTranslation.published = publish
+        articleTranslation.publisherId = user.id!!
+        articleTranslation.publishedDate = Timestamp(System.currentTimeMillis())
         articleTranslationService.save(articleTranslation)
         return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
     }
