@@ -2,6 +2,8 @@ package ru.kuchanov.gp.bean.data
 
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 import java.io.Serializable
 import java.sql.Timestamp
@@ -55,3 +57,13 @@ fun ArticleTranslationVersion.toDto(): ArticleTranslationVersionDto =
         created = created,
         updated = updated
     )
+
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "ArticleTranslationVersion not found in db!")
+class ArticleTranslationVersionNotFoundException: RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Version is not approved!")
+class VersionNotApprovedException: RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Version is not published!")
+class VersionNotPublishedException: RuntimeException()

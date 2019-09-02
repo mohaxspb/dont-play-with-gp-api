@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.service.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
 import ru.kuchanov.gp.bean.data.toDto
@@ -13,6 +14,12 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
     val articleTranslationVersionRepository: ArticleTranslationVersionRepository,
     val userService: GpUserDetailsService
 ) : ArticleTranslationVersionService {
+
+    override fun getOneById(id: Long): ArticleTranslationVersion? =
+        articleTranslationVersionRepository.findByIdOrNull(id)
+
+    override fun getOneByIdAsDto(id: Long): ArticleTranslationVersionDto? =
+        getOneById(id)?.toDto()?.withUsers()
 
     override fun findAllByArticleTranslationIdAsDto(articleTranslationId: Long): List<ArticleTranslationVersionDto> =
         articleTranslationVersionRepository

@@ -5,6 +5,11 @@ import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import javax.transaction.Transactional
 
 interface ArticleTranslationService {
+
+    fun getOneById(id: Long): ArticleTranslation?
+
+    fun getOneByIdAsDtoWithVersions(id: Long): ArticleTranslationDto?
+
     fun findAllByArticleId(articleId: Long): List<ArticleTranslation>
 
     fun findAllByArticleIdAsDtoWithVersions(articleId: Long): List<ArticleTranslationDto>

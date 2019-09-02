@@ -67,6 +67,9 @@ fun ArticleTranslation.toDto(): ArticleTranslationDto =
         updated = updated
     )
 
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "ArticleTranslation not found in db!")
+class ArticleTranslationNotFoundException: RuntimeException()
+
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "ArticleTranslation is not approved!")
 class TranslationNotApprovedException: RuntimeException()
 

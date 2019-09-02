@@ -42,6 +42,28 @@ object GpConstants {
         }
     }
 
+    object ArticleTranslationEndpoint {
+        const val PATH = "article/translation"
+
+        object Method {
+            const val CREATE = "create"
+            const val APPROVE = "approve"
+            const val PUBLISH = "publish"
+            const val ALL_BY_AUTHOR_ID = "allByAuthorId"
+        }
+    }
+
+    object ArticleTranslationVersionEndpoint {
+        const val PATH = "article/translation/version"
+
+        object Method {
+            const val CREATE = "create"
+            const val APPROVE = "approve"
+            const val PUBLISH = "publish"
+            const val ALL_BY_AUTHOR_ID = "allByAuthorId"
+        }
+    }
+
     enum class SocialProvider {
         GOOGLE, FACEBOOK, VK, GITHUB
     }
