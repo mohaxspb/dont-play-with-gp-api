@@ -22,17 +22,17 @@ data class ArticleTranslationVersion(
     @Column(name = "author_id")
     val authorId: Long?,
 
-    val approved: Boolean = false,
+    var approved: Boolean = false,
     @Column(name = "approver_id")
-    val approverId: Long? = null,
+    var approverId: Long? = null,
     @Column(name = "approved_date")
-    val approvedDate: Timestamp? = null,
+    var approvedDate: Timestamp? = null,
 
-    val published: Boolean = false,
+    var published: Boolean = false,
     @Column(name = "publisher_id")
-    val publisherId: Long? = null,
+    var publisherId: Long? = null,
     @Column(name = "published_date")
-    val publishedDate: Timestamp? = null,
+    var publishedDate: Timestamp? = null,
 
     @field:CreationTimestamp
     val created: Timestamp? = null,

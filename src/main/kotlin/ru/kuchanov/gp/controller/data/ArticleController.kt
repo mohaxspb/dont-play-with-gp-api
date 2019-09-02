@@ -1,15 +1,13 @@
 package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
-import ru.kuchanov.gp.bean.data.Article
-import ru.kuchanov.gp.bean.data.ArticleNotFoundException
-import ru.kuchanov.gp.bean.data.ArticleTranslation
-import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
+import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleService
@@ -101,5 +99,53 @@ class ArticleController @Autowired constructor(
         articleTranslationVersionService.save(textVersion)
         //return dto.
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(GpConstants.ArticleEndpoint.Method.APPROVE)
+    fun approve(
+        @AuthenticationPrincipal user: GpUser,
+        @RequestParam(name = "id") id: Long,
+        @RequestParam(name = "approve") approve: Boolean
+    ): ArticleDto {
+        val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+
+        if (approve) {
+            val translations = articleTranslationService
+                .findAllByArticleId(id)
+            val approvedTranslations = translations.filter { it.approved }
+            if (approvedTranslations.isEmpty()) {
+                throw TranslationNotApprovedException()
+            }
+        }
+        article.approved = approve
+        articleService.save(article)
+        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(GpConstants.ArticleEndpoint.Method.PUBLISH)
+    fun publish(
+        @AuthenticationPrincipal user: GpUser,
+        @RequestParam(name = "id") id: Long,
+        @RequestParam(name = "publish") publish: Boolean
+    ): ArticleDto {
+        val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+
+        if (publish) {
+            if (!article.approved) {
+                throw ArticleNotApprovedException()
+            }
+            val translations = articleTranslationService
+                .findAllByArticleId(id)
+            val publishedTranslations = translations.filter { it.published }
+            if (publishedTranslations.isEmpty()) {
+                throw TranslationNotPublishedException()
+            }
+        }
+
+        article.published = publish
+        articleService.save(article)
+        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
     }
 }

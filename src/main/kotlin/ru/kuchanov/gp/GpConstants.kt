@@ -36,6 +36,8 @@ object GpConstants {
 
         object Method {
             const val CREATE = "create"
+            const val APPROVE = "approve"
+            const val PUBLISH = "publish"
             const val ALL_BY_AUTHOR_ID = "allByAuthorId"
         }
     }
