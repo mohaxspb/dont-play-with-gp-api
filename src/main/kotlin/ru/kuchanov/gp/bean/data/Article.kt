@@ -77,5 +77,8 @@ fun Article.toDto(): ArticleDto =
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Article not found in db!")
 class ArticleNotFoundException: RuntimeException()
 
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not published!")
+class ArticleNotPublishedException: RuntimeException()
+
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not approved!")
 class ArticleNotApprovedException: RuntimeException()

@@ -36,14 +36,102 @@ class ArticleController @Autowired constructor(
 
     //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("{id}")
-    fun getById(@PathVariable(name = "id") id: Long): Article =
+    fun getById(
+        @PathVariable(name = "id") id: Long
+    ): Article =
         articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
-    //todo also add user dto for author and approver
+    fun ArticleDto.filteredForUser(user: GpUser): ArticleDto {
+        //only owned or published.
+        TODO()
+    }
+
     //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("full/{id}")
-    fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleDto =
-        articleService.getOneByIdAsDtoWithTranslationsAndVersions(id) ?: throw ArticleNotFoundException()
+    fun getByIdFull(
+        @PathVariable(name = "id") id: Long,
+        @AuthenticationPrincipal user: GpUser?
+    ): ArticleDto {
+        val article = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)
+            ?: throw ArticleNotFoundException()
+
+        if (user == null) {
+            if (!article.published) {
+                throw ArticleNotPublishedException()
+            } else {
+                return article.apply {
+                    translations = translations.filter { translation ->
+                        translation.apply {
+                            versions = versions.filter { it.published }
+                        }
+                        return@filter translation.published
+                    }
+                }
+            }
+        } else {
+            if (user.isAdmin()) {
+                return article
+            } else {
+                return article.filteredForUser(user)
+            }
+        }
+
+//        if (user?.isAdmin() == true) {
+//            return article
+//        } else {
+//            //check if published
+//            if (article.published) {
+//                //show only owned translations and versions or published ones
+//            } else {
+//                //check if it is author
+//                if (user?.id == article.id) {
+//                    //show only owned translations and versions or published ones
+//                } else {
+//                    throw ArticleNotPublishedException()
+//                }
+//            }
+//        }
+
+//            //fixme test
+//            if (gpUser?.id == article.authorId) {
+//                return article.apply {
+//                    translations = translations
+//                        .filter { translation ->
+//                            if (gpUser?.id == translation.authorId) {
+//                                return@filter true
+//                            } else {
+//                                //filter versions too
+//                                translation.versions = translation.versions.filter {
+//                                    (gpUser != null && gpUser.id == it.authorId) || it.published
+//                                }
+//                                return@filter translation.published
+//                            }
+//                        }
+//                }
+//            } else {
+//
+//            }
+
+//            // fixme test
+////            if (!article.published) {
+////                throw ArticleNotPublishedException()
+////            } else {
+////                return article.apply {
+////                    translations = translations
+////                        .filter { translation ->
+////                            if (gpUser != null && (gpUser.isAdmin() || gpUser.id == translation.authorId)) {
+////                                return@filter true
+////                            } else {
+////                                //filter versions too
+////                                translation.versions = translation.versions.filter {
+////                                    (gpUser != null && gpUser.id == it.authorId) || it.published
+////                                }
+////                                return@filter translation.published
+////                            }
+////                        }
+////                }
+////            }
+    }
 
     @DeleteMapping("delete/{id}")
     fun deleteById(
