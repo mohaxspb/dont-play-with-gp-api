@@ -1,5 +1,6 @@
 package ru.kuchanov.gp.model.dto.data
 
+import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.model.dto.UserDto
 import java.sql.Timestamp
 
@@ -29,4 +30,21 @@ data class ArticleDto(
     var author: UserDto? = null
     var approver: UserDto? = null
     var publisher: UserDto? = null
+}
+
+
+/**
+ * only owned or published.
+ */
+fun ArticleDto.filteredForUser(user: GpUser): ArticleDto {
+    //filter translations
+    translations = translations.filter { translation ->
+        //filter versions
+        translation.versions = translation.versions.filter {
+            it.published || it.authorId == user.id
+        }
+        translation.published || translation.authorId == user.id
+    }
+
+    return this
 }

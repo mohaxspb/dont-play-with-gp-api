@@ -9,6 +9,7 @@ import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleDto
+import ru.kuchanov.gp.model.dto.data.filteredForUser
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
@@ -41,12 +42,6 @@ class ArticleController @Autowired constructor(
     ): Article =
         articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
-    fun ArticleDto.filteredForUser(user: GpUser): ArticleDto {
-        //only owned or published.
-        TODO()
-    }
-
-    //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("full/{id}")
     fun getByIdFull(
         @PathVariable(name = "id") id: Long,
@@ -61,76 +56,18 @@ class ArticleController @Autowired constructor(
             } else {
                 return article.apply {
                     translations = translations.filter { translation ->
-                        translation.apply {
-                            versions = versions.filter { it.published }
-                        }
+                        translation.versions = translation.versions.filter { it.published }
                         return@filter translation.published
                     }
                 }
             }
         } else {
-            if (user.isAdmin()) {
-                return article
+            return if (user.isAdmin()) {
+                article
             } else {
-                return article.filteredForUser(user)
+                article.filteredForUser(user)
             }
         }
-
-//        if (user?.isAdmin() == true) {
-//            return article
-//        } else {
-//            //check if published
-//            if (article.published) {
-//                //show only owned translations and versions or published ones
-//            } else {
-//                //check if it is author
-//                if (user?.id == article.id) {
-//                    //show only owned translations and versions or published ones
-//                } else {
-//                    throw ArticleNotPublishedException()
-//                }
-//            }
-//        }
-
-//            //fixme test
-//            if (gpUser?.id == article.authorId) {
-//                return article.apply {
-//                    translations = translations
-//                        .filter { translation ->
-//                            if (gpUser?.id == translation.authorId) {
-//                                return@filter true
-//                            } else {
-//                                //filter versions too
-//                                translation.versions = translation.versions.filter {
-//                                    (gpUser != null && gpUser.id == it.authorId) || it.published
-//                                }
-//                                return@filter translation.published
-//                            }
-//                        }
-//                }
-//            } else {
-//
-//            }
-
-//            // fixme test
-////            if (!article.published) {
-////                throw ArticleNotPublishedException()
-////            } else {
-////                return article.apply {
-////                    translations = translations
-////                        .filter { translation ->
-////                            if (gpUser != null && (gpUser.isAdmin() || gpUser.id == translation.authorId)) {
-////                                return@filter true
-////                            } else {
-////                                //filter versions too
-////                                translation.versions = translation.versions.filter {
-////                                    (gpUser != null && gpUser.id == it.authorId) || it.published
-////                                }
-////                                return@filter translation.published
-////                            }
-////                        }
-////                }
-////            }
     }
 
     @DeleteMapping("delete/{id}")
