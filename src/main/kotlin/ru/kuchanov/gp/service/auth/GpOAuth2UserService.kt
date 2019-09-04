@@ -54,7 +54,7 @@ class GpOAuth2UserService @Autowired constructor(
         println("GpOAuth2UserService user: ${userAttributes.entries}")
 
         val additionalParams: Map<String, Any?>
-        if (userRequest.clientRegistration.registrationId == GpConstants.SocialProvider.VK.name.toLowerCase()) {
+        if (userRequest.clientRegistration.registrationId == VK.name.toLowerCase()) {
             val response = userAttributes["response"]
             println("GpOAuth2UserService response: ${response?.javaClass?.name}")
             val responseTyped = response as? List<LinkedHashMap<String, Any?>?>
