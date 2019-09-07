@@ -1,20 +1,29 @@
 package ru.kuchanov.gp.service.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.data.ArticleTranslation
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.repository.data.ArticleTranslationRepository
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @Service
 class ArticleTranslationServiceImpl @Autowired constructor(
     val articleTranslationRepository: ArticleTranslationRepository,
-    val articleTranslationVersionService: ArticleTranslationVersionService
+    val articleTranslationVersionService: ArticleTranslationVersionService,
+    val userService: GpUserDetailsService
 ) : ArticleTranslationService {
 
+    override fun getOneById(id: Long): ArticleTranslation? =
+        articleTranslationRepository.findByIdOrNull(id)
+
+    override fun getOneByIdAsDtoWithVersions(id: Long): ArticleTranslationDto? =
+        getOneById(id)?.toDto()?.withVersions()?.withUsers()
+
     override fun findAllByArticleIdAsDtoWithVersions(articleId: Long): List<ArticleTranslationDto> =
-        articleTranslationRepository.findAllByArticleId(articleId).map { it.toDto().withVersions() }
+        articleTranslationRepository.findAllByArticleId(articleId).map { it.toDto().withVersions().withUsers() }
 
     override fun findAllByArticleId(articleId: Long): List<ArticleTranslation> =
         articleTranslationRepository.findAllByArticleId(articleId)
@@ -40,5 +49,12 @@ class ArticleTranslationServiceImpl @Autowired constructor(
     fun ArticleTranslationDto.withVersions() =
         apply {
             versions = articleTranslationVersionService.findAllByArticleTranslationIdAsDto(id)
+        }
+
+    fun ArticleTranslationDto.withUsers() =
+        apply {
+            author = authorId?.let { userService.getByIdAsDto(it) }
+            approver = approverId?.let { userService.getByIdAsDto(it) }
+            publisher = publisherId?.let { userService.getByIdAsDto(it) }
         }
 }

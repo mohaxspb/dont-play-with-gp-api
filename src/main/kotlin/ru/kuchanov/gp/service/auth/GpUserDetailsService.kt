@@ -11,7 +11,7 @@ interface GpUserDetailsService : UserDetailsService {
     override fun loadUserByUsername(username: String): GpUser?
 
     fun getById(id: Long): GpUser?
-    fun getByIdDto(id: Long): UserDto
+    fun getByIdAsDto(id: Long): UserDto
     fun getByProviderId(id: String, provider: GpConstants.SocialProvider): GpUser?
 
     @Transactional

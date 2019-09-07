@@ -1,20 +1,20 @@
 package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
-import ru.kuchanov.gp.bean.data.Article
-import ru.kuchanov.gp.bean.data.ArticleNotFoundException
-import ru.kuchanov.gp.bean.data.ArticleTranslation
-import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
+import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleDto
+import ru.kuchanov.gp.model.dto.data.filteredForUser
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleEndpoint.PATH + "/")
@@ -37,13 +37,38 @@ class ArticleController @Autowired constructor(
 
     //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("{id}")
-    fun getById(@PathVariable(name = "id") id: Long): Article =
+    fun getById(
+        @PathVariable(name = "id") id: Long
+    ): Article =
         articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
-    //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("full/{id}")
-    fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleDto =
-        articleService.getOneByIdAsDtoWithTranslationsAndVersions(id) ?: throw ArticleNotFoundException()
+    fun getByIdFull(
+        @PathVariable(name = "id") id: Long,
+        @AuthenticationPrincipal user: GpUser?
+    ): ArticleDto {
+        val article = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)
+            ?: throw ArticleNotFoundException()
+
+        if (user == null) {
+            if (!article.published) {
+                throw ArticleNotPublishedException()
+            } else {
+                return article.apply {
+                    translations = translations.filter { translation ->
+                        translation.versions = translation.versions.filter { it.published }
+                        return@filter translation.published
+                    }
+                }
+            }
+        } else {
+            return if (user.isAdmin()) {
+                article
+            } else {
+                article.filteredForUser(user)
+            }
+        }
+    }
 
     @DeleteMapping("delete/{id}")
     fun deleteById(
@@ -100,5 +125,57 @@ class ArticleController @Autowired constructor(
         articleTranslationVersionService.save(textVersion)
         //return dto.
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(GpConstants.ArticleEndpoint.Method.APPROVE)
+    fun approve(
+        @AuthenticationPrincipal user: GpUser,
+        @RequestParam(name = "id") id: Long,
+        @RequestParam(name = "approve") approve: Boolean
+    ): ArticleDto {
+        val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+
+        if (approve) {
+            val translations = articleTranslationService
+                .findAllByArticleId(id)
+            val approvedTranslations = translations.filter { it.approved }
+            if (approvedTranslations.isEmpty()) {
+                throw TranslationNotApprovedException()
+            }
+        }
+        article.approved = approve
+        article.approverId = user.id!!
+        article.approvedDate = Timestamp(System.currentTimeMillis())
+        articleService.save(article)
+        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(GpConstants.ArticleEndpoint.Method.PUBLISH)
+    fun publish(
+        @AuthenticationPrincipal user: GpUser,
+        @RequestParam(name = "id") id: Long,
+        @RequestParam(name = "publish") publish: Boolean
+    ): ArticleDto {
+        val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+
+        if (publish) {
+            if (!article.approved) {
+                throw ArticleNotApprovedException()
+            }
+            val translations = articleTranslationService
+                .findAllByArticleId(id)
+            val publishedTranslations = translations.filter { it.published }
+            if (publishedTranslations.isEmpty()) {
+                throw TranslationNotPublishedException()
+            }
+        }
+
+        article.published = publish
+        article.publisherId = user.id!!
+        article.publishedDate = Timestamp(System.currentTimeMillis())
+        articleService.save(article)
+        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
     }
 }

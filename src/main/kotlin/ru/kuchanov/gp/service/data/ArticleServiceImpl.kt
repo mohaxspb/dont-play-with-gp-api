@@ -7,18 +7,20 @@ import ru.kuchanov.gp.bean.data.Article
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.repository.data.ArticleRepository
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @Service
 class ArticleServiceImpl @Autowired constructor(
     val articleRepository: ArticleRepository,
-    val articleTranslationService: ArticleTranslationService
+    val articleTranslationService: ArticleTranslationService,
+    val userService: GpUserDetailsService
 ) : ArticleService {
 
     override fun getOneById(id: Long): Article? =
         articleRepository.findByIdOrNull(id)
 
     override fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto? =
-        getOneById(id)?.toDto()?.withTranslations()
+        getOneById(id)?.toDto()?.withTranslations()?.withUsers()
 
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
@@ -36,5 +38,12 @@ class ArticleServiceImpl @Autowired constructor(
     fun ArticleDto.withTranslations() =
         apply {
             translations = articleTranslationService.findAllByArticleIdAsDtoWithVersions(id)
+        }
+
+    fun ArticleDto.withUsers() =
+        apply {
+            author = authorId?.let { userService.getByIdAsDto(it) }
+            approver = approverId?.let { userService.getByIdAsDto(it) }
+            publisher = publisherId?.let { userService.getByIdAsDto(it) }
         }
 }

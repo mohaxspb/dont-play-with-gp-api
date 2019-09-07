@@ -22,17 +22,17 @@ data class Article(
     @Column(name = "author_id")
     val authorId: Long?,
 
-    val approved: Boolean = false,
+    var approved: Boolean = false,
     @Column(name = "approver_id")
-    val approverId: Long? = null,
+    var approverId: Long? = null,
     @Column(name = "approved_date")
-    val approvedDate: Timestamp? = null,
+    var approvedDate: Timestamp? = null,
 
-    val published: Boolean = false,
+    var published: Boolean = false,
     @Column(name = "publisher_id")
-    val publisherId: Long? = null,
+    var publisherId: Long? = null,
     @Column(name = "published_date")
-    val publishedDate: Timestamp? = null,
+    var publishedDate: Timestamp? = null,
 
     /**
      * source* is null, if this is original article for dont-play-with-gp. Else - data from other site
@@ -59,12 +59,26 @@ data class Article(
 fun Article.toDto(): ArticleDto =
     ArticleDto(
         id = id!!,
-        authorId = authorId,
         originalLangId = originalLangId,
         sourceTitle = sourceTitle,
         sourceAuthorName = sourceAuthorName,
-        sourceUrl = sourceUrl
+        sourceUrl = sourceUrl,
+        authorId = authorId,
+        approverId = approverId,
+        approved = approved,
+        approvedDate = approvedDate,
+        publisherId = publisherId,
+        published = published,
+        publishedDate = publishedDate,
+        created = created,
+        updated = updated
     )
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Article not found in db!")
 class ArticleNotFoundException: RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not published!")
+class ArticleNotPublishedException: RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not approved!")
+class ArticleNotApprovedException: RuntimeException()

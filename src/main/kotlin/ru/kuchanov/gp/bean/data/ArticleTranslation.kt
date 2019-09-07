@@ -2,6 +2,8 @@ package ru.kuchanov.gp.bean.data
 
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import java.io.Serializable
 import java.sql.Timestamp
@@ -28,17 +30,17 @@ data class ArticleTranslation(
     @Column(name = "author_id")
     val authorId: Long?,
 
-    val approved: Boolean = false,
+    var approved: Boolean = false,
     @Column(name = "approver_id")
-    val approverId: Long? = null,
+    var approverId: Long? = null,
     @Column(name = "approved_date")
-    val approvedDate: Timestamp? = null,
+    var approvedDate: Timestamp? = null,
 
-    val published: Boolean = false,
+    var published: Boolean = false,
     @Column(name = "publisher_id")
-    val publisherId: Long? = null,
+    var publisherId: Long? = null,
     @Column(name = "published_date")
-    val publishedDate: Timestamp? = null,
+    var publishedDate: Timestamp? = null,
 
     @field:CreationTimestamp
     val created: Timestamp? = null,
@@ -51,8 +53,25 @@ fun ArticleTranslation.toDto(): ArticleTranslationDto =
         id = id!!,
         langId = langId,
         articleId = articleId,
-        authorId = authorId,
         title = title,
         shortDescription = shortDescription,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        authorId = authorId,
+        approverId = approverId,
+        approved = approved,
+        approvedDate = approvedDate,
+        publisherId = publisherId,
+        published = published,
+        publishedDate = publishedDate,
+        created = created,
+        updated = updated
     )
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "ArticleTranslation not found in db!")
+class ArticleTranslationNotFoundException: RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "ArticleTranslation is not approved!")
+class TranslationNotApprovedException: RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "ArticleTranslation is not published!")
+class TranslationNotPublishedException: RuntimeException()
