@@ -29,13 +29,6 @@ class ArticleController @Autowired constructor(
         "Article endpoint"
 
     //todo check user. Do not show article if it's not published if user is not admin or author
-    //todo return DTO
-    @GetMapping(GpConstants.ArticleEndpoint.Method.ALL_BY_AUTHOR_ID)
-    fun allArticlesByAuthorId(
-        @RequestParam(value = "authorId") authorId: Long
-    ): List<Article> = articleService.findAllByAuthorId(authorId)
-
-    //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("{id}")
     fun getById(
         @PathVariable(name = "id") id: Long
@@ -69,6 +62,29 @@ class ArticleController @Autowired constructor(
             }
         }
     }
+
+    @GetMapping(GpConstants.ArticleEndpoint.Method.ALL)
+    fun getArticles(
+        @RequestParam(value = "limit") limit: Int,
+        @RequestParam(value = "offset") offset: Int,
+        @RequestParam(value = "published", defaultValue = "true") published: Boolean = true,
+        @RequestParam(value = "approved", defaultValue = "true") approved: Boolean = true,
+        @RequestParam(value = "withTranslations", defaultValue = "false") withTranslations: Boolean = false,
+        @AuthenticationPrincipal user: GpUser?
+    ): List<ArticleDto> {
+        if ((published && approved) || user?.isAdmin() == true) {
+            return articleService.getPublishedArticles(offset, limit, published, approved, withTranslations)
+        } else {
+            throw GpAccessDeniedException("Only admins can see not published or approved articles!")
+        }
+    }
+
+    //todo check user. Do not show article if it's not published if user is not admin or author
+    //todo return DTO
+    @GetMapping(GpConstants.ArticleEndpoint.Method.ALL_BY_AUTHOR_ID)
+    fun allArticlesByAuthorId(
+        @RequestParam(value = "authorId") authorId: Long
+    ): List<Article> = articleService.findAllByAuthorId(authorId)
 
     @DeleteMapping("delete/{id}")
     fun deleteById(

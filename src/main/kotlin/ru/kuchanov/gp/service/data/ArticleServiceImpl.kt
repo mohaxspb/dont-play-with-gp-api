@@ -25,6 +25,44 @@ class ArticleServiceImpl @Autowired constructor(
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
 
+    override fun getPublishedArticles(
+        offset: Int,
+        limit: Int,
+        published: Boolean,
+        approved: Boolean,
+        withTranslations: Boolean
+    ): List<ArticleDto> =
+        articleRepository.getPublishedArticles(offset, limit, published, approved)
+            .map {
+                if (withTranslations) {
+                    it.toDto()
+                        .withTranslations()
+                        .withUsers()
+                        .apply {
+                            translations = translations
+                                .map { translation ->
+                                    translation.apply {
+                                        versions = versions
+                                            .filter { version ->
+                                                version.published == published
+                                            }
+                                            .filter { version ->
+                                                version.approved == approved
+                                            }
+                                    }
+                                }
+                                .filter { translation ->
+                                    translation.published == published
+                                }
+                                .filter { translation ->
+                                    translation.approved == approved
+                                }
+                        }
+                } else {
+                    it.toDto().withUsers()
+                }
+            }
+
     override fun save(article: Article): Article =
         articleRepository.save(article)
 

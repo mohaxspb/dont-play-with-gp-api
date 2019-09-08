@@ -12,6 +12,14 @@ interface ArticleService {
 
     fun findAllByAuthorId(authorId: Long): List<Article>
 
+    fun getPublishedArticles(
+        offset: Int,
+        limit: Int,
+        published: Boolean = true,
+        approved: Boolean = true,
+        withTranslations: Boolean = false
+    ): List<ArticleDto>
+
     fun save(article: Article): Article
 
     /**
