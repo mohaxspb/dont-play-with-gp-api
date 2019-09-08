@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.provider.OAuth2Request
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY
 import org.springframework.stereotype.Service
-import ru.kuchanov.gp.repository.auth.UserNotFoundException
+import ru.kuchanov.gp.bean.auth.UserNotFoundException
 import java.io.Serializable
 import java.util.*
 import javax.servlet.http.HttpServletRequest

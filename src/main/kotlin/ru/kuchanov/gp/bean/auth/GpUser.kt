@@ -141,3 +141,9 @@ fun GpUser.isAdmin(): Boolean {
 
 @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User with this email already exists")
 class UserAlreadyExistsException : RuntimeException()
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such user")
+class UserNotFoundException : RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Name must not be empty or blank!")
+class UserNameIsBlankException : RuntimeException()

@@ -11,6 +11,8 @@ object GpConstants {
 
         object Method {
             const val ME = "me"
+            const val DELETE = "delete"
+            const val UPDATE = "update"
         }
     }
 
