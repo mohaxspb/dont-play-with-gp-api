@@ -25,6 +25,9 @@ class ArticleTranslationServiceImpl @Autowired constructor(
     override fun findAllByArticleIdAsDtoWithVersions(articleId: Long): List<ArticleTranslationDto> =
         articleTranslationRepository.findAllByArticleId(articleId).map { it.toDto().withVersions().withUsers() }
 
+    override fun findAllByArticleIdAsDto(articleId: Long): List<ArticleTranslationDto> =
+        articleTranslationRepository.findAllByArticleId(articleId).map { it.toDto().withUsers() }
+
     override fun findAllByArticleId(articleId: Long): List<ArticleTranslation> =
         articleTranslationRepository.findAllByArticleId(articleId)
 

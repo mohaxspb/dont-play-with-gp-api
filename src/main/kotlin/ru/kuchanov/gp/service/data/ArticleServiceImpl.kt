@@ -30,13 +30,14 @@ class ArticleServiceImpl @Autowired constructor(
         limit: Int,
         published: Boolean,
         approved: Boolean,
-        withTranslations: Boolean
+        withTranslations: Boolean,
+        withVersions: Boolean
     ): List<ArticleDto> =
         articleRepository.getPublishedArticles(offset, limit, published, approved)
             .map {
                 if (withTranslations) {
                     it.toDto()
-                        .withTranslations()
+                        .withTranslations(withVersions)
                         .withUsers()
                         .apply {
                             translations = translations
@@ -73,9 +74,13 @@ class ArticleServiceImpl @Autowired constructor(
         return true
     }
 
-    fun ArticleDto.withTranslations() =
+    fun ArticleDto.withTranslations(withVersions: Boolean = true) =
         apply {
-            translations = articleTranslationService.findAllByArticleIdAsDtoWithVersions(id)
+            translations = if (withVersions) {
+                articleTranslationService.findAllByArticleIdAsDtoWithVersions(id)
+            } else {
+                articleTranslationService.findAllByArticleIdAsDto(id)
+            }
         }
 
     fun ArticleDto.withUsers() =
