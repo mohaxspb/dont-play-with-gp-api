@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.model.dto.UserDto
-import ru.kuchanov.gp.repository.auth.UserNotFoundException
 import ru.kuchanov.gp.repository.auth.UsersRepository
 
 
@@ -18,22 +17,16 @@ class GpUserDetailsServiceImpl @Autowired constructor(
     override fun getById(id: Long) =
         usersRepository.findOneById(id)?.withAuthorities()
 
-    override fun getByIdAsDto(id: Long): UserDto =
+    override fun getByIdAsDto(id: Long): UserDto? =
         usersRepository
             .getOneAsUserDto(id)
             ?.withAuthorities()
-            ?: throw UserNotFoundException()
 
     override fun save(user: GpUser): GpUser =
         usersRepository.save(user).withAuthorities()
 
     override fun update(user: GpUser): GpUser =
         usersRepository.save(user).withAuthorities()
-
-    override fun updateAvatarUrl(userId: Long, avatarUrl: String): UserDto {
-        usersRepository.updateAvatarUrl(userId, avatarUrl)
-        return usersRepository.getOneAsUserDto(userId)!!
-    }
 
     override fun loadUserByUsername(username: String) =
         usersRepository.findOneByUsername(username)?.withAuthorities()

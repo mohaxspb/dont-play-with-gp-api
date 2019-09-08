@@ -6,7 +6,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.stereotype.Service
-import ru.kuchanov.gp.repository.auth.UserNotFoundException
+import ru.kuchanov.gp.bean.auth.UserNotFoundException
 
 @Service
 class AccessTokenServices @Autowired constructor(
