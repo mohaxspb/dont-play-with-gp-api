@@ -25,6 +25,45 @@ class ArticleServiceImpl @Autowired constructor(
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
 
+    override fun getPublishedArticles(
+        offset: Int,
+        limit: Int,
+        published: Boolean,
+        approved: Boolean,
+        withTranslations: Boolean,
+        withVersions: Boolean
+    ): List<ArticleDto> =
+        articleRepository.getPublishedArticles(offset, limit, published, approved)
+            .map {
+                if (withTranslations) {
+                    it.toDto()
+                        .withTranslations(withVersions)
+                        .withUsers()
+                        .apply {
+                            translations = translations
+                                .map { translation ->
+                                    translation.apply {
+                                        versions = versions
+                                            .filter { version ->
+                                                version.published == published
+                                            }
+                                            .filter { version ->
+                                                version.approved == approved
+                                            }
+                                    }
+                                }
+                                .filter { translation ->
+                                    translation.published == published
+                                }
+                                .filter { translation ->
+                                    translation.approved == approved
+                                }
+                        }
+                } else {
+                    it.toDto().withUsers()
+                }
+            }
+
     override fun save(article: Article): Article =
         articleRepository.save(article)
 
@@ -35,9 +74,13 @@ class ArticleServiceImpl @Autowired constructor(
         return true
     }
 
-    fun ArticleDto.withTranslations() =
+    fun ArticleDto.withTranslations(withVersions: Boolean = true) =
         apply {
-            translations = articleTranslationService.findAllByArticleIdAsDtoWithVersions(id)
+            translations = if (withVersions) {
+                articleTranslationService.findAllByArticleIdAsDtoWithVersions(id)
+            } else {
+                articleTranslationService.findAllByArticleIdAsDto(id)
+            }
         }
 
     fun ArticleDto.withUsers() =
