@@ -6,11 +6,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
+import ru.kuchanov.gp.bean.auth.UserNotFoundException
 import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.dto.data.filteredForUser
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
@@ -21,7 +23,8 @@ import java.sql.Timestamp
 class ArticleController @Autowired constructor(
     val articleService: ArticleService,
     val articleTranslationService: ArticleTranslationService,
-    val articleTranslationVersionService: ArticleTranslationVersionService
+    val articleTranslationVersionService: ArticleTranslationVersionService,
+    val userService: GpUserDetailsService
 ) {
 
     @GetMapping
@@ -74,18 +77,33 @@ class ArticleController @Autowired constructor(
         @AuthenticationPrincipal user: GpUser?
     ): List<ArticleDto> {
         if ((published && approved) || user?.isAdmin() == true) {
-            return articleService.getPublishedArticles(offset, limit, published, approved, withTranslations, withVersions)
+            return articleService.getPublishedArticles(
+                offset,
+                limit,
+                published,
+                approved,
+                withTranslations,
+                withVersions
+            )
         } else {
             throw GpAccessDeniedException("Only admins can see not published or approved articles!")
         }
     }
 
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    //todo return DTO
     @GetMapping(GpConstants.ArticleEndpoint.Method.ALL_BY_AUTHOR_ID)
     fun allArticlesByAuthorId(
-        @RequestParam(value = "authorId") authorId: Long
-    ): List<Article> = articleService.findAllByAuthorId(authorId)
+        @RequestParam(value = "authorId") authorId: Long,
+        @AuthenticationPrincipal user: GpUser?
+    ): List<ArticleDto> {
+        userService.getById(authorId) ?: throw UserNotFoundException()
+        return if (user != null && (user.isAdmin() || user.id == authorId)) {
+            // all
+            articleService.findAllByAuthorIdWithTranslationsAsDto(authorId, false)
+        } else {
+            // only published
+            articleService.findAllByAuthorIdWithTranslationsAsDto(authorId)
+        }
+    }
 
     @DeleteMapping("delete/{id}")
     fun deleteById(

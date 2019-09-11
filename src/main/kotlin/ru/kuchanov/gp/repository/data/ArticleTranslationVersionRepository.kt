@@ -8,4 +8,6 @@ interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslation
     fun findAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>
 
     fun deleteAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>
+
+    fun findAllByAuthorId(authorId: Long): List<ArticleTranslationVersion>
 }
