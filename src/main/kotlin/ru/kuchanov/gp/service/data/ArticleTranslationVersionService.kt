@@ -14,6 +14,8 @@ interface ArticleTranslationVersionService {
 
     fun findAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>
 
+    fun findAllByAuthorId(authorId: Long): List<ArticleTranslationVersion>
+
     fun save(articleTranslationVersion: ArticleTranslationVersion): ArticleTranslationVersion
 
     @Transactional

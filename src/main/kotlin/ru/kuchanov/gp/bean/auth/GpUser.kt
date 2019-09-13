@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.web.bind.annotation.ResponseStatus
 import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.model.dto.AuthorityDto
 import ru.kuchanov.gp.model.dto.UserDto
 import java.sql.Timestamp
 import javax.persistence.*
@@ -108,7 +109,9 @@ fun GpUser.toDto(includeEmail: Boolean = false) = UserDto(
     fullName = fullName,
     primaryLanguageId = primaryLanguageId,
     email = if (includeEmail) username else null
-)
+).apply {
+    authorities = userAuthorities.map { AuthorityDto(it.authority) }
+}
 
 fun GpUser.setSocialProviderData(
     provider: GpConstants.SocialProvider,

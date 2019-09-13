@@ -46,8 +46,8 @@ class GpUserDetailsServiceImpl @Autowired constructor(
     }
 
     override fun deleteByUsername(username: String): Boolean {
-        val user = loadUserByUsername(username)
-        return deleteById(user!!.id!!)
+        val user = loadUserByUsername(username) ?: return false
+        return deleteById(user.id!!)
     }
 
     fun GpUser.withAuthorities() = this.apply {

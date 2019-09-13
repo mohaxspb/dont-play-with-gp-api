@@ -158,7 +158,9 @@ class AuthIntegrationTest {
         )
 //        println("accessToken: $accessToken")
 
-        val userJson = objectMapper.writeValueAsString(userDetailsService.loadUserByUsername(TEST_USERNAME)!!.toDto())
+        val userJson = objectMapper
+            .writeValueAsString(userDetailsService.loadUserByUsername(TEST_USERNAME)
+            !!.toDto(includeEmail = true))
 
         mvc.perform(
             get("/" + GpConstants.UsersEndpoint.PATH + "/" + GpConstants.UsersEndpoint.Method.ME)

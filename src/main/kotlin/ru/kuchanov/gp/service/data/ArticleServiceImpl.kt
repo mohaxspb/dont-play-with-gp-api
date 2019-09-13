@@ -25,6 +25,12 @@ class ArticleServiceImpl @Autowired constructor(
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
 
+    override fun findAllByAuthorIdWithTranslationsAsDto(authorId: Long, published: Boolean): List<ArticleDto> =
+        articleRepository
+            .findAllContentAuthorId(authorId)
+            .filter { if(published) it.published else true }
+            .map { it.toDto().withUsers().withTranslations(false) }
+
     override fun getPublishedArticles(
         offset: Int,
         limit: Int,

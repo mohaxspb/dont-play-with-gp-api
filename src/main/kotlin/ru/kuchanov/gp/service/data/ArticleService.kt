@@ -2,6 +2,7 @@ package ru.kuchanov.gp.service.data
 
 import ru.kuchanov.gp.bean.data.Article
 import ru.kuchanov.gp.model.dto.data.ArticleDto
+import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import javax.transaction.Transactional
 
 interface ArticleService {
@@ -11,6 +12,16 @@ interface ArticleService {
     fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto?
 
     fun findAllByAuthorId(authorId: Long): List<Article>
+
+    /**
+     * returns all [ArticleDto] with its [ArticleTranslationDto]s, where [authorId] is author of it
+     * or for one of its [ArticleDto.translations]
+     * or one of its [ArticleTranslationDto.versions]
+     */
+    fun findAllByAuthorIdWithTranslationsAsDto(
+        authorId: Long,
+        published: Boolean = true
+    ): List<ArticleDto>
 
     fun getPublishedArticles(
         offset: Int,
