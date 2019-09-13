@@ -78,6 +78,8 @@ dependencies {
     implementation("com.squareup.retrofit2:adapter-rxjava2:2.4.0")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.6")
+
+    implementation("commons-io:commons-io:2.6")
 }
 
 tasks.withType<KotlinCompile> {

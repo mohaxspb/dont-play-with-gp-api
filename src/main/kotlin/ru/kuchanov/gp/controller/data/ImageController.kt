@@ -24,23 +24,16 @@ class ImageController @Autowired constructor(
     /**
      * returns URL to image
      */
-    @PostMapping(
-        value = [GpConstants.ImageEndpoint.Method.ADD],
-        produces = [
-            MediaType.IMAGE_JPEG_VALUE,
-            MediaType.IMAGE_PNG_VALUE,
-            MediaType.IMAGE_GIF_VALUE
-        ]
-    )
+    @PostMapping(GpConstants.ImageEndpoint.Method.ADD)
     fun addImage(
         @RequestParam("image") image: MultipartFile,
         @RequestParam("imageName") imageName: String,
         @AuthenticationPrincipal user: GpUser
     ): String {
-        if (imageService.getByImageName(imageName) != null) {
+        if (imageService.getByUserIdAndFileName(user.id!!, imageName) != null) {
             throw ImageAlreadyExistsException()
         }
-        return imageService.uploadImage(user, image, imageName)
+        return imageService.saveImage(user.id, image, imageName)
     }
 
     @DeleteMapping("{userId}/{fileName:.+}")
@@ -51,8 +44,14 @@ class ImageController @Autowired constructor(
         imageService.deleteByUserIdAndFileName(userId, fileName)
 
     @ResponseBody
-    @GetMapping("{userId}/{fileName:.+}")
-    fun getById(
+    @GetMapping(
+        value = ["{userId}/{fileName:.+}"], produces = [
+            MediaType.IMAGE_JPEG_VALUE,
+            MediaType.IMAGE_PNG_VALUE,
+            MediaType.IMAGE_GIF_VALUE
+        ]
+    )
+    fun get(
         @PathVariable(value = "userId") userId: Long,
         @PathVariable(value = "fileName") fileName: String
     ): ByteArray =
