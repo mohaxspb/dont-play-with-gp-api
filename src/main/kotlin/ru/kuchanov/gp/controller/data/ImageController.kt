@@ -29,12 +29,8 @@ class ImageController @Autowired constructor(
         @RequestParam("image") image: MultipartFile,
         @RequestParam("imageName") imageName: String,
         @AuthenticationPrincipal user: GpUser
-    ): String {
-        if (imageService.getByUserIdAndFileName(user.id!!, imageName) != null) {
-            throw ImageAlreadyExistsException()
-        }
-        return imageService.saveImage(user.id, image, imageName)
-    }
+    ): String =
+        imageService.saveImage(user.id!!, image, imageName)
 
     @DeleteMapping("{userId}/{fileName:.+}")
     fun delete(

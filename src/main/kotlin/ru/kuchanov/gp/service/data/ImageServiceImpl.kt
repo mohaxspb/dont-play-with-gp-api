@@ -5,9 +5,11 @@ import org.apache.commons.io.IOUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.UserNotFoundException
 import ru.kuchanov.gp.bean.auth.isAdmin
+import ru.kuchanov.gp.exception.ImageAlreadyExistsException
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import java.io.File
@@ -20,7 +22,10 @@ import java.nio.file.Paths
 @Service
 class ImageServiceImpl @Autowired constructor(val userService: GpUserDetailsService) : ImageService {
 
-    override fun saveImage(userId: Long, image: MultipartFile, imageName: String): String {
+    override fun saveImage(userId: Long, image: MultipartFile, imageName: String?): String {
+        if (getByUserIdAndFileName(userId, imageName ?: image.name) != null) {
+            throw ImageAlreadyExistsException()
+        }
         val extension = try {
             FilenameUtils.getExtension(image.originalFilename)
         } catch (ignored: Exception) {
@@ -36,7 +41,8 @@ class ImageServiceImpl @Autowired constructor(val userService: GpUserDetailsServ
         val fileOutputStream = FileOutputStream(fullFileName)
         fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
 
-        return fullFileName
+        val serverAddress = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
+        return "$serverAddress/$fullFileName"
     }
 
     override fun getByUserIdAndFileName(userId: Long, imageName: String): ByteArray? {
