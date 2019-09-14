@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.UserNotFoundException
@@ -16,6 +17,7 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import ru.kuchanov.gp.service.data.ImageService
 import java.sql.Timestamp
 
 @RestController
@@ -24,7 +26,8 @@ class ArticleController @Autowired constructor(
     val articleService: ArticleService,
     val articleTranslationService: ArticleTranslationService,
     val articleTranslationVersionService: ArticleTranslationVersionService,
-    val userService: GpUserDetailsService
+    val userService: GpUserDetailsService,
+    val imageService: ImageService
 ) {
 
     @GetMapping
@@ -119,18 +122,21 @@ class ArticleController @Autowired constructor(
 
     @PostMapping(GpConstants.ArticleEndpoint.Method.CREATE)
     fun createArticle(
+        @RequestParam("image") image: MultipartFile?,
+        @RequestParam("imageName") imageName: String?,
         @RequestParam(value = "sourceTitle") sourceTitle: String?,
         @RequestParam(value = "sourceAuthorName") sourceAuthorName: String?,
         @RequestParam(value = "sourceUrl") sourceUrl: String?,
-        //todo image param
         @RequestParam(value = "articleLanguageId") articleLanguageId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
         @RequestParam(value = "text") text: String,
         @AuthenticationPrincipal author: GpUser
     ): ArticleDto {
-        println("createArticle: $articleLanguageId, $sourceTitle, $sourceAuthorName, $sourceUrl, $title, $shortDescription, $text")
         val authorId = author.id!!
+        //save image
+        val imageUrl = image?.let { imageService.saveImage(authorId, image, imageName) }
+
         //save article
         val article = Article(
             authorId = authorId,
@@ -145,8 +151,7 @@ class ArticleController @Autowired constructor(
             authorId = authorId,
             langId = articleLanguageId,
             articleId = articleInDb.id!!,
-            //todo imageUrl
-            imageUrl = null,
+            imageUrl = imageUrl,
             shortDescription = shortDescription,
             title = title
         )

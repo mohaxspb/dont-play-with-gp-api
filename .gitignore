@@ -11,3 +11,6 @@
 
 /.idea/*
 !/.idea/dictionaries
+
+# data
+/image/*

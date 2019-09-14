@@ -67,6 +67,18 @@ object GpConstants {
         }
     }
 
+    object ImageEndpoint {
+        const val PATH = "image"
+
+        object Method {
+            const val ADD = "add"
+        }
+    }
+
+    object FilesPaths {
+        const val IMAGE = "image"
+    }
+
     enum class SocialProvider {
         GOOGLE, FACEBOOK, VK, GITHUB
     }
