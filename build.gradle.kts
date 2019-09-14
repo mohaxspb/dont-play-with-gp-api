@@ -96,6 +96,7 @@ tasks.withType<BootRun> {
 //artifact
 tasks.withType<BootWar> {
     project.logger.lifecycle("property " + project.hasProperty("suffix"))
-    baseName = "dont-play-with-google-play"
+    //we need to specify context path here if we use war file in external tomcat
+    baseName = "api"
     version = ""
 }

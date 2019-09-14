@@ -41,6 +41,7 @@ class ImageServiceImpl @Autowired constructor(val userService: GpUserDetailsServ
         val fileOutputStream = FileOutputStream(fullFileName)
         fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
 
+//        todo return relative url to be able to move from one url to another
         val serverAddress = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
         return "$serverAddress/$fullFileName"
     }
