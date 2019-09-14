@@ -1,6 +1,6 @@
 1) Переменная PGDATA -> data postgres
 
-2)./pg_ctl start -> C:\Program Files\PostgreSQL\10\bin
+2) ./pg_ctl start -> C:\Program Files\PostgreSQL\10\bin
 
 3) pg_hba.conf -> # IPv4 local connections:
                  host    all             all             127.0.0.1/32            md5
