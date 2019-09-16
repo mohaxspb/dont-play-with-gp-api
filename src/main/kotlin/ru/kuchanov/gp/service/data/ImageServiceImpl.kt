@@ -5,7 +5,6 @@ import org.apache.commons.io.IOUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.UserNotFoundException
 import ru.kuchanov.gp.bean.auth.isAdmin
@@ -41,9 +40,7 @@ class ImageServiceImpl @Autowired constructor(val userService: GpUserDetailsServ
         val fileOutputStream = FileOutputStream(fullFileName)
         fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
 
-//        todo return relative url to be able to move from one url to another
-        val serverAddress = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
-        return "$serverAddress/$fullFileName"
+        return fullFileName
     }
 
     override fun getByUserIdAndFileName(userId: Long, imageName: String): ByteArray? {

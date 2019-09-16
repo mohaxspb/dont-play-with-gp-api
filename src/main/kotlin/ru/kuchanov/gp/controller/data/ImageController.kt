@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
-import ru.kuchanov.gp.exception.ImageAlreadyExistsException
 import ru.kuchanov.gp.exception.ImageNotFoundException
 import ru.kuchanov.gp.service.data.ImageService
 
