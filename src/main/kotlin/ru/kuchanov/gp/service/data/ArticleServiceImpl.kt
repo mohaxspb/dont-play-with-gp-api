@@ -3,6 +3,7 @@ package ru.kuchanov.gp.service.data
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import ru.kuchanov.gp.bean.auth.toDto
 import ru.kuchanov.gp.bean.data.Article
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleDto
@@ -91,8 +92,8 @@ class ArticleServiceImpl @Autowired constructor(
 
     fun ArticleDto.withUsers() =
         apply {
-            author = authorId?.let { userService.getByIdAsDto(it) }
-            approver = approverId?.let { userService.getByIdAsDto(it) }
-            publisher = publisherId?.let { userService.getByIdAsDto(it) }
+            author = authorId?.let { userService.getById(it)?.toDto() }
+            approver = approverId?.let { userService.getById(it)?.toDto() }
+            publisher = publisherId?.let { userService.getById(it)?.toDto() }
         }
 }
