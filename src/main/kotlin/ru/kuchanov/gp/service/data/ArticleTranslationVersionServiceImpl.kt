@@ -22,6 +22,9 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
     override fun getOneByIdAsDto(id: Long): ArticleTranslationVersionDto? =
         getOneById(id)?.toDto()?.withUsers()
 
+    override fun getPublishedByTranslationId(translationId: Long): ArticleTranslationVersion? =
+        articleTranslationVersionRepository.findOneByArticleTranslationIdAndPublished(translationId)
+
     override fun findAllByArticleTranslationIdAsDto(articleTranslationId: Long): List<ArticleTranslationVersionDto> =
         articleTranslationVersionRepository
             .findAllByArticleTranslationId(articleTranslationId)

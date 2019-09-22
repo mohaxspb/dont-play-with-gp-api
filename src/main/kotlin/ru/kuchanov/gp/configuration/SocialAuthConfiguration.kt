@@ -104,9 +104,10 @@ class SocialAuthConfiguration {
              */
             setRequestEntityConverter(OAuth2AuthorizationCodeGrantRequestEntityConverter())
 
-            val oAuth2AccessTokenResponseHttpMessageConverter = OAuth2AccessTokenResponseHttpMessageConverter().apply {
-                setTokenResponseConverter(socialTokenResponseConverter())
-            }
+            val oAuth2AccessTokenResponseHttpMessageConverter =
+                OAuth2AccessTokenResponseHttpMessageConverter().apply {
+                    setTokenResponseConverter(socialTokenResponseConverter())
+                }
 
             setRestOperations(
                 RestTemplate(

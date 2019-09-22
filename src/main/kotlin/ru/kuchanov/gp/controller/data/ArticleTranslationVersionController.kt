@@ -11,6 +11,7 @@ import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
 import ru.kuchanov.gp.bean.data.ArticleTranslationVersionNotFoundException
 import ru.kuchanov.gp.bean.data.VersionNotApprovedException
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
+import ru.kuchanov.gp.model.dto.data.PublishVersionResultDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
 import java.sql.Timestamp
@@ -86,13 +87,26 @@ class ArticleTranslationVersionController @Autowired constructor(
         @AuthenticationPrincipal user: GpUser,
         @RequestParam(name = "id") id: Long,
         @RequestParam(name = "publish") publish: Boolean
-    ): ArticleTranslationVersionDto {
+    ): PublishVersionResultDto {
         val articleTranslationVersion = articleTranslationVersionService.getOneById(id)
             ?: throw ArticleTranslationVersionNotFoundException()
+
+        var alreadyPublishedVersion: ArticleTranslationVersion? = null
 
         if (publish) {
             if (!articleTranslationVersion.approved) {
                 throw VersionNotApprovedException()
+            }
+
+            //check if there is already published versions and unpublish it
+            alreadyPublishedVersion = articleTranslationVersionService
+                .getPublishedByTranslationId(articleTranslationVersion.articleTranslationId)
+
+            if (alreadyPublishedVersion != null) {
+                alreadyPublishedVersion.published = false
+                alreadyPublishedVersion.publisherId = user.id!!
+                alreadyPublishedVersion.publishedDate = Timestamp(System.currentTimeMillis())
+                articleTranslationVersionService.save(alreadyPublishedVersion)
             }
         }
 
@@ -100,6 +114,10 @@ class ArticleTranslationVersionController @Autowired constructor(
         articleTranslationVersion.publisherId = user.id!!
         articleTranslationVersion.publishedDate = Timestamp(System.currentTimeMillis())
         articleTranslationVersionService.save(articleTranslationVersion)
-        return articleTranslationVersionService.getOneByIdAsDto(id)!!
+        val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
+        val unpublishedVersion =
+            alreadyPublishedVersion?.id?.let { articleTranslationVersionService.getOneByIdAsDto(it) }
+
+        return PublishVersionResultDto(updatedVersion = updatedVersion, unpublishedVersion = unpublishedVersion)
     }
 }
