@@ -72,6 +72,11 @@ class ArticleTranslationNotFoundException(
     override val message: String? = "ArticleTranslation not found in db!"
 ) : RuntimeException(message)
 
+@ResponseStatus(value = HttpStatus.CONFLICT)
+class ArticleTranslationAlreadyException(
+    override val message: String? = "ArticleTranslation with this language already exists in db!"
+) : RuntimeException(message)
+
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "ArticleTranslation is not approved!")
 class TranslationNotApprovedException : RuntimeException()
 

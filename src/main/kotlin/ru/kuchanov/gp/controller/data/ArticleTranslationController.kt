@@ -49,14 +49,43 @@ class ArticleTranslationController @Autowired constructor(
 
     @PostMapping(ArticleTranslationEndpoint.Method.CREATE)
     fun createArticleTranslation(
-        @RequestParam(value = "langId") langId: Long,
         @RequestParam(value = "articleId") articleId: Long,
+        @RequestParam("imageFile") imageFile: MultipartFile?,
+        @RequestParam("imageFileName") imageFileName: String?,
+        @RequestParam(value = "langId") langId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
         @RequestParam(value = "text") text: String,
         @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationDto {
-        TODO()
+        val translationAlreadyExists = articleTranslationService.findAllByArticleId(articleId)
+            .find { articleTranslation -> articleTranslation.langId == langId } != null
+        if (translationAlreadyExists) {
+            throw ArticleTranslationAlreadyException()
+        }
+        val authorId = author.id!!
+        //save image
+        val imageUrl = imageFile?.let { imageService.saveImage(authorId, imageFile, imageFileName) }
+
+        //save article translation
+        val newTranslation = ArticleTranslation(
+            authorId = authorId,
+            langId = langId,
+            articleId = articleId,
+            imageUrl = imageUrl,
+            shortDescription = shortDescription,
+            title = title
+        )
+        val savedTranslation = articleTranslationService.save(newTranslation)
+        //save article translation version
+        val textVersion = ArticleTranslationVersion(
+            authorId = authorId,
+            articleTranslationId = savedTranslation.id!!,
+            text = text
+        )
+        articleTranslationVersionService.save(textVersion)
+
+        return articleTranslationService.getOneByIdAsDtoWithVersions(savedTranslation.id!!)!!
     }
 
     @PostMapping(ArticleTranslationEndpoint.Method.EDIT)
