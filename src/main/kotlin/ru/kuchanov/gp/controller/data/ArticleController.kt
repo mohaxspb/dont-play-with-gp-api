@@ -180,7 +180,7 @@ class ArticleController @Autowired constructor(
 
         //check if article has translation with given lang
         if (!articleTranslationService.findAllByArticleId(articleId).map { it.langId }.contains(langId)) {
-            throw ArticleTranslationNotFoundException("Article doesn't have translation with ${language.langCode.toUpperCase()} language")
+            throw ArticleTranslationNotFoundException("Article doesn't have translation with ${language.langName} language")
         }
 
         if (author.isAdmin() || articleToUpdate.authorId == author.id) {
@@ -195,7 +195,6 @@ class ArticleController @Autowired constructor(
             throw GpAccessDeniedException("You are not admin or author of this article!")
         }
     }
-
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(GpConstants.ArticleEndpoint.Method.APPROVE)
