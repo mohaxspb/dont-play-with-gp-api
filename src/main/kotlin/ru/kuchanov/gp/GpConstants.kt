@@ -38,8 +38,10 @@ object GpConstants {
 
         object Method {
             const val CREATE = "create"
+            const val EDIT = "edit"
             const val APPROVE = "approve"
             const val PUBLISH = "publish"
+            const val FULL = "full"
             const val ALL = "all"
             const val ALL_BY_AUTHOR_ID = "allByAuthorId"
         }
@@ -50,9 +52,9 @@ object GpConstants {
 
         object Method {
             const val CREATE = "create"
+            const val EDIT = "edit"
             const val APPROVE = "approve"
             const val PUBLISH = "publish"
-            const val ALL_BY_AUTHOR_ID = "allByAuthorId"
         }
     }
 
@@ -61,9 +63,9 @@ object GpConstants {
 
         object Method {
             const val CREATE = "create"
+            const val EDIT = "edit"
             const val APPROVE = "approve"
             const val PUBLISH = "publish"
-            const val ALL_BY_AUTHOR_ID = "allByAuthorId"
         }
     }
 

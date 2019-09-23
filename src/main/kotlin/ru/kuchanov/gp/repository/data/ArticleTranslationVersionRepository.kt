@@ -8,6 +8,11 @@ import javax.transaction.Transactional
 interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslationVersion, Long> {
     fun findAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>
 
+    fun findOneByArticleTranslationIdAndPublished(
+        articleTranslationId: Long,
+        published: Boolean = true
+    ): ArticleTranslationVersion?
+
     @Transactional
     fun deleteAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>
 

@@ -10,6 +10,8 @@ interface ArticleTranslationVersionService {
 
     fun getOneByIdAsDto(id: Long): ArticleTranslationVersionDto?
 
+    fun getPublishedByTranslationId(translationId: Long): ArticleTranslationVersion?
+
     fun findAllByArticleTranslationIdAsDto(articleTranslationId: Long): List<ArticleTranslationVersionDto>
 
     fun findAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>

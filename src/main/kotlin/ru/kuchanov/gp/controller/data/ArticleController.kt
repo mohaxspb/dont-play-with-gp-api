@@ -14,10 +14,7 @@ import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.dto.data.filteredForUser
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
-import ru.kuchanov.gp.service.data.ArticleService
-import ru.kuchanov.gp.service.data.ArticleTranslationService
-import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
-import ru.kuchanov.gp.service.data.ImageService
+import ru.kuchanov.gp.service.data.*
 import java.sql.Timestamp
 
 @RestController
@@ -27,6 +24,7 @@ class ArticleController @Autowired constructor(
     val articleTranslationService: ArticleTranslationService,
     val articleTranslationVersionService: ArticleTranslationVersionService,
     val userService: GpUserDetailsService,
+    val languageService: LanguageService,
     val imageService: ImageService
 ) {
 
@@ -41,7 +39,7 @@ class ArticleController @Autowired constructor(
     ): Article =
         articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
-    @GetMapping("full/{id}")
+    @GetMapping(GpConstants.ArticleEndpoint.Method.FULL + "/{id}")
     fun getByIdFull(
         @PathVariable(name = "id") id: Long,
         @AuthenticationPrincipal user: GpUser?
@@ -165,6 +163,37 @@ class ArticleController @Autowired constructor(
         articleTranslationVersionService.save(textVersion)
         //return dto.
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
+    }
+
+    @PostMapping(GpConstants.ArticleEndpoint.Method.EDIT)
+    fun editArticle(
+        @RequestParam(value = "articleId") articleId: Long,
+        @RequestParam(value = "langId") langId: Long,
+        @RequestParam(value = "sourceUrl") sourceUrl: String?,
+        @RequestParam(value = "sourceAuthorName") sourceAuthorName: String?,
+        @RequestParam(value = "sourceTitle") sourceTitle: String?,
+        @AuthenticationPrincipal author: GpUser
+    ): ArticleDto {
+        val language = languageService.getOneById(langId) ?: throw LanguageNotFoundError()
+
+        val articleToUpdate = articleService.getOneById(articleId) ?: throw ArticleNotFoundException()
+
+        //check if article has translation with given lang
+        if (!articleTranslationService.findAllByArticleId(articleId).map { it.langId }.contains(langId)) {
+            throw ArticleTranslationNotFoundException("Article doesn't have translation with ${language.langName} language")
+        }
+
+        if (author.isAdmin() || articleToUpdate.authorId == author.id) {
+            articleToUpdate.originalLangId = langId
+            articleToUpdate.sourceUrl = sourceUrl
+            articleToUpdate.sourceAuthorName = sourceAuthorName
+            articleToUpdate.sourceTitle = sourceTitle
+            articleService.save(articleToUpdate)
+
+            return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleId)!!
+        } else {
+            throw GpAccessDeniedException("You are not admin or author of this article!")
+        }
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

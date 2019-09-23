@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import ru.kuchanov.gp.GpConstants.ArticleTranslationEndpoint
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
@@ -12,30 +13,22 @@ import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import ru.kuchanov.gp.service.data.ImageService
+import ru.kuchanov.gp.service.data.LanguageService
 import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + ArticleTranslationEndpoint.PATH + "/")
 class ArticleTranslationController @Autowired constructor(
     val articleTranslationService: ArticleTranslationService,
-    val articleTranslationVersionService: ArticleTranslationVersionService
+    val articleTranslationVersionService: ArticleTranslationVersionService,
+    val imageService: ImageService,
+    val languageService: LanguageService
 ) {
 
     @GetMapping
     fun index() =
         "ArticleTranslation endpoint"
-
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    //todo return DTO
-    @GetMapping(ArticleTranslationEndpoint.Method.ALL_BY_AUTHOR_ID)
-    fun allArticlesByAuthorId(
-        @RequestParam(value = "authorId") authorId: Long
-    ): List<ArticleTranslation> = TODO()
-
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    @GetMapping("{id}")
-    fun getById(@PathVariable(name = "id") id: Long): ArticleTranslation =
-        articleTranslationService.getOneById(id) ?: throw ArticleTranslationNotFoundException()
 
     //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("full/{id}")
@@ -56,14 +49,82 @@ class ArticleTranslationController @Autowired constructor(
 
     @PostMapping(ArticleTranslationEndpoint.Method.CREATE)
     fun createArticleTranslation(
-        @RequestParam(value = "langId") langId: Long,
         @RequestParam(value = "articleId") articleId: Long,
+        @RequestParam("imageFile") imageFile: MultipartFile?,
+        @RequestParam("imageFileName") imageFileName: String?,
+        @RequestParam(value = "langId") langId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
         @RequestParam(value = "text") text: String,
         @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationDto {
-        TODO()
+        val translationAlreadyExists = articleTranslationService.findAllByArticleId(articleId)
+            .find { articleTranslation -> articleTranslation.langId == langId } != null
+        if (translationAlreadyExists) {
+            throw ArticleTranslationAlreadyException()
+        }
+        val authorId = author.id!!
+        //save image
+        val imageUrl = imageFile?.let { imageService.saveImage(authorId, imageFile, imageFileName) }
+
+        //save article translation
+        val newTranslation = ArticleTranslation(
+            authorId = authorId,
+            langId = langId,
+            articleId = articleId,
+            imageUrl = imageUrl,
+            shortDescription = shortDescription,
+            title = title
+        )
+        val savedTranslation = articleTranslationService.save(newTranslation)
+        //save article translation version
+        val textVersion = ArticleTranslationVersion(
+            authorId = authorId,
+            articleTranslationId = savedTranslation.id!!,
+            text = text
+        )
+        articleTranslationVersionService.save(textVersion)
+
+        return articleTranslationService.getOneByIdAsDtoWithVersions(savedTranslation.id!!)!!
+    }
+
+    @PostMapping(ArticleTranslationEndpoint.Method.EDIT)
+    fun editArticleTranslation(
+        @RequestParam(value = "translationId") translationId: Long,
+        @RequestParam("imageFile") imageFile: MultipartFile?,
+        @RequestParam("imageFileName") imageFileName: String?,
+        @RequestParam("langId") langId: Long,
+        @RequestParam(value = "title") title: String,
+        @RequestParam(value = "shortDescription") shortDescription: String?,
+        @AuthenticationPrincipal author: GpUser
+    ): ArticleTranslationDto {
+        languageService.getOneById(langId) ?: throw LanguageNotFoundError()
+
+        //check if user is admin or author of translation
+        val translation =
+            articleTranslationService.getOneById(translationId) ?: throw ArticleTranslationNotFoundException()
+        if (author.isAdmin() || translation.authorId!! == author.id) {
+            // save image if need
+            var imageUrl: String? = null
+            if (imageFile != null && imageFileName != null) {
+                imageUrl = imageService.saveImage(author.id!!, imageFile, imageFileName)
+            }
+
+            articleTranslationService.save(
+                translation.apply {
+                    if (imageUrl != null) {
+                        this.imageUrl = imageUrl
+                    }
+                    this.title = title
+                    this.shortDescription = shortDescription
+                    this.langId = langId
+                }
+            )
+
+            return articleTranslationService.getOneByIdAsDtoWithVersions(translationId)!!
+        } else {
+            throw GpAccessDeniedException("You are not admin or author of this translation")
+        }
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

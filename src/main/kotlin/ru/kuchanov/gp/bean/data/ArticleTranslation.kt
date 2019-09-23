@@ -17,15 +17,15 @@ data class ArticleTranslation(
     var id: Long? = null,
 
     @Column(name = "lang_id")
-    val langId: Long,
+    var langId: Long,
     @Column(name = "article_id")
     val articleId: Long,
 
-    val title: String,
+    var title: String,
     @Column(name = "short_description")
-    val shortDescription: String?,
+    var shortDescription: String?,
     @Column(name = "image_url")
-    val imageUrl: String?,
+    var imageUrl: String?,
 
     @Column(name = "author_id")
     val authorId: Long?,
@@ -67,11 +67,18 @@ fun ArticleTranslation.toDto(): ArticleTranslationDto =
         updated = updated
     )
 
-@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "ArticleTranslation not found in db!")
-class ArticleTranslationNotFoundException: RuntimeException()
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
+class ArticleTranslationNotFoundException(
+    override val message: String? = "ArticleTranslation not found in db!"
+) : RuntimeException(message)
+
+@ResponseStatus(value = HttpStatus.CONFLICT)
+class ArticleTranslationAlreadyException(
+    override val message: String? = "ArticleTranslation with this language already exists in db!"
+) : RuntimeException(message)
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "ArticleTranslation is not approved!")
-class TranslationNotApprovedException: RuntimeException()
+class TranslationNotApprovedException : RuntimeException()
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "ArticleTranslation is not published!")
-class TranslationNotPublishedException: RuntimeException()
+class TranslationNotPublishedException : RuntimeException()
