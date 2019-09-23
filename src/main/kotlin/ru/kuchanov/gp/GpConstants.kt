@@ -38,6 +38,7 @@ object GpConstants {
 
         object Method {
             const val CREATE = "create"
+            const val EDIT = "edit"
             const val APPROVE = "approve"
             const val PUBLISH = "publish"
             const val FULL = "full"

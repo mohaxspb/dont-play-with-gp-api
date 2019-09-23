@@ -17,7 +17,7 @@ data class Article(
     var id: Long? = null,
 
     @Column(name = "original_lang_id")
-    val originalLangId: Long,
+    var originalLangId: Long,
 
     @Column(name = "author_id")
     val authorId: Long?,
