@@ -62,14 +62,14 @@ class ArticleTranslationController @Autowired constructor(
     @PostMapping(ArticleTranslationEndpoint.Method.EDIT)
     fun editArticleTranslation(
         @RequestParam(value = "translationId") translationId: Long,
-        @RequestParam("image") image: MultipartFile?,
-        @RequestParam("imageName") imageName: String?,
+        @RequestParam("imageFile") imageFile: MultipartFile?,
+        @RequestParam("imageFileName") imageFileName: String?,
         @RequestParam("langId") langId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
         @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationDto {
-        val language = languageService.getOneById(langId) ?: throw LanguageNotFoundError()
+        languageService.getOneById(langId) ?: throw LanguageNotFoundError()
 
         //check if user is admin or author of translation
         val translation =
@@ -77,8 +77,8 @@ class ArticleTranslationController @Autowired constructor(
         if (author.isAdmin() || translation.authorId!! == author.id) {
             // save image if need
             var imageUrl: String? = null
-            if (image != null && imageName != null) {
-                imageUrl = imageService.saveImage(author.id!!, image, imageName)
+            if (imageFile != null && imageFileName != null) {
+                imageUrl = imageService.saveImage(author.id!!, imageFile, imageFileName)
             }
 
             articleTranslationService.save(
