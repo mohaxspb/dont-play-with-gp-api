@@ -174,9 +174,14 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "sourceTitle") sourceTitle: String?,
         @AuthenticationPrincipal author: GpUser
     ): ArticleDto {
-        languageService.getOneById(langId) ?: throw LanguageNotFoundError()
+        val language = languageService.getOneById(langId) ?: throw LanguageNotFoundError()
 
         val articleToUpdate = articleService.getOneById(articleId) ?: throw ArticleNotFoundException()
+
+        //check if article has translation with given lang
+        if (!articleTranslationService.findAllByArticleId(articleId).map { it.langId }.contains(langId)) {
+            throw ArticleTranslationNotFoundException("Article doesn't have translation with ${language.langCode.toUpperCase()} language")
+        }
 
         if (author.isAdmin() || articleToUpdate.authorId == author.id) {
             articleToUpdate.originalLangId = langId
