@@ -3,6 +3,7 @@ package ru.kuchanov.gp.service.data
 import ru.kuchanov.gp.bean.data.GpLanguage
 
 interface LanguageService {
+    fun getOneById(langId: Long): GpLanguage?
 
     fun findAll(): List<GpLanguage>
 
