@@ -7,18 +7,18 @@ import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
-import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
-import ru.kuchanov.gp.bean.data.ArticleTranslationVersionNotFoundException
-import ru.kuchanov.gp.bean.data.VersionNotApprovedException
+import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 import ru.kuchanov.gp.model.dto.data.PublishVersionResultDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
+import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
 import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleTranslationVersionEndpoint.PATH + "/")
 class ArticleTranslationVersionController @Autowired constructor(
+    val articleTranslationService: ArticleTranslationService,
     val articleTranslationVersionService: ArticleTranslationVersionService
 ) {
 
@@ -27,21 +27,9 @@ class ArticleTranslationVersionController @Autowired constructor(
         "ArticleTranslationVersion endpoint"
 
     //todo check user. Do not show article if it's not published if user is not admin or author
-    //todo return DTO
-    @GetMapping(GpConstants.ArticleTranslationVersionEndpoint.Method.ALL_BY_AUTHOR_ID)
-    fun allArticlesByAuthorId(
-        @RequestParam(value = "authorId") authorId: Long
-    ): List<ArticleTranslationVersion> = TODO()
-
-    //todo check user. Do not show article if it's not published if user is not admin or author
     @GetMapping("{id}")
     fun getById(@PathVariable(name = "id") id: Long): ArticleTranslationVersion =
         articleTranslationVersionService.getOneById(id) ?: throw ArticleTranslationVersionNotFoundException()
-
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    @GetMapping("full/{id}")
-    fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleTranslationVersionDto =
-        articleTranslationVersionService.getOneByIdAsDto(id) ?: throw ArticleTranslationVersionNotFoundException()
 
     @DeleteMapping("delete/{id}")
     fun deleteById(
@@ -57,11 +45,25 @@ class ArticleTranslationVersionController @Autowired constructor(
 
     @PostMapping(GpConstants.ArticleTranslationVersionEndpoint.Method.CREATE)
     fun createArticleTranslationVersion(
-        @AuthenticationPrincipal author: GpUser,
         @RequestParam(value = "articleTranslationId") articleTranslationId: Long,
-        @RequestParam(value = "text") text: String
+        @RequestParam(value = "text") text: String,
+        @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationVersionDto {
-        TODO()
+        //check if user is admin or author of translation or translation is published
+        val translation = articleTranslationService.getOneById(articleTranslationId)
+            ?: throw ArticleTranslationNotFoundException()
+
+        if(author.isAdmin() || translation.published || author.id!! == translation.id!!){
+            val newVersion = ArticleTranslationVersion(
+                articleTranslationId = articleTranslationId,
+                authorId = author.id!!,
+                text = text
+            )
+            val createdVersion = articleTranslationVersionService.save(newVersion)
+            return articleTranslationVersionService.getOneByIdAsDto(createdVersion.id!!)!!
+        } else{
+            throw GpAccessDeniedException("You are not author or this translation, or translation is not published or you are not admin!")
+        }
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
