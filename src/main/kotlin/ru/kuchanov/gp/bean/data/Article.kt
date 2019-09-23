@@ -74,8 +74,8 @@ fun Article.toDto(): ArticleDto =
         updated = updated
     )
 
-@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Article not found in db!")
-class ArticleNotFoundException: RuntimeException()
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
+class ArticleNotFoundException(override val message: String? = "Article not found in db!"): RuntimeException(message)
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not published!")
 class ArticleNotPublishedException: RuntimeException()

@@ -41,7 +41,7 @@ class ArticleController @Autowired constructor(
     ): Article =
         articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
-    @GetMapping(GpConstants.ArticleEndpoint.Method.ALL + "/{id}")
+    @GetMapping(GpConstants.ArticleEndpoint.Method.FULL + "/{id}")
     fun getByIdFull(
         @PathVariable(name = "id") id: Long,
         @AuthenticationPrincipal user: GpUser?

@@ -19,7 +19,7 @@ data class ArticleTranslationVersion(
     @Column(name = "article_translation_id")
     val articleTranslationId: Long,
 
-    val text: String,
+    var text: String,
 
     @Column(name = "author_id")
     val authorId: Long?,

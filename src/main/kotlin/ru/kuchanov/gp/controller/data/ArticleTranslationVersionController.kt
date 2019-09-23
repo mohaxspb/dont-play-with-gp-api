@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
-import ru.kuchanov.gp.bean.data.*
+import ru.kuchanov.gp.bean.data.ArticleTranslationNotFoundException
+import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
+import ru.kuchanov.gp.bean.data.ArticleTranslationVersionNotFoundException
+import ru.kuchanov.gp.bean.data.VersionNotApprovedException
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 import ru.kuchanov.gp.model.dto.data.PublishVersionResultDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
@@ -53,7 +56,7 @@ class ArticleTranslationVersionController @Autowired constructor(
         val translation = articleTranslationService.getOneById(articleTranslationId)
             ?: throw ArticleTranslationNotFoundException()
 
-        if(author.isAdmin() || translation.published || author.id!! == translation.id!!){
+        if (author.isAdmin() || translation.published || author.id!! == translation.id!!) {
             val newVersion = ArticleTranslationVersion(
                 articleTranslationId = articleTranslationId,
                 authorId = author.id!!,
@@ -61,8 +64,27 @@ class ArticleTranslationVersionController @Autowired constructor(
             )
             val createdVersion = articleTranslationVersionService.save(newVersion)
             return articleTranslationVersionService.getOneByIdAsDto(createdVersion.id!!)!!
-        } else{
+        } else {
             throw GpAccessDeniedException("You are not author or this translation, or translation is not published or you are not admin!")
+        }
+    }
+
+    @PostMapping(GpConstants.ArticleTranslationVersionEndpoint.Method.EDIT)
+    fun editArticleTranslationVersion(
+        @RequestParam(value = "versionId") versionId: Long,
+        @RequestParam(value = "text") text: String,
+        @AuthenticationPrincipal author: GpUser
+    ): ArticleTranslationVersionDto {
+        //check if user is admin or author of version
+        val versionToEdit =
+            articleTranslationVersionService.getOneById(versionId) ?: throw ArticleTranslationVersionNotFoundException()
+
+        if (author.isAdmin() || author.id!! == versionToEdit.authorId) {
+            versionToEdit.text = text
+            articleTranslationVersionService.save(versionToEdit)
+            return articleTranslationVersionService.getOneByIdAsDto(versionId)!!
+        } else {
+            throw GpAccessDeniedException("You are not author or this version or you are not admin!")
         }
     }
 
