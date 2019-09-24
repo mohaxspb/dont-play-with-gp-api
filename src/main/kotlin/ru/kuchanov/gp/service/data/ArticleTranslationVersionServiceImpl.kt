@@ -7,13 +7,15 @@ import ru.kuchanov.gp.bean.auth.toDto
 import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
+import ru.kuchanov.gp.repository.data.ArticleRepository
+import ru.kuchanov.gp.repository.data.ArticleTranslationRepository
 import ru.kuchanov.gp.repository.data.ArticleTranslationVersionRepository
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @Service
 class ArticleTranslationVersionServiceImpl @Autowired constructor(
-    val articleService: ArticleService,
-    val translationService: ArticleTranslationService,
+    val articleRepository: ArticleRepository,
+    val translationRepository: ArticleTranslationRepository,
     val userService: GpUserDetailsService,
     val articleTranslationVersionRepository: ArticleTranslationVersionRepository
 ) : ArticleTranslationVersionService {
@@ -46,11 +48,11 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
             true
         } else {
             val translationId = articleTranslationVersionRepository.getTranslationIdById(versionId)
-            if (translationService.existsByIdAndAuthorId(translationId, userId)) {
+            if (translationRepository.existsByIdAndAuthorId(translationId, userId)) {
                 true
             } else {
-                val articleId = translationService.getArticleIdById(translationId)
-                articleService.existsByIdAndAuthorId(articleId, userId)
+                val articleId = translationRepository.getArticleIdById(translationId)
+                articleRepository.existsByIdAndAuthorId(articleId, userId)
             }
         }
     }

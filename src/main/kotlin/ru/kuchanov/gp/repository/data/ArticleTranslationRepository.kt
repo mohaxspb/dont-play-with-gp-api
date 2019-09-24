@@ -11,5 +11,14 @@ interface ArticleTranslationRepository : JpaRepository<ArticleTranslation, Long>
     @Query("select articleId from ArticleTranslation where id=:id")
     fun getArticleIdById(id: Long): Long
 
+    @Query(
+        """
+            select count(*) from article_translations 
+            where article_id = (select article_id from article_translations where id=:translationId)
+        """,
+        nativeQuery = true
+    )
+    fun countTranslationsByTranslationId(translationId: Long): Int
+
     fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
 }

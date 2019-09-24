@@ -18,6 +18,10 @@ interface ArticleTranslationService {
 
     fun getArticleIdById(translationId: Long): Long
 
+    fun isUserIsAuthorOfTranslationOrArticleByTranslationId(translationId: Long, userId: Long): Boolean
+
+    fun countOfTranslationsByTranslationId(translationId: Long): Int
+
     fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
 
     fun save(articleTranslation: ArticleTranslation): ArticleTranslation

@@ -40,10 +40,18 @@ class ArticleTranslationController @Autowired constructor(
         @PathVariable(name = "id") id: Long,
         @AuthenticationPrincipal user: GpUser
     ): Boolean {
-        if (user.isAdmin() || articleTranslationService.getOneById(id)!!.authorId == user.id) {
-            return articleTranslationService.deleteById(id)
+        if (user.isAdmin() || articleTranslationService.isUserIsAuthorOfTranslationOrArticleByTranslationId(
+                id,
+                user.id!!
+            )
+        ) {
+            if (articleTranslationService.countOfTranslationsByTranslationId(id) > 1) {
+                return articleTranslationService.deleteById(id)
+            } else {
+                throw IsTheOnlyTranslationException()
+            }
         } else {
-            throw GpAccessDeniedException("You are not admin or author of this translation!")
+            throw GpAccessDeniedException("You are not admin or author of this translation or article!")
         }
     }
 

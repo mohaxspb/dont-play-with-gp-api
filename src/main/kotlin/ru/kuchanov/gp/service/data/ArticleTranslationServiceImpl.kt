@@ -7,14 +7,16 @@ import ru.kuchanov.gp.bean.auth.toDto
 import ru.kuchanov.gp.bean.data.ArticleTranslation
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
+import ru.kuchanov.gp.repository.data.ArticleRepository
 import ru.kuchanov.gp.repository.data.ArticleTranslationRepository
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @Service
 class ArticleTranslationServiceImpl @Autowired constructor(
-    val articleTranslationRepository: ArticleTranslationRepository,
+    val articleRepository: ArticleRepository,
     val articleTranslationVersionService: ArticleTranslationVersionService,
-    val userService: GpUserDetailsService
+    val userService: GpUserDetailsService,
+    val articleTranslationRepository: ArticleTranslationRepository
 ) : ArticleTranslationService {
 
     override fun getOneById(id: Long): ArticleTranslation? =
@@ -34,6 +36,18 @@ class ArticleTranslationServiceImpl @Autowired constructor(
 
     override fun getArticleIdById(translationId: Long): Long =
         articleTranslationRepository.getArticleIdById(translationId)
+
+    override fun countOfTranslationsByTranslationId(translationId: Long): Int =
+        articleTranslationRepository.countTranslationsByTranslationId(translationId)
+
+    override fun isUserIsAuthorOfTranslationOrArticleByTranslationId(translationId: Long, userId: Long): Boolean {
+        return if (articleTranslationRepository.existsByIdAndAuthorId(translationId, userId)) {
+            true
+        } else {
+            val articleId = articleTranslationRepository.getArticleIdById(translationId)
+            return articleRepository.existsByIdAndAuthorId(articleId, userId)
+        }
+    }
 
     override fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean =
         articleTranslationRepository.existsByIdAndAuthorId(id, authorId)
