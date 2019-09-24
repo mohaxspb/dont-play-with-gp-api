@@ -32,6 +32,12 @@ class ArticleTranslationServiceImpl @Autowired constructor(
     override fun findAllByArticleId(articleId: Long): List<ArticleTranslation> =
         articleTranslationRepository.findAllByArticleId(articleId)
 
+    override fun getArticleIdById(translationId: Long): Long =
+        articleTranslationRepository.getArticleIdById(translationId)
+
+    override fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean =
+        articleTranslationRepository.existsByIdAndAuthorId(id, authorId)
+
     override fun save(articleTranslation: ArticleTranslation): ArticleTranslation =
         articleTranslationRepository.save(articleTranslation)
 

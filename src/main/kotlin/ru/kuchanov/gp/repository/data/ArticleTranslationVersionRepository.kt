@@ -14,12 +14,13 @@ interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslation
         published: Boolean = true
     ): ArticleTranslationVersion?
 
+    @Query("select articleTranslationId from ArticleTranslationVersion where id=:versionId")
     fun getTranslationIdById(versionId: Long): Long
 
     @Query(
         """
-            select count(*) from article_translation_versions as ats 
-            where ats.article_translation_id = (select article_translation_id from ats where id=:versionId)
+            select count(*) from article_translation_versions 
+            where article_translation_id = (select article_translation_id from article_translation_versions where id=:versionId)
         """,
         nativeQuery = true
     )

@@ -38,4 +38,6 @@ interface ArticleRepository : JpaRepository<Article, Long> {
         nativeQuery = true
     )
     fun findAllContentAuthorId(authorId: Long): List<Article>
+
+    fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
 }

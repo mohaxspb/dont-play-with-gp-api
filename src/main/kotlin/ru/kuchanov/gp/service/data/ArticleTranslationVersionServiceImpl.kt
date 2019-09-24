@@ -12,8 +12,10 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 
 @Service
 class ArticleTranslationVersionServiceImpl @Autowired constructor(
-    val articleTranslationVersionRepository: ArticleTranslationVersionRepository,
-    val userService: GpUserDetailsService
+    val articleService: ArticleService,
+    val translationService: ArticleTranslationService,
+    val userService: GpUserDetailsService,
+    val articleTranslationVersionRepository: ArticleTranslationVersionRepository
 ) : ArticleTranslationVersionService {
 
     override fun getOneById(id: Long): ArticleTranslationVersion? =
@@ -40,16 +42,17 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
         articleTranslationVersionRepository.countVersionsByVersionId(versionId)
 
     override fun isUserIsAuthorOfVersionOrTranslationOrArticleByVersionId(versionId: Long, userId: Long): Boolean {
-
-        if (articleTranslationVersionRepository.existsByIdAndAuthorId(userId, versionId)) {
-            return true
+        return if (articleTranslationVersionRepository.existsByIdAndAuthorId(userId, versionId)) {
+            true
         } else {
-            // todo check if it works
             val translationId = articleTranslationVersionRepository.getTranslationIdById(versionId)
-            println("translationId: $translationId")
+            if (translationService.existsByIdAndAuthorId(translationId, userId)) {
+                true
+            } else {
+                val articleId = translationService.getArticleIdById(translationId)
+                articleService.existsByIdAndAuthorId(articleId, userId)
+            }
         }
-
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun save(articleTranslationVersion: ArticleTranslationVersion): ArticleTranslationVersion =

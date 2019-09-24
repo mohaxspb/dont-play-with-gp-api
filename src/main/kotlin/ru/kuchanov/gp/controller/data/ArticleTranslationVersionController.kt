@@ -31,9 +31,10 @@ class ArticleTranslationVersionController @Autowired constructor(
         @PathVariable(name = "id") id: Long,
         @AuthenticationPrincipal user: GpUser
     ): Boolean {
-        // todo also check if user is author of translation ot article
-
-        if (user.isAdmin() || articleTranslationVersionService.getOneById(id)!!.authorId == user.id) {
+        //check if user is admin or author of version, translation or article
+        if (user.isAdmin() ||
+            articleTranslationVersionService.isUserIsAuthorOfVersionOrTranslationOrArticleByVersionId(id, user.id!!)
+        ) {
             // also, if it's the only version do not allow to delete!
             if (articleTranslationVersionService.countOfVersionsByVersionId(id) > 1) {
                 return articleTranslationVersionService.deleteById(id)
@@ -41,7 +42,7 @@ class ArticleTranslationVersionController @Autowired constructor(
                 throw IsTheOnlyVersionException()
             }
         } else {
-            throw GpAccessDeniedException("You are not admin or author of this version!")
+            throw GpAccessDeniedException("You are not admin or author of this translation!")
         }
     }
 

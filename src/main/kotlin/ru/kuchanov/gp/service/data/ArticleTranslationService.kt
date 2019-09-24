@@ -16,6 +16,10 @@ interface ArticleTranslationService {
 
     fun findAllByArticleIdAsDto(articleId: Long): List<ArticleTranslationDto>
 
+    fun getArticleIdById(translationId: Long): Long
+
+    fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
+
     fun save(articleTranslation: ArticleTranslation): ArticleTranslation
 
     /**
