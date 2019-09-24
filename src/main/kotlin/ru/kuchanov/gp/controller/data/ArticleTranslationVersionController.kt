@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.bean.auth.isAdmin
-import ru.kuchanov.gp.bean.data.ArticleTranslationNotFoundException
-import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
-import ru.kuchanov.gp.bean.data.ArticleTranslationVersionNotFoundException
-import ru.kuchanov.gp.bean.data.VersionNotApprovedException
+import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 import ru.kuchanov.gp.model.dto.data.PublishVersionResultDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
@@ -29,18 +26,20 @@ class ArticleTranslationVersionController @Autowired constructor(
     fun index() =
         "ArticleTranslationVersion endpoint"
 
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    @GetMapping("{id}")
-    fun getById(@PathVariable(name = "id") id: Long): ArticleTranslationVersion =
-        articleTranslationVersionService.getOneById(id) ?: throw ArticleTranslationVersionNotFoundException()
-
     @DeleteMapping("delete/{id}")
     fun deleteById(
         @PathVariable(name = "id") id: Long,
         @AuthenticationPrincipal user: GpUser
     ): Boolean {
+        // todo also check if user is author of translation ot article
+
         if (user.isAdmin() || articleTranslationVersionService.getOneById(id)!!.authorId == user.id) {
-            return articleTranslationVersionService.deleteById(id)
+            // also, if it's the only version do not allow to delete!
+            if (articleTranslationVersionService.countOfVersionsByVersionId(id) > 1) {
+                return articleTranslationVersionService.deleteById(id)
+            } else {
+                throw IsTheOnlyVersionException()
+            }
         } else {
             throw GpAccessDeniedException("You are not admin or author of this version!")
         }

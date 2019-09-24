@@ -36,6 +36,22 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
     override fun findAllByAuthorId(authorId: Long): List<ArticleTranslationVersion> =
         articleTranslationVersionRepository.findAllByAuthorId(authorId)
 
+    override fun countOfVersionsByVersionId(versionId: Long): Int =
+        articleTranslationVersionRepository.countVersionsByVersionId(versionId)
+
+    override fun isUserIsAuthorOfVersionOrTranslationOrArticleByVersionId(versionId: Long, userId: Long): Boolean {
+
+        if (articleTranslationVersionRepository.existsByIdAndAuthorId(userId, versionId)) {
+            return true
+        } else {
+            // todo check if it works
+            val translationId = articleTranslationVersionRepository.getTranslationIdById(versionId)
+            println("translationId: $translationId")
+        }
+
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun save(articleTranslationVersion: ArticleTranslationVersion): ArticleTranslationVersion =
         articleTranslationVersionRepository.save(articleTranslationVersion)
 

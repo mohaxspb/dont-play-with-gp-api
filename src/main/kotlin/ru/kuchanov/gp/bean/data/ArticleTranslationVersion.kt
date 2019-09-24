@@ -60,10 +60,15 @@ fun ArticleTranslationVersion.toDto(): ArticleTranslationVersionDto =
 
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "ArticleTranslationVersion not found in db!")
-class ArticleTranslationVersionNotFoundException: RuntimeException()
+class ArticleTranslationVersionNotFoundException : RuntimeException()
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Version is not approved!")
-class VersionNotApprovedException: RuntimeException()
+class VersionNotApprovedException : RuntimeException()
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Version is not published!")
-class VersionNotPublishedException: RuntimeException()
+class VersionNotPublishedException : RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED)
+class IsTheOnlyVersionException(
+    override val message: String? = "You are not allowed to delete the only version in translation"
+) : RuntimeException(message)
