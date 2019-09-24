@@ -16,8 +16,6 @@ interface ArticleTranslationService {
 
     fun findAllByArticleIdAsDto(articleId: Long): List<ArticleTranslationDto>
 
-    fun getArticleIdById(translationId: Long): Long
-
     fun isUserIsAuthorOfTranslationOrArticleByTranslationId(translationId: Long, userId: Long): Boolean
 
     fun countOfTranslationsByTranslationId(translationId: Long): Int

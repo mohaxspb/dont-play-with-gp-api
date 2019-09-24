@@ -5,6 +5,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.auth.toDto
 import ru.kuchanov.gp.bean.data.ArticleTranslation
+import ru.kuchanov.gp.bean.data.ArticleTranslationNotFoundException
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.repository.data.ArticleRepository
@@ -34,9 +35,6 @@ class ArticleTranslationServiceImpl @Autowired constructor(
     override fun findAllByArticleId(articleId: Long): List<ArticleTranslation> =
         articleTranslationRepository.findAllByArticleId(articleId)
 
-    override fun getArticleIdById(translationId: Long): Long =
-        articleTranslationRepository.getArticleIdById(translationId)
-
     override fun countOfTranslationsByTranslationId(translationId: Long): Int =
         articleTranslationRepository.countTranslationsByTranslationId(translationId)
 
@@ -45,6 +43,7 @@ class ArticleTranslationServiceImpl @Autowired constructor(
             true
         } else {
             val articleId = articleTranslationRepository.getArticleIdById(translationId)
+                ?: throw ArticleTranslationNotFoundException()
             return articleRepository.existsByIdAndAuthorId(articleId, userId)
         }
     }

@@ -9,7 +9,7 @@ interface ArticleTranslationRepository : JpaRepository<ArticleTranslation, Long>
     fun findAllByArticleId(articleId: Long): List<ArticleTranslation>
 
     @Query("select articleId from ArticleTranslation where id=:id")
-    fun getArticleIdById(id: Long): Long
+    fun getArticleIdById(id: Long): Long?
 
     @Query(
         """

@@ -15,7 +15,7 @@ interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslation
     ): ArticleTranslationVersion?
 
     @Query("select articleTranslationId from ArticleTranslationVersion where id=:versionId")
-    fun getTranslationIdById(versionId: Long): Long
+    fun getTranslationIdById(versionId: Long): Long?
 
     @Query(
         """

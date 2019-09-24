@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.auth.toDto
+import ru.kuchanov.gp.bean.data.ArticleTranslationNotFoundException
 import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
+import ru.kuchanov.gp.bean.data.ArticleTranslationVersionNotFoundException
 import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 import ru.kuchanov.gp.repository.data.ArticleRepository
@@ -48,10 +50,12 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
             true
         } else {
             val translationId = articleTranslationVersionRepository.getTranslationIdById(versionId)
+                ?: throw ArticleTranslationVersionNotFoundException()
             if (translationRepository.existsByIdAndAuthorId(translationId, userId)) {
                 true
             } else {
-                val articleId = translationRepository.getArticleIdById(translationId)
+                val articleId =
+                    translationRepository.getArticleIdById(translationId) ?: throw ArticleTranslationNotFoundException()
                 articleRepository.existsByIdAndAuthorId(articleId, userId)
             }
         }
