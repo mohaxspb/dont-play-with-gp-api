@@ -1,7 +1,6 @@
 package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import ru.kuchanov.gp.GpConstants
@@ -88,7 +87,6 @@ class ArticleTranslationVersionController @Autowired constructor(
         }
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(GpConstants.ArticleTranslationVersionEndpoint.Method.APPROVE)
     fun approve(
         @AuthenticationPrincipal user: GpUser,
@@ -98,14 +96,22 @@ class ArticleTranslationVersionController @Autowired constructor(
         val articleTranslationVersion = articleTranslationVersionService.getOneById(id)
             ?: throw ArticleTranslationVersionNotFoundException()
 
-        articleTranslationVersion.approved = approve
-        articleTranslationVersion.approverId = user.id!!
-        articleTranslationVersion.approvedDate = Timestamp(System.currentTimeMillis())
-        articleTranslationVersionService.save(articleTranslationVersion)
-        return articleTranslationVersionService.getOneByIdAsDto(id)!!
+        if (user.isAdmin()
+            || articleTranslationService.isUserIsAuthorOfTranslationOrArticleByTranslationId(
+                articleTranslationVersion.articleTranslationId,
+                user.id!!
+            )
+        ) {
+            articleTranslationVersion.approved = approve
+            articleTranslationVersion.approverId = user.id!!
+            articleTranslationVersion.approvedDate = Timestamp(System.currentTimeMillis())
+            articleTranslationVersionService.save(articleTranslationVersion)
+            return articleTranslationVersionService.getOneByIdAsDto(id)!!
+        } else {
+            throw GpAccessDeniedException("You are not admin or author of this translation or article!")
+        }
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(GpConstants.ArticleTranslationVersionEndpoint.Method.PUBLISH)
     fun publish(
         @AuthenticationPrincipal user: GpUser,
@@ -115,33 +121,42 @@ class ArticleTranslationVersionController @Autowired constructor(
         val articleTranslationVersion = articleTranslationVersionService.getOneById(id)
             ?: throw ArticleTranslationVersionNotFoundException()
 
-        var alreadyPublishedVersion: ArticleTranslationVersion? = null
+        if (user.isAdmin()
+            || articleTranslationService.isUserIsAuthorOfTranslationOrArticleByTranslationId(
+                articleTranslationVersion.articleTranslationId,
+                user.id!!
+            )
+        ) {
+            var alreadyPublishedVersion: ArticleTranslationVersion? = null
 
-        if (publish) {
-            if (!articleTranslationVersion.approved) {
-                throw VersionNotApprovedException()
+            if (publish) {
+                if (!articleTranslationVersion.approved) {
+                    throw VersionNotApprovedException()
+                }
+
+                //check if there is already published versions and unpublish it
+                alreadyPublishedVersion = articleTranslationVersionService
+                    .getPublishedByTranslationId(articleTranslationVersion.articleTranslationId)
+
+                if (alreadyPublishedVersion != null) {
+                    alreadyPublishedVersion.published = false
+                    alreadyPublishedVersion.publisherId = user.id!!
+                    alreadyPublishedVersion.publishedDate = Timestamp(System.currentTimeMillis())
+                    articleTranslationVersionService.save(alreadyPublishedVersion)
+                }
             }
 
-            //check if there is already published versions and unpublish it
-            alreadyPublishedVersion = articleTranslationVersionService
-                .getPublishedByTranslationId(articleTranslationVersion.articleTranslationId)
+            articleTranslationVersion.published = publish
+            articleTranslationVersion.publisherId = user.id!!
+            articleTranslationVersion.publishedDate = Timestamp(System.currentTimeMillis())
+            articleTranslationVersionService.save(articleTranslationVersion)
+            val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
+            val unpublishedVersion =
+                alreadyPublishedVersion?.id?.let { articleTranslationVersionService.getOneByIdAsDto(it) }
 
-            if (alreadyPublishedVersion != null) {
-                alreadyPublishedVersion.published = false
-                alreadyPublishedVersion.publisherId = user.id!!
-                alreadyPublishedVersion.publishedDate = Timestamp(System.currentTimeMillis())
-                articleTranslationVersionService.save(alreadyPublishedVersion)
-            }
+            return PublishVersionResultDto(updatedVersion = updatedVersion, unpublishedVersion = unpublishedVersion)
+        } else {
+            throw GpAccessDeniedException("You are not admin or author of this translation or article!")
         }
-
-        articleTranslationVersion.published = publish
-        articleTranslationVersion.publisherId = user.id!!
-        articleTranslationVersion.publishedDate = Timestamp(System.currentTimeMillis())
-        articleTranslationVersionService.save(articleTranslationVersion)
-        val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
-        val unpublishedVersion =
-            alreadyPublishedVersion?.id?.let { articleTranslationVersionService.getOneByIdAsDto(it) }
-
-        return PublishVersionResultDto(updatedVersion = updatedVersion, unpublishedVersion = unpublishedVersion)
     }
 }

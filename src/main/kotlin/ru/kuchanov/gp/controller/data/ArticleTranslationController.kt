@@ -1,7 +1,6 @@
 package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -11,15 +10,13 @@ import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
-import ru.kuchanov.gp.service.data.ArticleTranslationService
-import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
-import ru.kuchanov.gp.service.data.ImageService
-import ru.kuchanov.gp.service.data.LanguageService
+import ru.kuchanov.gp.service.data.*
 import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + ArticleTranslationEndpoint.PATH + "/")
 class ArticleTranslationController @Autowired constructor(
+    val articleService: ArticleService,
     val articleTranslationService: ArticleTranslationService,
     val articleTranslationVersionService: ArticleTranslationVersionService,
     val imageService: ImageService,
@@ -31,11 +28,11 @@ class ArticleTranslationController @Autowired constructor(
         "ArticleTranslation endpoint"
 
     //todo check user. Do not show article if it's not published if user is not admin or author
-    @GetMapping("full/{id}")
+    @GetMapping(ArticleTranslationEndpoint.Method.FULL + "/{id}")
     fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleTranslationDto =
         articleTranslationService.getOneByIdAsDtoWithVersions(id) ?: throw ArticleTranslationNotFoundException()
 
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping(ArticleTranslationEndpoint.Method.DELETE + "/{id}")
     fun deleteById(
         @PathVariable(name = "id") id: Long,
         @AuthenticationPrincipal user: GpUser
@@ -58,8 +55,8 @@ class ArticleTranslationController @Autowired constructor(
     @PostMapping(ArticleTranslationEndpoint.Method.CREATE)
     fun createArticleTranslation(
         @RequestParam(value = "articleId") articleId: Long,
-        @RequestParam("imageFile") imageFile: MultipartFile?,
-        @RequestParam("imageFileName") imageFileName: String?,
+        @RequestParam(value = "imageFile") imageFile: MultipartFile?,
+        @RequestParam(value = "imageFileName") imageFileName: String?,
         @RequestParam(value = "langId") langId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
@@ -135,7 +132,6 @@ class ArticleTranslationController @Autowired constructor(
         }
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(ArticleTranslationEndpoint.Method.APPROVE)
     fun approve(
         @AuthenticationPrincipal user: GpUser,
@@ -145,22 +141,25 @@ class ArticleTranslationController @Autowired constructor(
         val articleTranslation = articleTranslationService.getOneById(id)
             ?: throw ArticleTranslationNotFoundException()
 
-        if (approve) {
-            val versions = articleTranslationVersionService
-                .findAllByArticleTranslationId(id)
-            val approvedVersions = versions.filter { it.approved }
-            if (approvedVersions.isEmpty()) {
-                throw VersionNotApprovedException()
+        if (user.isAdmin() || articleService.existsByIdAndAuthorId(articleTranslation.articleId, user.id!!)) {
+            if (approve) {
+                val versions = articleTranslationVersionService
+                    .findAllByArticleTranslationId(id)
+                val approvedVersions = versions.filter { it.approved }
+                if (approvedVersions.isEmpty()) {
+                    throw VersionNotApprovedException()
+                }
             }
+            articleTranslation.approved = approve
+            articleTranslation.approverId = user.id!!
+            articleTranslation.approvedDate = Timestamp(System.currentTimeMillis())
+            articleTranslationService.save(articleTranslation)
+            return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
+        } else {
+            throw GpAccessDeniedException("You are not admin or author of article!")
         }
-        articleTranslation.approved = approve
-        articleTranslation.approverId = user.id!!
-        articleTranslation.approvedDate = Timestamp(System.currentTimeMillis())
-        articleTranslationService.save(articleTranslation)
-        return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(ArticleTranslationEndpoint.Method.PUBLISH)
     fun publish(
         @AuthenticationPrincipal user: GpUser,
@@ -170,22 +169,26 @@ class ArticleTranslationController @Autowired constructor(
         val articleTranslation = articleTranslationService.getOneById(id)
             ?: throw ArticleTranslationNotFoundException()
 
-        if (publish) {
-            if (!articleTranslation.approved) {
-                throw TranslationNotApprovedException()
+        if (user.isAdmin() || articleService.existsByIdAndAuthorId(articleTranslation.articleId, user.id!!)) {
+            if (publish) {
+                if (!articleTranslation.approved) {
+                    throw TranslationNotApprovedException()
+                }
+                val versions = articleTranslationVersionService
+                    .findAllByArticleTranslationId(id)
+                val publishedVersions = versions.filter { it.published }
+                if (publishedVersions.isEmpty()) {
+                    throw VersionNotPublishedException()
+                }
             }
-            val versions = articleTranslationVersionService
-                .findAllByArticleTranslationId(id)
-            val publishedVersions = versions.filter { it.published }
-            if (publishedVersions.isEmpty()) {
-                throw VersionNotPublishedException()
-            }
-        }
 
-        articleTranslation.published = publish
-        articleTranslation.publisherId = user.id!!
-        articleTranslation.publishedDate = Timestamp(System.currentTimeMillis())
-        articleTranslationService.save(articleTranslation)
-        return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
+            articleTranslation.published = publish
+            articleTranslation.publisherId = user.id!!
+            articleTranslation.publishedDate = Timestamp(System.currentTimeMillis())
+            articleTranslationService.save(articleTranslation)
+            return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
+        } else {
+            throw GpAccessDeniedException("You are not admin or author of article!")
+        }
     }
 }
