@@ -16,7 +16,7 @@ data class ArticleDto(
     val authorId: Long?,
 
     val approverId: Long? = null,
-    val approved : Boolean = false,
+    val approved: Boolean = false,
     val approvedDate: Timestamp? = null,
 
     val publisherId: Long? = null,
@@ -37,13 +37,17 @@ data class ArticleDto(
  * only owned or published.
  */
 fun ArticleDto.filteredForUser(user: GpUser): ArticleDto {
-    //filter translations
-    translations = translations.filter { translation ->
-        //filter versions
-        translation.versions = translation.versions.filter {
-            it.published || it.authorId == user.id
+    //filter translations only if user is not author of article
+    if (user.id!! != authorId) {
+        translations = translations.filter { translation ->
+            //filter versions only if user is not author of article
+            if (user.id != translation.authorId) {
+                translation.versions = translation.versions.filter { version ->
+                    version.published || version.authorId == user.id
+                }
+            }
+            translation.published || translation.authorId == user.id
         }
-        translation.published || translation.authorId == user.id
     }
 
     return this

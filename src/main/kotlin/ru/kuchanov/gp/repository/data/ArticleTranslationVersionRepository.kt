@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.repository.data
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import ru.kuchanov.gp.bean.data.ArticleTranslationVersion
 import javax.transaction.Transactional
 
@@ -12,6 +13,20 @@ interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslation
         articleTranslationId: Long,
         published: Boolean = true
     ): ArticleTranslationVersion?
+
+    @Query("select articleTranslationId from ArticleTranslationVersion where id=:versionId")
+    fun getTranslationIdById(versionId: Long): Long?
+
+    @Query(
+        """
+            select count(*) from article_translation_versions 
+            where article_translation_id = (select article_translation_id from article_translation_versions where id=:versionId)
+        """,
+        nativeQuery = true
+    )
+    fun countVersionsByVersionId(versionId: Long): Int
+
+    fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
 
     @Transactional
     fun deleteAllByArticleTranslationId(articleTranslationId: Long): List<ArticleTranslationVersion>

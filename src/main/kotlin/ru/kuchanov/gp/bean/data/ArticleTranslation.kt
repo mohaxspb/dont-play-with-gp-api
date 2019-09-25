@@ -82,3 +82,8 @@ class TranslationNotApprovedException : RuntimeException()
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "ArticleTranslation is not published!")
 class TranslationNotPublishedException : RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED)
+class IsTheOnlyTranslationException(
+    override val message: String? = "You are not allowed to delete the only translation in article"
+) : RuntimeException(message)

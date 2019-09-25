@@ -18,6 +18,10 @@ interface ArticleTranslationVersionService {
 
     fun findAllByAuthorId(authorId: Long): List<ArticleTranslationVersion>
 
+    fun countOfVersionsByVersionId(versionId: Long): Int
+
+    fun isUserIsAuthorOfVersionOrTranslationOrArticleByVersionId(versionId: Long, userId: Long): Boolean
+
     fun save(articleTranslationVersion: ArticleTranslationVersion): ArticleTranslationVersion
 
     @Transactional

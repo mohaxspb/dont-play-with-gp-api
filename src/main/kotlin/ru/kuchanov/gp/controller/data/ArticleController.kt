@@ -111,8 +111,12 @@ class ArticleController @Autowired constructor(
         @PathVariable(name = "id") id: Long,
         @AuthenticationPrincipal user: GpUser
     ): Boolean {
-        if (user.isAdmin() || articleService.getOneById(id)!!.authorId == user.id) {
-            return articleService.deleteById(id)
+        if (user.isAdmin() || articleService.existsByIdAndAuthorId(id, user.id!!)) {
+            if (articleService.getOneById(id) != null) {
+                return articleService.deleteById(id)
+            } else {
+                throw ArticleNotFoundException()
+            }
         } else {
             throw GpAccessDeniedException("You are not admin or author of this article!")
         }

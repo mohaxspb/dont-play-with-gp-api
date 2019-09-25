@@ -23,6 +23,8 @@ interface ArticleService {
         published: Boolean = true
     ): List<ArticleDto>
 
+    fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
+
     fun getPublishedArticles(
         offset: Int,
         limit: Int,
