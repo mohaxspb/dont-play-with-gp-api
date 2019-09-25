@@ -27,11 +27,6 @@ class ArticleTranslationController @Autowired constructor(
     fun index() =
         "ArticleTranslation endpoint"
 
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    @GetMapping(ArticleTranslationEndpoint.Method.FULL + "/{id}")
-    fun getByIdFull(@PathVariable(name = "id") id: Long): ArticleTranslationDto =
-        articleTranslationService.getOneByIdAsDtoWithVersions(id) ?: throw ArticleTranslationNotFoundException()
-
     @DeleteMapping(ArticleTranslationEndpoint.Method.DELETE + "/{id}")
     fun deleteById(
         @PathVariable(name = "id") id: Long,
@@ -96,19 +91,26 @@ class ArticleTranslationController @Autowired constructor(
     @PostMapping(ArticleTranslationEndpoint.Method.EDIT)
     fun editArticleTranslation(
         @RequestParam(value = "translationId") translationId: Long,
-        @RequestParam("imageFile") imageFile: MultipartFile?,
-        @RequestParam("imageFileName") imageFileName: String?,
-        @RequestParam("langId") langId: Long,
+        @RequestParam(value = "imageFile") imageFile: MultipartFile?,
+        @RequestParam(value = "imageFileName") imageFileName: String?,
+        @RequestParam(value = "langId") langId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
         @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationDto {
-        languageService.getOneById(langId) ?: throw LanguageNotFoundError()
+        languageService.getOneById(langId)
+            ?: throw LanguageNotFoundError()
 
-        //check if user is admin or author of translation
-        val translation =
-            articleTranslationService.getOneById(translationId) ?: throw ArticleTranslationNotFoundException()
-        if (author.isAdmin() || translation.authorId!! == author.id) {
+        val translation = articleTranslationService.getOneById(translationId)
+            ?: throw ArticleTranslationNotFoundException()
+
+        //check if user is admin or author of translation or article
+        if (author.isAdmin()
+            || articleTranslationService.isUserIsAuthorOfTranslationOrArticleByTranslationId(
+                translationId,
+                author.id!!
+            )
+        ) {
             // save image if need
             var imageUrl: String? = null
             if (imageFile != null && imageFileName != null) {

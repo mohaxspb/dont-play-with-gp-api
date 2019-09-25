@@ -74,11 +74,16 @@ class ArticleTranslationVersionController @Autowired constructor(
         @RequestParam(value = "text") text: String,
         @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationVersionDto {
-        //check if user is admin or author of version
         val versionToEdit =
             articleTranslationVersionService.getOneById(versionId) ?: throw ArticleTranslationVersionNotFoundException()
 
-        if (author.isAdmin() || author.id!! == versionToEdit.authorId) {
+        //check if user is admin or author of version, translation or article
+        if (author.isAdmin()
+            || articleTranslationVersionService.isUserIsAuthorOfVersionOrTranslationOrArticleByVersionId(
+                versionId,
+                author.id!!
+            )
+        ) {
             versionToEdit.text = text
             articleTranslationVersionService.save(versionToEdit)
             return articleTranslationVersionService.getOneByIdAsDto(versionId)!!
