@@ -14,4 +14,11 @@ interface TagService {
 
     @Transactional
     fun delete(tag: Tag): Boolean
+
+    @Transactional
+    fun deleteAllByArticleId(articleId: Long)
+
+    fun saveTagsForArticle(tags: List<Tag>, articleId: Long, authorId: Long)
+
+    fun findAllForArticle(articleId: Long): List<Tag>
 }

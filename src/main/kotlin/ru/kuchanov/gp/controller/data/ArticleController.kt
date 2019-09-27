@@ -25,7 +25,8 @@ class ArticleController @Autowired constructor(
     val articleTranslationVersionService: ArticleTranslationVersionService,
     val userService: GpUserDetailsService,
     val languageService: LanguageService,
-    val imageService: ImageService
+    val imageService: ImageService,
+    val tagService: TagService
 ) {
 
     @GetMapping
@@ -129,6 +130,7 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "sourceTitle") sourceTitle: String?,
         @RequestParam(value = "sourceAuthorName") sourceAuthorName: String?,
         @RequestParam(value = "sourceUrl") sourceUrl: String?,
+        @RequestParam(value = "tags") tags: List<String>,
         @RequestParam(value = "articleLanguageId") articleLanguageId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
@@ -139,6 +141,17 @@ class ArticleController @Autowired constructor(
         //save image
         val imageUrl = image?.let { imageService.saveImage(authorId, image, imageName) }
 
+        //save tags
+        val tagsForArticle = mutableListOf<Tag>()
+        tags.forEach {
+            val tagInDb = tagService.findByTitle(it)
+            if (tagInDb == null) {
+                tagsForArticle.add(tagService.save(Tag(title = it, authorId = authorId)))
+            } else {
+                tagsForArticle.add(tagInDb)
+            }
+        }
+
         //save article
         val article = Article(
             authorId = authorId,
@@ -148,6 +161,10 @@ class ArticleController @Autowired constructor(
             sourceUrl = sourceUrl
         )
         val articleInDb = articleService.save(article)
+
+        //save tagsForArticle
+        tagService.saveTagsForArticle(tagsForArticle, articleInDb.id!!, authorId)
+
         //save article translation
         val articleTranslation = ArticleTranslation(
             authorId = authorId,
