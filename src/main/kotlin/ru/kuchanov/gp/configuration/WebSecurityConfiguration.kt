@@ -137,6 +137,8 @@ class WebSecurityConfiguration @Autowired constructor(
                 "/users/",
                 "/language/",
                 "/language/all",
+                "/tag/",
+                "/tag/all",
                 "/article/**",
                 "/image/**",
                 "/login**",
