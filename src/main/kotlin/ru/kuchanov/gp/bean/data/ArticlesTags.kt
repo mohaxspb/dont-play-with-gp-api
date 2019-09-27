@@ -2,6 +2,8 @@ package ru.kuchanov.gp.bean.data
 
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
 import java.io.Serializable
 import java.sql.Timestamp
 import javax.persistence.*
@@ -26,3 +28,6 @@ data class ArticlesTags(
     @field:UpdateTimestamp
     val updated: Timestamp? = null
 ) : Serializable
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
+class ArticlesTagsNotFoundException(override val message: String? = "ArticlesTags not found in db!"): RuntimeException(message)
