@@ -27,4 +27,9 @@ data class Tag(
 ) : Serializable
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
-class TagNotFoundException(override val message: String? = "Tag not found in db!"): RuntimeException(message)
+class TagNotFoundException(override val message: String? = "Tag not found in db!") :
+    RuntimeException(message)
+
+@ResponseStatus(value = HttpStatus.CONFLICT)
+class TagAlreadyExixstsException(override val message: String? = "Tag already exists in db!") :
+    RuntimeException(message)
