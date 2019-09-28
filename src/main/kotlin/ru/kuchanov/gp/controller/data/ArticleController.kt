@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -16,6 +17,8 @@ import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.*
 import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.*
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleEndpoint.PATH + "/")
@@ -261,5 +264,50 @@ class ArticleController @Autowired constructor(
         article.publishedDate = Timestamp(System.currentTimeMillis())
         articleService.save(article)
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(GpConstants.ArticleEndpoint.Method.PUBLISH_WITH_DATE)
+    fun publishWithDate(
+        @RequestParam(name = "id") id: Long,
+        @RequestParam(name = "publishDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) publishDate: Date,
+        @AuthenticationPrincipal user: GpUser
+    ): ArticleDto
+    {
+        val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+
+        if (!article.approved) {
+            throw ArticleNotApprovedException()
+        }
+        val translations = articleTranslationService
+            .findAllByArticleId(id)
+        val publishedTranslations = translations.filter { it.published }
+        if (publishedTranslations.isEmpty()) {
+            throw TranslationNotPublishedException()
+        }
+
+        article.published = true
+        article.publisherId = user.id!!
+//        val newDate = publishDate.toDate(
+//            timeZone = TimeZone.getTimeZone(
+//                ZoneId.ofOffset(
+//                    "UTC",
+//                    ZoneOffset.ofTotalSeconds(timezoneOffset * 60)
+//                )
+//            )
+//        )
+
+        article.publishedDate = Timestamp(publishDate.time)
+        articleService.save(article)
+        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+    }
+
+    fun String.toDate(
+        dateFormat: String = "yyyy-MM-dd'T'HH:mm",
+        timeZone: TimeZone = TimeZone.getTimeZone("UTC")
+    ): Date {
+        val parser = SimpleDateFormat(dateFormat, Locale.getDefault())
+        parser.timeZone = timeZone
+        return parser.parse(this)
     }
 }
