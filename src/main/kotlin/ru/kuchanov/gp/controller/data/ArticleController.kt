@@ -17,7 +17,6 @@ import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.*
 import java.sql.Timestamp
-import java.text.SimpleDateFormat
 import java.util.*
 
 @RestController
@@ -270,10 +269,9 @@ class ArticleController @Autowired constructor(
     @PostMapping(GpConstants.ArticleEndpoint.Method.PUBLISH_WITH_DATE)
     fun publishWithDate(
         @RequestParam(name = "id") id: Long,
-        @RequestParam(name = "publishDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) publishDate: Date,
+        @RequestParam(name = "publishDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) publishDate: Date,
         @AuthenticationPrincipal user: GpUser
-    ): ArticleDto
-    {
+    ): ArticleDto {
         val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
 
         if (!article.approved) {
@@ -288,26 +286,9 @@ class ArticleController @Autowired constructor(
 
         article.published = true
         article.publisherId = user.id!!
-//        val newDate = publishDate.toDate(
-//            timeZone = TimeZone.getTimeZone(
-//                ZoneId.ofOffset(
-//                    "UTC",
-//                    ZoneOffset.ofTotalSeconds(timezoneOffset * 60)
-//                )
-//            )
-//        )
 
         article.publishedDate = Timestamp(publishDate.time)
         articleService.save(article)
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
-    }
-
-    fun String.toDate(
-        dateFormat: String = "yyyy-MM-dd'T'HH:mm",
-        timeZone: TimeZone = TimeZone.getTimeZone("UTC")
-    ): Date {
-        val parser = SimpleDateFormat(dateFormat, Locale.getDefault())
-        parser.timeZone = timeZone
-        return parser.parse(this)
     }
 }
