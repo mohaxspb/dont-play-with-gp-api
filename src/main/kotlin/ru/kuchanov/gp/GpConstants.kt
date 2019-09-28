@@ -51,6 +51,7 @@ object GpConstants {
             const val EDIT = "edit"
             const val APPROVE = "approve"
             const val PUBLISH = "publish"
+            const val PUBLISH_WITH_DATE = "publishWithDate"
             const val FULL = "full"
             const val ALL = "all"
             const val ALL_BY_AUTHOR_ID = "allByAuthorId"

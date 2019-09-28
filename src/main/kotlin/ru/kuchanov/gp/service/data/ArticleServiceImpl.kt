@@ -9,6 +9,8 @@ import ru.kuchanov.gp.bean.data.toDto
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.repository.data.ArticleRepository
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
+import java.sql.Timestamp
+import java.util.*
 
 @Service
 class ArticleServiceImpl @Autowired constructor(
@@ -42,9 +44,19 @@ class ArticleServiceImpl @Autowired constructor(
         published: Boolean,
         approved: Boolean,
         withTranslations: Boolean,
-        withVersions: Boolean
+        withVersions: Boolean,
+        onlyForCurrentDate: Boolean
     ): List<ArticleDto> =
-        articleRepository.getPublishedArticles(offset, limit, published, approved)
+        articleRepository.getPublishedArticles(
+            offset,
+            limit,
+            published,
+            approved,
+            if (onlyForCurrentDate)
+                Timestamp(System.currentTimeMillis()).toString()
+            else
+                Timestamp(Calendar.getInstance().apply { add(Calendar.YEAR, 100) }.timeInMillis).toString()
+        )
             .map {
                 if (withTranslations) {
                     it.toDto()

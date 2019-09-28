@@ -32,6 +32,7 @@ data class ArticleDto(
     var author: UserDto? = null
     var approver: UserDto? = null
     var publisher: UserDto? = null
+    var fromFuture: Boolean = false
 }
 
 
@@ -54,3 +55,16 @@ fun ArticleDto.filteredForUser(user: GpUser): ArticleDto {
 
     return this
 }
+
+fun ArticleDto.isUserAuthorOfSomething(userId: Long): Boolean =
+    if (authorId == userId) {
+        true
+    } else {
+        if (translations.firstOrNull { it.authorId == userId } != null) {
+            true
+        } else {
+            val versions = translations.flatMap { it.versions }
+            println(versions)
+            versions.firstOrNull { it.authorId == userId } != null
+        }
+    }

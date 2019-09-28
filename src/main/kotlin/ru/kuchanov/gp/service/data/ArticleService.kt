@@ -31,7 +31,8 @@ interface ArticleService {
         published: Boolean = true,
         approved: Boolean = true,
         withTranslations: Boolean = true,
-        withVersions: Boolean = false
+        withVersions: Boolean = false,
+        onlyForCurrentDate: Boolean = true
     ): List<ArticleDto>
 
     fun save(article: Article): Article

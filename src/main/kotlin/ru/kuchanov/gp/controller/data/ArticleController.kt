@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -12,10 +13,12 @@ import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.dto.data.filteredForUser
+import ru.kuchanov.gp.model.dto.data.isUserAuthorOfSomething
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.*
 import java.sql.Timestamp
+import java.util.*
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleEndpoint.PATH + "/")
@@ -33,13 +36,6 @@ class ArticleController @Autowired constructor(
     fun index() =
         "Article endpoint"
 
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    @GetMapping("{id}")
-    fun getById(
-        @PathVariable(name = "id") id: Long
-    ): Article =
-        articleService.getOneById(id) ?: throw ArticleNotFoundException()
-
     @GetMapping(GpConstants.ArticleEndpoint.Method.FULL + "/{id}")
     fun getByIdFull(
         @PathVariable(name = "id") id: Long,
@@ -51,6 +47,8 @@ class ArticleController @Autowired constructor(
         if (user == null) {
             if (!article.published) {
                 throw ArticleNotPublishedException()
+            } else if (article.fromFuture) {
+                throw ArticleNotAvailableYetException()
             } else {
                 return article.apply {
                     translations = translations.filter { translation ->
@@ -62,6 +60,8 @@ class ArticleController @Autowired constructor(
         } else {
             return if (user.isAdmin()) {
                 article
+            } else if (!article.isUserAuthorOfSomething(user.id!!)) {
+                throw ArticleNotAvailableYetException()
             } else {
                 article.filteredForUser(user)
             }
@@ -76,19 +76,21 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "approved", defaultValue = "true") approved: Boolean = true,
         @RequestParam(value = "withTranslations", defaultValue = "true") withTranslations: Boolean = true,
         @RequestParam(value = "withVersions", defaultValue = "false") withVersions: Boolean = false,
+        @RequestParam(value = "onlyForCurrentDate", defaultValue = "true") onlyForCurrentDate: Boolean = true,
         @AuthenticationPrincipal user: GpUser?
     ): List<ArticleDto> {
-        if ((published && approved) || user?.isAdmin() == true) {
+        if ((published && approved && onlyForCurrentDate) || user?.isAdmin() == true) {
             return articleService.getPublishedArticles(
                 offset,
                 limit,
                 published,
                 approved,
                 withTranslations,
-                withVersions
+                withVersions,
+                onlyForCurrentDate
             )
         } else {
-            throw GpAccessDeniedException("Only admins can see not published or approved articles!")
+            throw GpAccessDeniedException("Only admins can see not published or approved articles or articles from future!")
         }
     }
 
@@ -259,6 +261,33 @@ class ArticleController @Autowired constructor(
         article.published = publish
         article.publisherId = user.id!!
         article.publishedDate = Timestamp(System.currentTimeMillis())
+        articleService.save(article)
+        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(GpConstants.ArticleEndpoint.Method.PUBLISH_WITH_DATE)
+    fun publishWithDate(
+        @RequestParam(name = "id") id: Long,
+        @RequestParam(name = "publishDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) publishDate: Date,
+        @AuthenticationPrincipal user: GpUser
+    ): ArticleDto {
+        val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+
+        if (!article.approved) {
+            throw ArticleNotApprovedException()
+        }
+        val translations = articleTranslationService
+            .findAllByArticleId(id)
+        val publishedTranslations = translations.filter { it.published }
+        if (publishedTranslations.isEmpty()) {
+            throw TranslationNotPublishedException()
+        }
+
+        article.published = true
+        article.publisherId = user.id!!
+
+        article.publishedDate = Timestamp(publishDate.time)
         articleService.save(article)
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
     }

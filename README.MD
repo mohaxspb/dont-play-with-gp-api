@@ -16,12 +16,20 @@
 
 7) Чтобы русский текст работал через git-bash на винде надо создать файл настроек в папке юзера (типа `C:/Users/username`) так (`touch .bashrc`) и в него прописать локали:
 
-```
-export LC_ALL=ru_RU.CP1251
-export LANG=ru_RU.CP1251
-export LANGUAGE=ru_RU.CP1251
-```
+    ```
+    export LC_ALL=ru_RU.CP1251
+    export LANG=ru_RU.CP1251
+    export LANGUAGE=ru_RU.CP1251
+    ```
 
 8) При pg_dump надо не забывать про кодировку! И иногда надо несколько раз выполнить инсерты, т.к. всё валится на порядке добавления записей.
 
 9) На сервере надо проверить кодировку системы. https://unix.stackexchange.com/a/303838/268799
+
+10) To ignore changes in application-dev.yml execute:
+
+    ```git update-index --assume-unchanged PROJECT_ROOT\src\main\resources\application-dev.yml```
+    
+    to push changes execute:
+    
+    ```git update-index --no-assume-unchanged PROJECT_ROOT\src\main\resources\application-dev.yml```

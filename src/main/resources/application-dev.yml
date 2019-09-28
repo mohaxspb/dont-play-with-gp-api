@@ -28,6 +28,8 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
+        jdbc:
+          time_zone: UTC
         connection:
           charSet: UTF-8
         temp:
@@ -93,14 +95,23 @@ logging:
       hibernate: ERROR
       hibernate.SQL: ERROR
       hibernate.type: ERROR
-      springframework: DEBUG
+      springframework: INFO
       springframework.web: TRACE
       springframework.web.filter.CommonsRequestLoggingFilter: TRACE
-    root: ERROR
+      root: ERROR
+      #      flywaydb: INFO
+      #      hibernate: ERROR
+      #      hibernate.SQL: TRACE
+      #      hibernate.type: ERROR
+      #      springframework: DEBUG
+    #      springframework.web: TRACE
+    #      springframework.web.filter.CommonsRequestLoggingFilter: TRACE
   pattern:
     console: '%d{HH:mm:ss.SSS} %msg%n'
-
 # misc
+auth:
+  logout:
+    socialLogout: false
 my:
   db:
     name: gp_db
