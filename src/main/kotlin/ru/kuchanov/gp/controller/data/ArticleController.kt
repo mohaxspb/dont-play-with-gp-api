@@ -141,17 +141,6 @@ class ArticleController @Autowired constructor(
         //save image
         val imageUrl = image?.let { imageService.saveImage(authorId, image, imageName) }
 
-        //save tags
-        val tagsForArticle = mutableListOf<Tag>()
-        tags.forEach {
-            val tagInDb = tagService.findByTitle(it)
-            if (tagInDb == null) {
-                tagsForArticle.add(tagService.save(Tag(title = it, authorId = authorId)))
-            } else {
-                tagsForArticle.add(tagInDb)
-            }
-        }
-
         //save article
         val article = Article(
             authorId = authorId,
@@ -163,7 +152,7 @@ class ArticleController @Autowired constructor(
         val articleInDb = articleService.save(article)
 
         //save tagsForArticle
-        tagService.saveTagsForArticle(tagsForArticle, articleInDb.id!!, authorId)
+        tagService.saveTagsForArticle(tags, articleInDb.id!!, authorId)
 
         //save article translation
         val articleTranslation = ArticleTranslation(
@@ -193,6 +182,7 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "sourceUrl") sourceUrl: String?,
         @RequestParam(value = "sourceAuthorName") sourceAuthorName: String?,
         @RequestParam(value = "sourceTitle") sourceTitle: String?,
+        @RequestParam(value = "tags") tags: List<String>,
         @AuthenticationPrincipal author: GpUser
     ): ArticleDto {
         val language = languageService.getOneById(langId) ?: throw LanguageNotFoundError()
@@ -210,6 +200,10 @@ class ArticleController @Autowired constructor(
             articleToUpdate.sourceAuthorName = sourceAuthorName
             articleToUpdate.sourceTitle = sourceTitle
             articleService.save(articleToUpdate)
+
+            //update tags, by deleting all for article and saving new ones
+            tagService.deleteAllByArticleId(articleId)
+            tagService.saveTagsForArticle(tags, articleId, author.id!!)
 
             return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleId)!!
         } else {

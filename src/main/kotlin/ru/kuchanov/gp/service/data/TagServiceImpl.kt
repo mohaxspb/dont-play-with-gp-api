@@ -31,10 +31,11 @@ class TagServiceImpl @Autowired constructor(
     override fun save(tag: Tag): Tag =
         tagRepository.save(tag)
 
-    override fun saveTagsForArticle(tags: List<Tag>, articleId: Long, authorId: Long) {
-        tags.forEach {
-            if (articlesTagsRepository.findByArticleIdAndTagId(articleId, it.id!!) == null) {
-                articlesTagsRepository.save(ArticlesTags(articleId = articleId, tagId = it.id!!, authorId = authorId))
+    override fun saveTagsForArticle(tagTitles: List<String>, articleId: Long, authorId: Long) {
+        tagTitles.forEach { tagTitle ->
+            val tagInDb = findByTitle(tagTitle) ?: save(Tag(title = tagTitle, authorId = authorId))
+            if (articlesTagsRepository.findByArticleIdAndTagId(articleId, tagInDb.id!!) == null) {
+                articlesTagsRepository.save(ArticlesTags(articleId = articleId, tagId = tagInDb.id!!, authorId = authorId))
             }
         }
     }
