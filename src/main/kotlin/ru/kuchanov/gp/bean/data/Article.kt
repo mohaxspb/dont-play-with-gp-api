@@ -73,12 +73,18 @@ fun Article.toDto(): ArticleDto =
         created = created,
         updated = updated
     )
+        .apply {
+            fromFuture = publishedDate?.let { it > Timestamp(System.currentTimeMillis()) } ?: false
+        }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
-class ArticleNotFoundException(override val message: String? = "Article not found in db!"): RuntimeException(message)
+class ArticleNotFoundException(override val message: String? = "Article not found in db!") : RuntimeException(message)
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not published!")
-class ArticleNotPublishedException: RuntimeException()
+class ArticleNotPublishedException : RuntimeException()
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not published yet!")
+class ArticleNotAvailableYetException : RuntimeException()
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not approved!")
-class ArticleNotApprovedException: RuntimeException()
+class ArticleNotApprovedException : RuntimeException()

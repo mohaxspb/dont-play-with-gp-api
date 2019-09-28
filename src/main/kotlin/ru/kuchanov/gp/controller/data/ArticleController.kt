@@ -13,6 +13,7 @@ import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.dto.data.filteredForUser
+import ru.kuchanov.gp.model.dto.data.isUserAuthorOfSomething
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.*
@@ -46,6 +47,8 @@ class ArticleController @Autowired constructor(
         if (user == null) {
             if (!article.published) {
                 throw ArticleNotPublishedException()
+            } else if (article.fromFuture) {
+                throw ArticleNotAvailableYetException()
             } else {
                 return article.apply {
                     translations = translations.filter { translation ->
@@ -57,6 +60,8 @@ class ArticleController @Autowired constructor(
         } else {
             return if (user.isAdmin()) {
                 article
+            } else if (!article.isUserAuthorOfSomething(user.id!!)) {
+                throw ArticleNotAvailableYetException()
             } else {
                 article.filteredForUser(user)
             }
