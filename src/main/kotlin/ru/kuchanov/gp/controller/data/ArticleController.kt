@@ -78,19 +78,21 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "approved", defaultValue = "true") approved: Boolean = true,
         @RequestParam(value = "withTranslations", defaultValue = "true") withTranslations: Boolean = true,
         @RequestParam(value = "withVersions", defaultValue = "false") withVersions: Boolean = false,
+        @RequestParam(value = "onlyForCurrentDate", defaultValue = "true") onlyForCurrentDate: Boolean = true,
         @AuthenticationPrincipal user: GpUser?
     ): List<ArticleDto> {
-        if ((published && approved) || user?.isAdmin() == true) {
+        if ((published && approved && onlyForCurrentDate) || user?.isAdmin() == true) {
             return articleService.getPublishedArticles(
                 offset,
                 limit,
                 published,
                 approved,
                 withTranslations,
-                withVersions
+                withVersions,
+                onlyForCurrentDate
             )
         } else {
-            throw GpAccessDeniedException("Only admins can see not published or approved articles!")
+            throw GpAccessDeniedException("Only admins can see not published or approved articles or articles from future!")
         }
     }
 

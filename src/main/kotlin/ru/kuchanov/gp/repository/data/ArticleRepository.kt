@@ -12,7 +12,9 @@ interface ArticleRepository : JpaRepository<Article, Long> {
     @Query(
         """
             SELECT * FROM articles 
-            WHERE published= :published AND approved= :approved
+            WHERE published= :published 
+            AND approved= :approved 
+            AND published_date <= CAST( :publishDate AS timestamp) 
             ORDER BY published_date DESC 
             OFFSET :offset LIMIT :limit
         """,
@@ -22,7 +24,8 @@ interface ArticleRepository : JpaRepository<Article, Long> {
         offset: Int,
         limit: Int,
         published: Boolean = true,
-        approved: Boolean = true
+        approved: Boolean = true,
+        publishDate: String
     ): List<Article>
 
     @Query(
