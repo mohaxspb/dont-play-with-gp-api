@@ -35,13 +35,6 @@ class ArticleController @Autowired constructor(
     fun index() =
         "Article endpoint"
 
-    //todo check user. Do not show article if it's not published if user is not admin or author
-    @GetMapping("{id}")
-    fun getById(
-        @PathVariable(name = "id") id: Long
-    ): Article =
-        articleService.getOneById(id) ?: throw ArticleNotFoundException()
-
     @GetMapping(GpConstants.ArticleEndpoint.Method.FULL + "/{id}")
     fun getByIdFull(
         @PathVariable(name = "id") id: Long,
