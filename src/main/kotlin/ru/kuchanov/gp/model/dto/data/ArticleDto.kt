@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.model.dto.data
 
 import ru.kuchanov.gp.bean.auth.GpUser
+import ru.kuchanov.gp.bean.data.Tag
 import ru.kuchanov.gp.model.dto.UserDto
 import java.sql.Timestamp
 
@@ -27,6 +28,7 @@ data class ArticleDto(
     val updated: Timestamp? = null
 ) {
     var translations: List<ArticleTranslationDto> = emptyList()
+    var tags: List<Tag> = emptyList()
     var author: UserDto? = null
     var approver: UserDto? = null
     var publisher: UserDto? = null

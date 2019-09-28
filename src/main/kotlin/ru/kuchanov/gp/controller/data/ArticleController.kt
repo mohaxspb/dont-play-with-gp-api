@@ -25,7 +25,8 @@ class ArticleController @Autowired constructor(
     val articleTranslationVersionService: ArticleTranslationVersionService,
     val userService: GpUserDetailsService,
     val languageService: LanguageService,
-    val imageService: ImageService
+    val imageService: ImageService,
+    val tagService: TagService
 ) {
 
     @GetMapping
@@ -129,6 +130,7 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "sourceTitle") sourceTitle: String?,
         @RequestParam(value = "sourceAuthorName") sourceAuthorName: String?,
         @RequestParam(value = "sourceUrl") sourceUrl: String?,
+        @RequestParam(value = "tags") tags: List<String>,
         @RequestParam(value = "articleLanguageId") articleLanguageId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
@@ -148,6 +150,10 @@ class ArticleController @Autowired constructor(
             sourceUrl = sourceUrl
         )
         val articleInDb = articleService.save(article)
+
+        //save tagsForArticle
+        tagService.saveTagsForArticle(tags, articleInDb.id!!, authorId)
+
         //save article translation
         val articleTranslation = ArticleTranslation(
             authorId = authorId,
@@ -176,6 +182,7 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "sourceUrl") sourceUrl: String?,
         @RequestParam(value = "sourceAuthorName") sourceAuthorName: String?,
         @RequestParam(value = "sourceTitle") sourceTitle: String?,
+        @RequestParam(value = "tags") tags: List<String>,
         @AuthenticationPrincipal author: GpUser
     ): ArticleDto {
         val language = languageService.getOneById(langId) ?: throw LanguageNotFoundError()
@@ -193,6 +200,10 @@ class ArticleController @Autowired constructor(
             articleToUpdate.sourceAuthorName = sourceAuthorName
             articleToUpdate.sourceTitle = sourceTitle
             articleService.save(articleToUpdate)
+
+            //update tags, by deleting all for article and saving new ones
+            tagService.deleteAllByArticleId(articleId)
+            tagService.saveTagsForArticle(tags, articleId, author.id!!)
 
             return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleId)!!
         } else {

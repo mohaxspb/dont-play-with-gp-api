@@ -14,14 +14,15 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 class ArticleServiceImpl @Autowired constructor(
     val articleRepository: ArticleRepository,
     val articleTranslationService: ArticleTranslationService,
-    val userService: GpUserDetailsService
+    val userService: GpUserDetailsService,
+    val tagService: TagService
 ) : ArticleService {
 
     override fun getOneById(id: Long): Article? =
         articleRepository.findByIdOrNull(id)
 
     override fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto? =
-        getOneById(id)?.toDto()?.withTranslations()?.withUsers()
+        getOneById(id)?.toDto()?.withTranslations()?.withUsers()?.withTags()
 
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
@@ -29,8 +30,8 @@ class ArticleServiceImpl @Autowired constructor(
     override fun findAllByAuthorIdWithTranslationsAsDto(authorId: Long, published: Boolean): List<ArticleDto> =
         articleRepository
             .findAllContentAuthorId(authorId)
-            .filter { if(published) it.published else true }
-            .map { it.toDto().withUsers().withTranslations(false) }
+            .filter { if (published) it.published else true }
+            .map { it.toDto().withUsers().withTranslations(false).withTags() }
 
     override fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean =
         articleRepository.existsByIdAndAuthorId(id, authorId)
@@ -48,7 +49,6 @@ class ArticleServiceImpl @Autowired constructor(
                 if (withTranslations) {
                     it.toDto()
                         .withTranslations(withVersions)
-                        .withUsers()
                         .apply {
                             translations = translations
                                 .map { translation ->
@@ -70,8 +70,10 @@ class ArticleServiceImpl @Autowired constructor(
                                 }
                         }
                 } else {
-                    it.toDto().withUsers()
+                    it.toDto()
                 }
+                    .withTags()
+                    .withUsers()
             }
 
     override fun save(article: Article): Article =
@@ -80,6 +82,7 @@ class ArticleServiceImpl @Autowired constructor(
     override fun deleteById(id: Long): Boolean {
         //delete all dependent objects
         articleTranslationService.deleteAllByArticleId(id)
+        tagService.deleteAllByArticleId(id)
         articleRepository.deleteById(id)
         return true
     }
@@ -91,6 +94,11 @@ class ArticleServiceImpl @Autowired constructor(
             } else {
                 articleTranslationService.findAllByArticleIdAsDto(id)
             }
+        }
+
+    fun ArticleDto.withTags() =
+        apply {
+            tags = tagService.findAllForArticle(id)
         }
 
     fun ArticleDto.withUsers() =

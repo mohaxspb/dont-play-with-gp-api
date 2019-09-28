@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS article_translations
 ALTER TABLE article_translations
     DROP CONSTRAINT IF EXISTS article_id_foreign_key_from_articles;
 ALTER TABLE article_translations
-    ADD CONSTRAINT article_id_foreign_key_from_languages FOREIGN KEY (article_id) REFERENCES articles (id);
+    ADD CONSTRAINT article_id_foreign_key_from_articles FOREIGN KEY (article_id) REFERENCES articles (id);
 
 ALTER TABLE article_translations
     DROP CONSTRAINT IF EXISTS lang_id_foreign_key_from_languages;
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS article_translation_versions
 ALTER TABLE article_translation_versions
     DROP CONSTRAINT IF EXISTS article_translation_id_foreign_key_from_articles;
 ALTER TABLE article_translation_versions
-    ADD CONSTRAINT article_translation_id_foreign_key_from_languages FOREIGN KEY (article_translation_id) REFERENCES article_translations (id);
+    ADD CONSTRAINT article_translation_id_foreign_key_from_articles FOREIGN KEY (article_translation_id) REFERENCES article_translations (id);
 
 ALTER TABLE article_translation_versions
     DROP CONSTRAINT IF EXISTS author_id_foreign_key_from_users;

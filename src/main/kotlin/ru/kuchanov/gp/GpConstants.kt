@@ -33,6 +33,16 @@ object GpConstants {
         }
     }
 
+    object TagEndpoint {
+        const val PATH = "tag"
+
+        object Method {
+            const val ALL = "all"
+            const val ADD = "add"
+            const val DELETE = "add"
+        }
+    }
+
     object ArticleEndpoint {
         const val PATH = "article"
 
