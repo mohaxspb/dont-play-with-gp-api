@@ -33,10 +33,10 @@ class CommentController @Autowired constructor(
         commentService.findAllByArticleIdAsDtoWithAuthor(articleId, offset, limit)
 
     @GetMapping(GpConstants.CommentEndpoint.Method.ALL_BY_AUTHOR_ID)
-    fun getAll(
-        @RequestParam(value = "authorId") authorId: Long
+    fun getAllForUser(
+        @RequestParam(value = "userId") userId: Long
     ): List<Comment> =
-        commentService.findAllByAuthorId(authorId)
+        commentService.findAllByAuthorId(userId)
 
     @PostMapping(GpConstants.CommentEndpoint.Method.ADD)
     fun create(
