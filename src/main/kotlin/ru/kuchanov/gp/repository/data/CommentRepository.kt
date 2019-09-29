@@ -26,4 +26,6 @@ interface CommentRepository : JpaRepository<Comment, Long> {
 
     @Transactional
     fun deleteAllByArticleId(articleId: Long): Boolean
+
+    fun countByArticleId(articleId: Long):Int
 }

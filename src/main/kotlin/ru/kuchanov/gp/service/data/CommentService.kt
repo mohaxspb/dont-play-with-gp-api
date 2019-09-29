@@ -14,6 +14,8 @@ interface CommentService {
 
     fun findAllByArticleIdAsDtoWithAuthor(articleId: Long, offset: Int, limit: Int): List<CommentDto>
 
+    fun countCommentsForArticle(articleId: Long): Int
+
     fun save(comment: Comment): Comment
 
     @Transactional

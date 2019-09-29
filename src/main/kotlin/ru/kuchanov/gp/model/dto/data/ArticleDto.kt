@@ -33,6 +33,7 @@ data class ArticleDto(
     var approver: UserDto? = null
     var publisher: UserDto? = null
     var fromFuture: Boolean = false
+    var commentsCount: Int = 0
 }
 
 

@@ -17,7 +17,8 @@ class ArticleServiceImpl @Autowired constructor(
     val articleRepository: ArticleRepository,
     val articleTranslationService: ArticleTranslationService,
     val userService: GpUserDetailsService,
-    val tagService: TagService
+    val tagService: TagService,
+    val commentService: CommentService
 ) : ArticleService {
 
     override fun getOneById(id: Long): Article? =
@@ -86,6 +87,7 @@ class ArticleServiceImpl @Autowired constructor(
                 }
                     .withTags()
                     .withUsers()
+                    .withCommentsCount()
             }
 
     override fun save(article: Article): Article =
@@ -111,6 +113,11 @@ class ArticleServiceImpl @Autowired constructor(
     fun ArticleDto.withTags() =
         apply {
             tags = tagService.findAllForArticle(id)
+        }
+
+    fun ArticleDto.withCommentsCount() =
+        apply {
+            commentsCount = commentService.countCommentsForArticle(id)
         }
 
     fun ArticleDto.withUsers() =

@@ -28,6 +28,9 @@ class CommentServiceImpl @Autowired constructor(
     override fun findAllByArticleIdAsDtoWithAuthor(articleId: Long, offset: Int, limit: Int): List<CommentDto> =
         commentRepository.getByArticleIdWithOffsetAndLimit(articleId, offset, limit).map { it.toDto().withAuthor() }
 
+    override fun countCommentsForArticle(articleId: Long): Int =
+        commentRepository.countByArticleId(articleId)
+
     override fun save(comment: Comment): Comment =
         commentRepository.save(comment)
 
