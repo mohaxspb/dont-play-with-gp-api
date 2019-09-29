@@ -140,6 +140,7 @@ class WebSecurityConfiguration @Autowired constructor(
                 "/tag/",
                 "/tag/all",
                 "/comment/",
+                "/comment/countForArticle",
                 "/comment/all",
                 "/comment/allByAuthorId",
                 "/article/**",
