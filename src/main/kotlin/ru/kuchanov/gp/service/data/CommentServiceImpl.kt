@@ -1,0 +1,38 @@
+package ru.kuchanov.gp.service.data
+
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import ru.kuchanov.gp.bean.auth.toDto
+import ru.kuchanov.gp.bean.data.Comment
+import ru.kuchanov.gp.bean.data.toDto
+import ru.kuchanov.gp.model.dto.data.CommentDto
+import ru.kuchanov.gp.repository.data.CommentRepository
+import ru.kuchanov.gp.service.auth.GpUserDetailsService
+
+@Service
+class CommentServiceImpl @Autowired constructor(
+    val commentRepository: CommentRepository,
+    val userService: GpUserDetailsService
+) : CommentService {
+    override fun findAllByAuthorId(authorId: Long): List<Comment> =
+        commentRepository.findAllByAuthorId(authorId)
+
+    override fun findAllByArticleIdAsDtoWithAuthor(articleId: Long, offset: Int, limit: Int): List<CommentDto> =
+        commentRepository.getByArticleIdWithOffsetAndLimit(articleId, offset, limit).map { it.toDto().withAuthor() }
+
+    override fun save(comment: Comment): Comment =
+        commentRepository.save(comment)
+
+    override fun deleteById(id: Long): Boolean {
+        commentRepository.deleteById(id)
+        return true
+    }
+
+    override fun deleteAllByArticleId(articleId: Long): Boolean =
+        commentRepository.deleteAllByArticleId(articleId)
+
+    fun CommentDto.withAuthor() =
+        apply {
+            author = userService.getById(authorId)?.toDto()
+        }
+}
