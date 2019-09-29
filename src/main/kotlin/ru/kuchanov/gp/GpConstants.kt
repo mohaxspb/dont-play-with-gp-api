@@ -43,6 +43,17 @@ object GpConstants {
         }
     }
 
+    object CommentEndpoint {
+        const val PATH = "comment"
+
+        object Method {
+            const val ALL = "all"
+            const val ALL_BY_AUTHOR_ID = "allByAuthorId"
+            const val ADD = "add"
+            const val DELETE = "add"
+        }
+    }
+
     object ArticleEndpoint {
         const val PATH = "article"
 

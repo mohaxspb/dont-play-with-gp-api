@@ -6,6 +6,10 @@ import javax.transaction.Transactional
 
 interface CommentService {
 
+    fun getById(id: Long): Comment?
+
+    fun getByIdAsDto(id: Long): CommentDto?
+
     fun findAllByAuthorId(authorId: Long): List<Comment>
 
     fun findAllByArticleIdAsDtoWithAuthor(articleId: Long, offset: Int, limit: Int): List<CommentDto>

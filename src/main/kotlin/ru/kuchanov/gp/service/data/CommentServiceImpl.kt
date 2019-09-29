@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.service.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.auth.toDto
 import ru.kuchanov.gp.bean.data.Comment
@@ -14,6 +15,13 @@ class CommentServiceImpl @Autowired constructor(
     val commentRepository: CommentRepository,
     val userService: GpUserDetailsService
 ) : CommentService {
+
+    override fun getById(id: Long): Comment? =
+        commentRepository.findByIdOrNull(id)
+
+    override fun getByIdAsDto(id: Long): CommentDto? =
+        commentRepository.findByIdOrNull(id)?.toDto()?.withAuthor()
+
     override fun findAllByAuthorId(authorId: Long): List<Comment> =
         commentRepository.findAllByAuthorId(authorId)
 
