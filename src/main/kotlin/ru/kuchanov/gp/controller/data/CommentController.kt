@@ -24,6 +24,10 @@ class CommentController @Autowired constructor(
     fun index() =
         "Comment endpoint"
 
+    @GetMapping(GpConstants.CommentEndpoint.Method.COUNT_FOR_ARTICLE)
+    fun countForArticle(@RequestParam(value = "articleId") articleId: Long): Int =
+        commentService.countCommentsForArticle(articleId)
+
     @GetMapping(GpConstants.CommentEndpoint.Method.ALL)
     fun getAll(
         @RequestParam(value = "articleId") articleId: Long,

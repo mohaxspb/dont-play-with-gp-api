@@ -47,6 +47,7 @@ object GpConstants {
         const val PATH = "comment"
 
         object Method {
+            const val COUNT_FOR_ARTICLE = "countForArticle"
             const val ALL = "all"
             const val ALL_BY_AUTHOR_ID = "allByAuthorId"
             const val ADD = "add"
