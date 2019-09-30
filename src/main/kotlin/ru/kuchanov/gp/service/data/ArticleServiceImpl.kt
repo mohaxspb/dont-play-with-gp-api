@@ -17,14 +17,15 @@ class ArticleServiceImpl @Autowired constructor(
     val articleRepository: ArticleRepository,
     val articleTranslationService: ArticleTranslationService,
     val userService: GpUserDetailsService,
-    val tagService: TagService
+    val tagService: TagService,
+    val commentService: CommentService
 ) : ArticleService {
 
     override fun getOneById(id: Long): Article? =
         articleRepository.findByIdOrNull(id)
 
     override fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto? =
-        getOneById(id)?.toDto()?.withTranslations()?.withUsers()?.withTags()
+        getOneById(id)?.toDto()?.withTranslations()?.withUsers()?.withTags()?.withCommentsCount()
 
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
@@ -86,6 +87,7 @@ class ArticleServiceImpl @Autowired constructor(
                 }
                     .withTags()
                     .withUsers()
+                    .withCommentsCount()
             }
 
     override fun save(article: Article): Article =
@@ -111,6 +113,11 @@ class ArticleServiceImpl @Autowired constructor(
     fun ArticleDto.withTags() =
         apply {
             tags = tagService.findAllForArticle(id)
+        }
+
+    fun ArticleDto.withCommentsCount() =
+        apply {
+            commentsCount = commentService.countCommentsForArticle(id)
         }
 
     fun ArticleDto.withUsers() =
