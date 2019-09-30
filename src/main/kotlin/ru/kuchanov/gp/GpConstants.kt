@@ -51,7 +51,7 @@ object GpConstants {
             const val ALL = "all"
             const val ALL_BY_AUTHOR_ID = "allByAuthorId"
             const val ADD = "add"
-            const val DELETE = "add"
+            const val DELETE = "delete"
         }
     }
 
