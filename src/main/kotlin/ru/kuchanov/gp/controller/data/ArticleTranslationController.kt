@@ -91,8 +91,8 @@ class ArticleTranslationController @Autowired constructor(
     @PostMapping(ArticleTranslationEndpoint.Method.EDIT)
     fun editArticleTranslation(
         @RequestParam(value = "translationId") translationId: Long,
-        @RequestParam(value = "imageFile") imageFile: MultipartFile?,
-        @RequestParam(value = "imageFileName") imageFileName: String?,
+        @RequestParam(value = "imageFile", required = false) imageFile: MultipartFile?,
+        @RequestParam(value = "imageFileName", required = false) imageFileName: String?,
         @RequestParam(value = "langId") langId: Long,
         @RequestParam(value = "title") title: String,
         @RequestParam(value = "shortDescription") shortDescription: String?,
