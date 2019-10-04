@@ -33,3 +33,13 @@
     to push changes execute:
     
     ```git update-index --no-assume-unchanged PROJECT_ROOT\src\main\resources\application-dev.yml```
+
+11) On tomcat9 you [should add](https://stackoverflow.com/a/56874245/3212712) `/var/lib/tomcat9/image` folder to `/lib/systemd/system/tomcat9.service` so:
+
+    `ReadWritePaths=/var/lib/tomcat9/image/`
+    
+    and execute:
+    
+    `systemctl daemon-reload`  
+    
+    `service tomcat9 restart`
