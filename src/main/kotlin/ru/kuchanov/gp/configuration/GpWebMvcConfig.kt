@@ -18,9 +18,12 @@ class GpWebMvcConfig : WebMvcConfigurer {
                 "http://localhost:443",
                 //my dev IP
                 "http://192.168.43.235:4200",
+                //stage address
                 "http://kuchanov.ru",
-                "https://kuchanov.ru"
-                //todo add prod domains (both http and https to prevent cors problems)
+                "https://kuchanov.ru",
+                //prod address
+                "http://dont-play-with-google.com",
+                "https://dont-play-with-google.com"
             )
             .allowCredentials(true)
     }
