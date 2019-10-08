@@ -26,6 +26,15 @@ interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslation
     )
     fun countVersionsByVersionId(versionId: Long): Int
 
+    @Query(
+        """
+            select count(*) from article_translation_versions 
+            where article_translation_id = (select id from article_translations where article_id=:articleId)
+        """,
+        nativeQuery = true
+    )
+    fun countByArticleId(articleId: Long): Int
+
     fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
 
     @Transactional

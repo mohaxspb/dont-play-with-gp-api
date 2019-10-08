@@ -20,6 +20,8 @@ interface ArticleTranslationService {
 
     fun countOfTranslationsByTranslationId(translationId: Long): Int
 
+    fun countTranslationsByArticleId(articleId: Long): Int
+
     fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
 
     fun save(articleTranslation: ArticleTranslation): ArticleTranslation
