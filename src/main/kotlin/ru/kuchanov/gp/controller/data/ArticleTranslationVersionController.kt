@@ -107,6 +107,9 @@ class ArticleTranslationVersionController @Autowired constructor(
                 user.id!!
             )
         ) {
+            if (articleTranslationVersion.published) {
+                throw VersionIsPublishedException("You can't disapprove published version! Unpublish it first.")
+            }
             articleTranslationVersion.approved = approve
             articleTranslationVersion.approverId = user.id!!
             articleTranslationVersion.approvedDate = Timestamp(System.currentTimeMillis())

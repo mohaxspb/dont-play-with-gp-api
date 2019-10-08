@@ -20,6 +20,8 @@ interface ArticleTranslationVersionService {
 
     fun countOfVersionsByVersionId(versionId: Long): Int
 
+    fun countByArticleId(articleId: Long): Int
+
     fun isUserIsAuthorOfVersionOrTranslationOrArticleByVersionId(versionId: Long, userId: Long): Boolean
 
     fun save(articleTranslationVersion: ArticleTranslationVersion): ArticleTranslationVersion

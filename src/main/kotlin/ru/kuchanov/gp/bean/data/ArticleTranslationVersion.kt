@@ -69,6 +69,11 @@ class VersionNotApprovedException : RuntimeException()
 class VersionNotPublishedException : RuntimeException()
 
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED)
+class VersionIsPublishedException(
+    override val message: String? = "Version is published!"
+) : RuntimeException(message)
+
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED)
 class IsTheOnlyVersionException(
     override val message: String? = "You are not allowed to delete the only version in translation"
 ) : RuntimeException(message)

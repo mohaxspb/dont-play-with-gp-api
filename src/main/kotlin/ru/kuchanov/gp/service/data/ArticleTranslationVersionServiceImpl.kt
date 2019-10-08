@@ -45,6 +45,9 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
     override fun countOfVersionsByVersionId(versionId: Long): Int =
         articleTranslationVersionRepository.countVersionsByVersionId(versionId)
 
+    override fun countByArticleId(articleId: Long): Int =
+        articleTranslationVersionRepository.countByArticleId(articleId)
+
     override fun isUserIsAuthorOfVersionOrTranslationOrArticleByVersionId(versionId: Long, userId: Long): Boolean {
         return if (articleTranslationVersionRepository.existsByIdAndAuthorId(userId, versionId)) {
             true

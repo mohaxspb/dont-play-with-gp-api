@@ -38,6 +38,9 @@ class ArticleTranslationServiceImpl @Autowired constructor(
     override fun countOfTranslationsByTranslationId(translationId: Long): Int =
         articleTranslationRepository.countTranslationsByTranslationId(translationId)
 
+    override fun countTranslationsByArticleId(articleId: Long): Int =
+        articleTranslationRepository.countByArticleId(articleId)
+
     override fun isUserIsAuthorOfTranslationOrArticleByTranslationId(translationId: Long, userId: Long): Boolean {
         return if (articleTranslationRepository.existsByIdAndAuthorId(translationId, userId)) {
             true

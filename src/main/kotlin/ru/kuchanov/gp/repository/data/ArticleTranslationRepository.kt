@@ -20,5 +20,7 @@ interface ArticleTranslationRepository : JpaRepository<ArticleTranslation, Long>
     )
     fun countTranslationsByTranslationId(translationId: Long): Int
 
+    fun countByArticleId(articleId: Long): Int
+
     fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean
 }

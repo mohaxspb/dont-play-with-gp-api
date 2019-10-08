@@ -229,6 +229,10 @@ class ArticleController @Autowired constructor(
             if (approvedTranslations.isEmpty()) {
                 throw TranslationNotApprovedException()
             }
+        } else {
+            if (article.published) {
+                throw ArticleIsPublishedException("You can't disapprove published article! Unpublish it first.")
+            }
         }
         article.approved = approve
         article.approverId = user.id!!
@@ -245,22 +249,52 @@ class ArticleController @Autowired constructor(
         @RequestParam(name = "publish") publish: Boolean
     ): ArticleDto {
         val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+        val userId = user.id!!
+        val timestamp = Timestamp(System.currentTimeMillis())
 
         if (publish) {
-            if (!article.approved) {
-                throw ArticleNotApprovedException()
-            }
-            val translations = articleTranslationService
-                .findAllByArticleId(id)
-            val publishedTranslations = translations.filter { it.published }
-            if (publishedTranslations.isEmpty()) {
-                throw TranslationNotPublishedException()
+            //allow publish if there is only one translation and one text version for this article
+            val countOfTranslations = articleTranslationService.countTranslationsByArticleId(id)
+            val countOfVersions = articleTranslationVersionService.countByArticleId(id)
+            if (countOfTranslations == 1 && countOfVersions == 1) {
+                article.approved = true
+                article.approverId = userId
+                article.approvedDate = timestamp
+                articleService.save(article)
+                //approve and publish all translations and its versions
+                val translation = articleTranslationService.findAllByArticleId(id)[0]
+                translation.approved = true
+                translation.approverId = userId
+                translation.approvedDate = timestamp
+                translation.published = true
+                translation.publisherId = userId
+                translation.publishedDate = timestamp
+                articleTranslationService.save(translation)
+
+                val version = articleTranslationVersionService.findAllByArticleTranslationId(translation.id!!)[0]
+                version.approved = true
+                version.approverId = userId
+                version.approvedDate = timestamp
+                version.published = true
+                version.publisherId = userId
+                version.publishedDate = timestamp
+                articleTranslationVersionService.save(version)
+            } else {
+                if (!article.approved) {
+                    throw ArticleNotApprovedException()
+                }
+                val translations = articleTranslationService
+                    .findAllByArticleId(id)
+                val publishedTranslations = translations.filter { it.published }
+                if (publishedTranslations.isEmpty()) {
+                    throw TranslationNotPublishedException()
+                }
             }
         }
 
         article.published = publish
-        article.publisherId = user.id!!
-        article.publishedDate = Timestamp(System.currentTimeMillis())
+        article.publisherId = userId
+        article.publishedDate = timestamp
         articleService.save(article)
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
     }

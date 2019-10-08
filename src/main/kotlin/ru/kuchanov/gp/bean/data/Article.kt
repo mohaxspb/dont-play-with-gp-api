@@ -83,6 +83,9 @@ class ArticleNotFoundException(override val message: String? = "Article not foun
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not published!")
 class ArticleNotPublishedException : RuntimeException()
 
+@ResponseStatus(value = HttpStatus.PRECONDITION_FAILED)
+class ArticleIsPublishedException(override val message: String? = "Article is published!") : RuntimeException(message)
+
 @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Article is not published yet!")
 class ArticleNotAvailableYetException : RuntimeException()
 
