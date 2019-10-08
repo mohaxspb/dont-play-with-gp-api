@@ -151,6 +151,10 @@ class ArticleTranslationController @Autowired constructor(
                 if (approvedVersions.isEmpty()) {
                     throw VersionNotApprovedException()
                 }
+            } else{
+                if (articleTranslation.published) {
+                    throw TranslationIsPublishedException("You can't disapprove published translation! Unpublish it first.")
+                }
             }
             articleTranslation.approved = approve
             articleTranslation.approverId = user.id!!
