@@ -253,43 +253,7 @@ class ArticleController @Autowired constructor(
         val timestamp = Timestamp(System.currentTimeMillis())
 
         if (publish) {
-            //allow publish if there is only one translation and one text version for this article
-            val countOfTranslations = articleTranslationService.countTranslationsByArticleId(id)
-            val countOfVersions = articleTranslationVersionService.countByArticleId(id)
-            if (countOfTranslations == 1 && countOfVersions == 1) {
-                article.approved = true
-                article.approverId = userId
-                article.approvedDate = timestamp
-                articleService.save(article)
-                //approve and publish all translations and its versions
-                val translation = articleTranslationService.findAllByArticleId(id)[0]
-                translation.approved = true
-                translation.approverId = userId
-                translation.approvedDate = timestamp
-                translation.published = true
-                translation.publisherId = userId
-                translation.publishedDate = timestamp
-                articleTranslationService.save(translation)
-
-                val version = articleTranslationVersionService.findAllByArticleTranslationId(translation.id!!)[0]
-                version.approved = true
-                version.approverId = userId
-                version.approvedDate = timestamp
-                version.published = true
-                version.publisherId = userId
-                version.publishedDate = timestamp
-                articleTranslationVersionService.save(version)
-            } else {
-                if (!article.approved) {
-                    throw ArticleNotApprovedException()
-                }
-                val translations = articleTranslationService
-                    .findAllByArticleId(id)
-                val publishedTranslations = translations.filter { it.published }
-                if (publishedTranslations.isEmpty()) {
-                    throw TranslationNotPublishedException()
-                }
-            }
+            checkArticle(article, userId)
         }
 
         article.published = publish
@@ -307,22 +271,57 @@ class ArticleController @Autowired constructor(
         @AuthenticationPrincipal user: GpUser
     ): ArticleDto {
         val article = articleService.getOneById(id) ?: throw ArticleNotFoundException()
+        val userId = user.id!!
 
-        if (!article.approved) {
-            throw ArticleNotApprovedException()
-        }
-        val translations = articleTranslationService
-            .findAllByArticleId(id)
-        val publishedTranslations = translations.filter { it.published }
-        if (publishedTranslations.isEmpty()) {
-            throw TranslationNotPublishedException()
-        }
+        checkArticle(article, userId)
 
         article.published = true
-        article.publisherId = user.id!!
+        article.publisherId = userId
 
         article.publishedDate = Timestamp(publishDate.time)
         articleService.save(article)
         return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+    }
+
+    private fun checkArticle(article: Article, userId: Long) {
+        val articleId = article.id!!
+        //allow publish if there is only one translation and one text version for this article
+        val countOfTranslations = articleTranslationService.countTranslationsByArticleId(articleId)
+        val countOfVersions = articleTranslationVersionService.countByArticleId(articleId)
+        if (countOfTranslations == 1 && countOfVersions == 1) {
+            val timestamp = Timestamp(System.currentTimeMillis())
+
+            article.approved = true
+            article.approverId = userId
+            article.approvedDate = timestamp
+            articleService.save(article)
+            //approve and publish all translations and its versions
+            val translation = articleTranslationService.findAllByArticleId(articleId)[0]
+            translation.approved = true
+            translation.approverId = userId
+            translation.approvedDate = timestamp
+            translation.published = true
+            translation.publisherId = userId
+            translation.publishedDate = timestamp
+            articleTranslationService.save(translation)
+
+            val version = articleTranslationVersionService.findAllByArticleTranslationId(translation.id!!)[0]
+            version.approved = true
+            version.approverId = userId
+            version.approvedDate = timestamp
+            version.published = true
+            version.publisherId = userId
+            version.publishedDate = timestamp
+            articleTranslationVersionService.save(version)
+        } else {
+            if (!article.approved) {
+                throw ArticleNotApprovedException()
+            }
+            val translations = articleTranslationService.findAllByArticleId(articleId)
+            val publishedTranslations = translations.filter { it.published }
+            if (publishedTranslations.isEmpty()) {
+                throw TranslationNotPublishedException()
+            }
+        }
     }
 }
