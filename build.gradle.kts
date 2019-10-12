@@ -48,6 +48,8 @@ dependencies {
     runtime("org.springframework.boot:spring-boot-starter-tomcat")
     //info
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    //email
+    implementation("org.springframework.boot:spring-boot-starter-mail")
     //data
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     //security

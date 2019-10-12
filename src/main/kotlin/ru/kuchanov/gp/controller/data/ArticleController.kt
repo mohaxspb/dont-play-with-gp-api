@@ -1,7 +1,9 @@
 package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -19,6 +21,9 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.*
 import java.sql.Timestamp
 import java.util.*
+import javax.mail.Message
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleEndpoint.PATH + "/")
@@ -29,8 +34,12 @@ class ArticleController @Autowired constructor(
     val userService: GpUserDetailsService,
     val languageService: LanguageService,
     val imageService: ImageService,
-    val tagService: TagService
+    val tagService: TagService,
+    val javaMailSender: JavaMailSender
 ) {
+
+    @Value("\${my.mail.admin.address}")
+    private lateinit var adminEmailAddress: String
 
     @GetMapping
     fun index() =
@@ -173,8 +182,18 @@ class ArticleController @Autowired constructor(
             text = text
         )
         articleTranslationVersionService.save(textVersion)
+
+        val createdArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
+
+        javaMailSender.send { mimeMessage: MimeMessage ->
+            println("adminEmailAddress: $adminEmailAddress")
+            mimeMessage.setRecipient(Message.RecipientType.TO, InternetAddress(adminEmailAddress))
+            mimeMessage.subject = "New article created!"
+            mimeMessage.setText("New article created! ${createdArticle.translations[0].title} by ${createdArticle.author!!.fullName}")
+        }
+
         //return dto.
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
+        return createdArticle
     }
 
     @PostMapping(GpConstants.ArticleEndpoint.Method.EDIT)
