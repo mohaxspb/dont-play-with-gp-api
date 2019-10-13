@@ -186,7 +186,7 @@ class ArticleController @Autowired constructor(
         val createdArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
 
         javaMailSender.send { mimeMessage: MimeMessage ->
-            println("adminEmailAddress: $adminEmailAddress")
+            mimeMessage.setFrom()
             mimeMessage.setRecipient(Message.RecipientType.TO, InternetAddress(adminEmailAddress))
             mimeMessage.subject = "New article created!"
             mimeMessage.setText("New article created! ${createdArticle.translations[0].title} by ${createdArticle.author!!.fullName}")
