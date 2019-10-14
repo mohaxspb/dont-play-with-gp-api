@@ -11,6 +11,7 @@ import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.*
+import ru.kuchanov.gp.service.mail.MailService
 import java.sql.Timestamp
 
 @RestController
@@ -20,7 +21,8 @@ class ArticleTranslationController @Autowired constructor(
     val articleTranslationService: ArticleTranslationService,
     val articleTranslationVersionService: ArticleTranslationVersionService,
     val imageService: ImageService,
-    val languageService: LanguageService
+    val languageService: LanguageService,
+    val mailService: MailService
 ) {
 
     @GetMapping
@@ -85,7 +87,12 @@ class ArticleTranslationController @Autowired constructor(
         )
         articleTranslationVersionService.save(textVersion)
 
-        return articleTranslationService.getOneByIdAsDtoWithVersions(savedTranslation.id!!)!!
+        val createdTranslation = articleTranslationService
+            .getOneByIdAsDtoWithVersions(savedTranslation.id!!)!!
+
+        mailService.sendTranslationCreatedMail(createdTranslation)
+
+        return createdTranslation
     }
 
     @PostMapping(ArticleTranslationEndpoint.Method.EDIT)
@@ -151,7 +158,7 @@ class ArticleTranslationController @Autowired constructor(
                 if (approvedVersions.isEmpty()) {
                     throw VersionNotApprovedException()
                 }
-            } else{
+            } else {
                 if (articleTranslation.published) {
                     throw TranslationIsPublishedException("You can't disapprove published translation! Unpublish it first.")
                 }
