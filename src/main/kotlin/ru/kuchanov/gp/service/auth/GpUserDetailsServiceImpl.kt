@@ -14,6 +14,9 @@ class GpUserDetailsServiceImpl @Autowired constructor(
     val usersAuthoritiesService: UsersAuthoritiesService
 ) : GpUserDetailsService {
 
+    override fun getAllById(ids: List<Long>): List<GpUser> =
+        usersRepository.findAllById(ids)
+
     override fun getById(id: Long) =
         usersRepository.findOneById(id)?.withAuthorities()
 
