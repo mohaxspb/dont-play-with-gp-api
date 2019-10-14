@@ -69,7 +69,7 @@ class ArticleController @Autowired constructor(
         } else {
             return if (user.isAdmin()) {
                 article
-            } else if (!article.isUserAuthorOfSomething(user.id!!)) {
+            } else if (article.fromFuture && !article.isUserAuthorOfSomething(user.id!!)) {
                 throw ArticleNotAvailableYetException()
             } else {
                 article.filteredForUser(user)
