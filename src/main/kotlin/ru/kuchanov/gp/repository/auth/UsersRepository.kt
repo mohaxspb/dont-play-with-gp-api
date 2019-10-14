@@ -1,11 +1,7 @@
 package ru.kuchanov.gp.repository.auth
 
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.http.HttpStatus
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.ResponseStatus
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.model.dto.UserDto
 

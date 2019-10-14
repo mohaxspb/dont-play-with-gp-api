@@ -65,7 +65,6 @@ fun ArticleDto.isUserAuthorOfSomething(userId: Long): Boolean =
             true
         } else {
             val versions = translations.flatMap { it.versions }
-            println(versions)
             versions.firstOrNull { it.authorId == userId } != null
         }
     }
