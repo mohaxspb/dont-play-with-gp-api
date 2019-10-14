@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
+import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
@@ -11,6 +12,7 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import ru.kuchanov.gp.util.getServerAddress
 import javax.mail.Message
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
@@ -23,8 +25,11 @@ class MailServiceImpl @Autowired constructor(
     val translationService: ArticleTranslationService,
     val versionService: ArticleTranslationVersionService,
     val usersService: GpUserDetailsService,
-    @Value("\${my.mail.admin.address}") val adminEmailAddress: String
+    @Value("\${my.mail.admin.address}") val adminEmailAddress: String,
+    @Value("\${angular.port}") val angularServerPort: String,
+    @Value("\${angular.href}") val angularServerHref: String
 ) : MailService {
+
     override fun sendMail(vararg to: String, subj: String, text: String) {
         javaMailSender.send { mimeMessage: MimeMessage ->
             mimeMessage.setFrom()
@@ -38,7 +43,10 @@ class MailServiceImpl @Autowired constructor(
         sendMail(
             adminEmailAddress,
             subj = "New article created!",
-            text = "New article created! ${createdArticle.translations[0].title} by ${createdArticle.author!!.fullName}"
+            text = """New article created! ${createdArticle.translations[0].title} by ${createdArticle.author!!.fullName}
+                |                
+                |You can visit it here: ${getServerAddress()}$angularServerPort$angularServerHref#/${GpConstants.ArticleEndpoint.PATH}/${createdArticle.id}
+            """.trimMargin()
         )
     }
 
@@ -59,7 +67,10 @@ class MailServiceImpl @Autowired constructor(
         sendMail(
             *userEmails.toTypedArray(),
             subj = "New Translation created!",
-            text = "New Translation created! ${createdTranslation.title} by ${createdTranslation.author!!.fullName}"
+            text = """New Translation created! ${createdTranslation.title} by ${createdTranslation.author!!.fullName}
+                |                
+                |You can visit it here: ${getServerAddress()}$angularServerPort$angularServerHref#/${GpConstants.ArticleEndpoint.PATH}/${createdTranslation.articleId}?langId=${createdTranslation.langId}
+            """.trimMargin()
         )
     }
 
@@ -83,7 +94,10 @@ class MailServiceImpl @Autowired constructor(
         sendMail(
             *userEmails.toTypedArray(),
             subj = "New text version created!",
-            text = "New text version created! ${translation.title} by ${createdVersion.author!!.fullName}"
+            text = """New text version created! ${translation.title} by ${createdVersion.author!!.fullName}
+               |
+               |You can visit it here: ${getServerAddress()}$angularServerPort$angularServerHref#/${GpConstants.ArticleEndpoint.PATH}/${translation.articleId}?langId=${translation.langId}
+            """.trimMargin()
         )
     }
 

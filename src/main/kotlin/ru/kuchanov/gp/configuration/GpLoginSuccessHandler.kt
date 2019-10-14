@@ -26,7 +26,7 @@ class GpLoginSuccessHandler : SavedRequestAwareAuthenticationSuccessHandler() {
         println("targetUrl: $targetUrl")
         if (targetUrl == "/") {
             val schemeAndDomain = "${request.scheme}://${request.serverName}"
-            val defaultRedirectUrl = "$schemeAndDomain:$angularServerPort$angularServerHref"
+            val defaultRedirectUrl = "$schemeAndDomain$angularServerPort$angularServerHref"
             println("defaultRedirectUrl: $defaultRedirectUrl")
             return defaultRedirectUrl
         } else {
