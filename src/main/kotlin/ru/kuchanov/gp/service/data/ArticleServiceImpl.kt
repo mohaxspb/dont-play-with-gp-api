@@ -90,8 +90,8 @@ class ArticleServiceImpl @Autowired constructor(
                     .withCommentsCount()
             }
 
-    override fun getPublishedArticlesBetweenDates(startDate: String, endDate: String): List<ArticleDto> =
-        articleRepository.getPublishedArticlesBetweenDates(startDate, endDate)
+    override fun getCreatedArticlesBetweenDates(startDate: String, endDate: String): List<ArticleDto> =
+        articleRepository.getCreatedArticlesBetweenDates(startDate, endDate)
             .map { it.toDto().withTranslations().withUsers() }
 
     override fun save(article: Article): Article =

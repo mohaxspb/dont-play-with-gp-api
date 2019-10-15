@@ -31,14 +31,13 @@ interface ArticleRepository : JpaRepository<Article, Long> {
     @Query(
         """
             SELECT * FROM articles 
-            WHERE published=true 
-            AND published_date >= CAST( :startDate AS timestamp) 
-            AND published_date <= CAST( :endDate AS timestamp) 
-            ORDER BY published_date
+            WHERE created >= CAST( :startDate AS timestamp) 
+            AND created <= CAST( :endDate AS timestamp) 
+            ORDER BY created
         """,
         nativeQuery = true
     )
-    fun getPublishedArticlesBetweenDates(startDate: String, endDate: String): List<Article>
+    fun getCreatedArticlesBetweenDates(startDate: String, endDate: String): List<Article>
 
     @Query(
         """
