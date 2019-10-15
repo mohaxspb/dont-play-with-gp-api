@@ -245,7 +245,12 @@ class ArticleController @Autowired constructor(
         article.approverId = user.id!!
         article.approvedDate = Timestamp(System.currentTimeMillis())
         articleService.save(article)
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        mailService.sendArticleApprovedMail(updatedArticle)
+
+        return updatedArticle
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -267,7 +272,12 @@ class ArticleController @Autowired constructor(
         article.publisherId = userId
         article.publishedDate = timestamp
         articleService.save(article)
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        mailService.sendArticlePublishedMail(updatedArticle)
+
+        return updatedArticle
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -287,7 +297,12 @@ class ArticleController @Autowired constructor(
 
         article.publishedDate = Timestamp(publishDate.time)
         articleService.save(article)
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        mailService.sendArticlePublishedMail(updatedArticle)
+
+        return updatedArticle
     }
 
     private fun checkArticle(article: Article, userId: Long) {
