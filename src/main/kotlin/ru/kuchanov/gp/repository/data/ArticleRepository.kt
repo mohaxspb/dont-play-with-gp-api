@@ -30,6 +30,18 @@ interface ArticleRepository : JpaRepository<Article, Long> {
 
     @Query(
         """
+            SELECT * FROM articles 
+            WHERE published=true 
+            AND published_date >= CAST( :startDate AS timestamp) 
+            AND published_date <= CAST( :endDate AS timestamp) 
+            ORDER BY published_date
+        """,
+        nativeQuery = true
+    )
+    fun getPublishedArticlesBetweenDates(startDate: String, endDate: String): List<Article>
+
+    @Query(
+        """
             select * from articles as a 
             where a.id in (
               select article_id from article_translations as t where t.id in (

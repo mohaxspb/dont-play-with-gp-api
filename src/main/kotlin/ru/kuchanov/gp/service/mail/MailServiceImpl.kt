@@ -3,6 +3,7 @@ package ru.kuchanov.gp.service.mail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.isAdmin
@@ -14,6 +15,9 @@ import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
 import ru.kuchanov.gp.util.getServerAddress
+import java.sql.Timestamp
+import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.mail.Message
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
@@ -198,6 +202,35 @@ class MailServiceImpl @Autowired constructor(
                 |You can visit it here: ${createArticleLink(translation.articleId)}
             """.trimMargin()
         )
+    }
+
+    @Scheduled(
+        /**
+         * second, minute, hour, day, month, day of week
+         */
+        cron = "*/15 * * * * *"
+    )
+    fun sendStatisticsEmail() {
+        val currentDate = LocalDate.now()
+        println("currentDate: $currentDate")
+        val startDate = currentDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+        val endDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC)
+        println("startDate: $startDate")
+        println("endDate: $endDate")
+        val articlesCreatedToday = articleService.getPublishedArticlesBetweenDates(
+            Timestamp.from(startDate).toString(),
+            Timestamp.from(endDate).toString()
+        )
+        println("startDate: ${Timestamp.from(startDate)}")
+        println("endDate: ${Timestamp.from(endDate)}")
+        //ExceptOfMentionedInArticle
+        val translationsCreatedToday = TODO()
+        //ExceptOfMentionedIn translations
+        val versionsCreatedToday = TODO()
+
+        val usersCreatedToday = TODO()
+
+        val commentsCreatedToday = TODO()
     }
 
     private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {

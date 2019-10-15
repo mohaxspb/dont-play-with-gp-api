@@ -35,6 +35,8 @@ interface ArticleService {
         onlyForCurrentDate: Boolean = true
     ): List<ArticleDto>
 
+    fun getPublishedArticlesBetweenDates(startDate: String, endDate: String):List<ArticleDto>
+
     fun save(article: Article): Article
 
     /**
