@@ -80,8 +80,8 @@ class ArticleTranslationVersionController @Autowired constructor(
         @RequestParam(value = "text") text: String,
         @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationVersionDto {
-        val versionToEdit =
-            articleTranslationVersionService.getOneById(versionId) ?: throw ArticleTranslationVersionNotFoundException()
+        val versionToEdit = articleTranslationVersionService.getOneById(versionId)
+            ?: throw ArticleTranslationVersionNotFoundException()
 
         //check if user is admin or author of version, translation or article
         if (author.isAdmin()
@@ -120,7 +120,10 @@ class ArticleTranslationVersionController @Autowired constructor(
             articleTranslationVersion.approverId = user.id!!
             articleTranslationVersion.approvedDate = Timestamp(System.currentTimeMillis())
             articleTranslationVersionService.save(articleTranslationVersion)
-            return articleTranslationVersionService.getOneByIdAsDto(id)!!
+
+            val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
+            mailService.sendVersionApprovedMail(updatedVersion)
+            return updatedVersion
         } else {
             throw GpAccessDeniedException("You are not admin or author of this translation or article!")
         }
@@ -167,6 +170,8 @@ class ArticleTranslationVersionController @Autowired constructor(
             val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
             val unpublishedVersion =
                 alreadyPublishedVersion?.id?.let { articleTranslationVersionService.getOneByIdAsDto(it) }
+
+            mailService.sendVersionPublishedMail(updatedVersion)
 
             return PublishVersionResultDto(updatedVersion = updatedVersion, unpublishedVersion = unpublishedVersion)
         } else {
