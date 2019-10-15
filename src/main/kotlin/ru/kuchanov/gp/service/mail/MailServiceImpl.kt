@@ -45,7 +45,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "New article created!",
             text = """New article created! ${createdArticle.translations[0].title} by ${createdArticle.author!!.fullName}
                 |                
-                |You can visit it here: ${getServerAddress()}$angularServerPort$angularServerHref#/${GpConstants.ArticleEndpoint.PATH}/${createdArticle.id}
+                |You can visit it here: ${createArticleLink(createdArticle.id)}
             """.trimMargin()
         )
     }
@@ -69,7 +69,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "New Translation created!",
             text = """New Translation created! ${createdTranslation.title} by ${createdTranslation.author!!.fullName}
                 |                
-                |You can visit it here: ${getServerAddress()}$angularServerPort$angularServerHref#/${GpConstants.ArticleEndpoint.PATH}/${createdTranslation.articleId}?langId=${createdTranslation.langId}
+                |You can visit it here: ${createArticleLink(createdTranslation.articleId, createdTranslation.langId)}
             """.trimMargin()
         )
     }
@@ -96,7 +96,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "New text version created!",
             text = """New text version created! ${translation.title} by ${createdVersion.author!!.fullName}
                |
-               |You can visit it here: ${getServerAddress()}$angularServerPort$angularServerHref#/${GpConstants.ArticleEndpoint.PATH}/${translation.articleId}?langId=${translation.langId}
+               |You can visit it here:  ${createArticleLink(translation.articleId, translation.langId)}
             """.trimMargin()
         )
     }
@@ -125,5 +125,13 @@ class MailServiceImpl @Autowired constructor(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-
+    private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {
+        val serverAddress = "${getServerAddress()}$angularServerPort$angularServerHref#"
+        val articlePage = GpConstants.ArticleEndpoint.PATH
+        var link = "$serverAddress/$articlePage/$articleId"
+        translationLangId?.let {
+            link += "?langId=$it"
+        }
+        return link
+    }
 }
