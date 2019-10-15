@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
 import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
@@ -101,28 +102,102 @@ class MailServiceImpl @Autowired constructor(
         )
     }
 
-    override fun sendArticleApprovedMail(articleId: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sendArticleApprovedMail(article: ArticleDto) {
+        //send to article author if he is not admin
+        val articleAuthor = usersService.getById(article.authorId!!)!!
+        if (!articleAuthor.isAdmin()) {
+            sendMail(
+                articleAuthor.username,
+                subj = "Your article approved!",
+                text = """Your article "${article.translations[0].title}" approved!
+                |                
+                |You can visit it here: ${createArticleLink(article.id)}
+            """.trimMargin()
+            )
+        }
     }
 
-    override fun sendArticlePublishedMail(articleId: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sendArticlePublishedMail(article: ArticleDto) {
+        //send to article author if he is not admin and to admin
+        val userEmails = mutableSetOf(adminEmailAddress)
+        val articleAuthor = usersService.getById(article.authorId!!)!!
+        if (!articleAuthor.isAdmin()) {
+            userEmails += articleAuthor.username
+        }
+        sendMail(
+            *userEmails.toTypedArray(),
+            subj = "Your article published!",
+            text = """Your article "${article.translations[0].title}" published!
+                |                
+                |You can visit it here: ${createArticleLink(article.id)}
+            """.trimMargin()
+        )
     }
 
-    override fun sendTranslationApprovedMail(translationId: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sendTranslationApprovedMail(translation: ArticleTranslationDto) {
+        //send to translation author if he is not admin
+        val author = usersService.getById(translation.authorId!!)!!
+        if (!author.isAdmin()) {
+            sendMail(
+                author.username,
+                subj = "Your translation approved!",
+                text = """Your translation "${translation.title}" approved!
+                |                
+                |You can visit it here: ${createArticleLink(translation.articleId, translation.langId)}
+            """.trimMargin()
+            )
+        }
     }
 
-    override fun sendTranslationPublishedMail(translationId: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sendTranslationPublishedMail(translation: ArticleTranslationDto) {
+        //send to translation author if he is not admin and to admin
+        val userEmails = mutableSetOf(adminEmailAddress)
+        val author = usersService.getById(translation.authorId!!)!!
+        if (!author.isAdmin()) {
+            userEmails += author.username
+        }
+        sendMail(
+            *userEmails.toTypedArray(),
+            subj = "Your translation published!",
+            text = """Your translation "${translation.title}" published!
+                |                
+                |You can visit it here: ${createArticleLink(translation.articleId, translation.langId)}
+            """.trimMargin()
+        )
     }
 
-    override fun sendVersionApprovedMail(versionId: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sendVersionApprovedMail(version: ArticleTranslationVersionDto) {
+        //send to article author if he is not admin
+        val author = usersService.getById(version.authorId!!)!!
+        if (!author.isAdmin()) {
+            val translation = translationService.getOneById(version.articleTranslationId)!!
+            sendMail(
+                author.username,
+                subj = "Your text version approved!",
+                text = """Your text version for "${translation.title}" approved! 
+                |                
+                |You can visit it here: ${createArticleLink(translation.articleId)}
+            """.trimMargin()
+            )
+        }
     }
 
-    override fun sendVersionPublishedMail(versionId: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sendVersionPublishedMail(version: ArticleTranslationVersionDto) {
+        //send to version author if he is not admin and to admin
+        val userEmails = mutableSetOf(adminEmailAddress)
+        val author = usersService.getById(version.authorId!!)!!
+        if (!author.isAdmin()) {
+            userEmails += author.username
+        }
+        val translation = translationService.getOneById(version.articleTranslationId)!!
+        sendMail(
+            author.username,
+            subj = "Your text version published!",
+            text = """Your text version for "${translation.title}" published! 
+                |                
+                |You can visit it here: ${createArticleLink(translation.articleId)}
+            """.trimMargin()
+        )
     }
 
     private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {

@@ -8,17 +8,17 @@ interface MailService {
 
     fun sendMail(vararg to: String, subj: String, text: String)
 
-    fun sendArticleApprovedMail(articleId: Long)
+    fun sendArticleApprovedMail(article: ArticleDto)
 
-    fun sendArticlePublishedMail(articleId: Long)
+    fun sendArticlePublishedMail(article: ArticleDto)
 
-    fun sendTranslationApprovedMail(translationId: Long)
+    fun sendTranslationApprovedMail(translation: ArticleTranslationDto)
 
-    fun sendTranslationPublishedMail(translationId: Long)
+    fun sendTranslationPublishedMail(translation: ArticleTranslationDto)
 
-    fun sendVersionApprovedMail(versionId: Long)
+    fun sendVersionApprovedMail(version: ArticleTranslationVersionDto)
 
-    fun sendVersionPublishedMail(versionId: Long)
+    fun sendVersionPublishedMail(version: ArticleTranslationVersionDto)
 
     fun sendArticleCreatedMail(createdArticle: ArticleDto)
 
