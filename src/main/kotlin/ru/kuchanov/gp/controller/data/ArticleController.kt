@@ -247,9 +247,9 @@ class ArticleController @Autowired constructor(
         articleService.save(article)
 
         val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
-
-        mailService.sendArticleApprovedMail(updatedArticle)
-
+        if (updatedArticle.approved) {
+            mailService.sendArticleApprovedMail(updatedArticle)
+        }
         return updatedArticle
     }
 
@@ -274,9 +274,9 @@ class ArticleController @Autowired constructor(
         articleService.save(article)
 
         val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
-
-        mailService.sendArticlePublishedMail(updatedArticle)
-
+        if (updatedArticle.published) {
+            mailService.sendArticlePublishedMail(updatedArticle)
+        }
         return updatedArticle
     }
 
@@ -299,9 +299,9 @@ class ArticleController @Autowired constructor(
         articleService.save(article)
 
         val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
-
-        mailService.sendArticlePublishedMail(updatedArticle)
-
+        if (updatedArticle.published) {
+            mailService.sendArticlePublishedMail(updatedArticle)
+        }
         return updatedArticle
     }
 

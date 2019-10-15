@@ -122,7 +122,9 @@ class ArticleTranslationVersionController @Autowired constructor(
             articleTranslationVersionService.save(articleTranslationVersion)
 
             val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
-            mailService.sendVersionApprovedMail(updatedVersion)
+            if (updatedVersion.approved) {
+                mailService.sendVersionApprovedMail(updatedVersion)
+            }
             return updatedVersion
         } else {
             throw GpAccessDeniedException("You are not admin or author of this translation or article!")
@@ -170,9 +172,9 @@ class ArticleTranslationVersionController @Autowired constructor(
             val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
             val unpublishedVersion =
                 alreadyPublishedVersion?.id?.let { articleTranslationVersionService.getOneByIdAsDto(it) }
-
-            mailService.sendVersionPublishedMail(updatedVersion)
-
+            if (updatedVersion.published) {
+                mailService.sendVersionPublishedMail(updatedVersion)
+            }
             return PublishVersionResultDto(updatedVersion = updatedVersion, unpublishedVersion = unpublishedVersion)
         } else {
             throw GpAccessDeniedException("You are not admin or author of this translation or article!")
