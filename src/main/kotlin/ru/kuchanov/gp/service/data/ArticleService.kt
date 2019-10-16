@@ -11,6 +11,8 @@ interface ArticleService {
 
     fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto?
 
+    fun findAllByIdsAsDtoWithTranslations(ids: List<Long>): List<ArticleDto>
+
     fun findAllByAuthorId(authorId: Long): List<Article>
 
     /**

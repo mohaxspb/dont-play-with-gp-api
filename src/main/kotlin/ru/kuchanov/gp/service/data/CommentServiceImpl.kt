@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.auth.toDto
 import ru.kuchanov.gp.bean.data.Comment
 import ru.kuchanov.gp.bean.data.toDto
+import ru.kuchanov.gp.model.dto.data.ArticleIdAndCommentsCount
 import ru.kuchanov.gp.model.dto.data.CommentDto
 import ru.kuchanov.gp.repository.data.CommentRepository
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
@@ -41,6 +42,15 @@ class CommentServiceImpl @Autowired constructor(
 
     override fun deleteAllByArticleId(articleId: Long): Boolean =
         commentRepository.deleteAllByArticleId(articleId)
+
+    override fun getArticleIdsForCommentsCreatedBetweenDates(startDate: String, endDate: String): List<Long> =
+        commentRepository.getArticleIdsForCommentsCreatedBetweenDates(startDate, endDate)
+
+    override fun getArticleIdsAndCommentsCountForCommentsCreatedBetweenDates(
+        startDate: String,
+        endDate: String
+    ): List<ArticleIdAndCommentsCount> =
+        commentRepository.getArticleIdsAndCommentsCountForCommentsCreatedBetweenDates(startDate, endDate)
 
     fun CommentDto.withAuthor() =
         apply {

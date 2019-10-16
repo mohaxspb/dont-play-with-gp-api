@@ -14,6 +14,7 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import ru.kuchanov.gp.service.data.CommentService
 import ru.kuchanov.gp.util.getServerAddress
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -28,7 +29,8 @@ class MailServiceImpl @Autowired constructor(
     val articleService: ArticleService,
     val translationService: ArticleTranslationService,
     val versionService: ArticleTranslationVersionService,
-    val usersService: GpUserDetailsService,
+    val userService: GpUserDetailsService,
+    val commentService: CommentService,
     @Value("\${my.mail.admin.address}") val adminEmailAddress: String,
     @Value("\${angular.port}") val angularServerPort: String,
     @Value("\${angular.href}") val angularServerHref: String
@@ -58,15 +60,15 @@ class MailServiceImpl @Autowired constructor(
         //send to article and other translations authors
         val userEmails = mutableSetOf(adminEmailAddress)
         //article author
-        userEmails += usersService.getById(articleService.getOneById(createdTranslation.articleId)?.authorId!!)!!.username
+        userEmails += userService.getById(articleService.getOneById(createdTranslation.articleId)?.authorId!!)!!.username
         //translation authors
         val translationAuthorIds = translationService
             .findAllByArticleId(createdTranslation.articleId)
             .map { it.authorId!! }
-        userEmails += usersService.getAllById(translationAuthorIds).map { it.username }
+        userEmails += userService.getAllById(translationAuthorIds).map { it.username }
 
         //remove author of translation
-        userEmails -= usersService.getById(createdTranslation.authorId!!)!!.username
+        userEmails -= userService.getById(createdTranslation.authorId!!)!!.username
 
         sendMail(
             *userEmails.toTypedArray(),
@@ -85,15 +87,15 @@ class MailServiceImpl @Autowired constructor(
         val versionsAuthorsIds = versionService
             .findAllByArticleTranslationId(createdVersion.articleTranslationId)
             .map { it.authorId!! }
-        userEmails += usersService.getAllById(versionsAuthorsIds).map { it.username }
+        userEmails += userService.getAllById(versionsAuthorsIds).map { it.username }
         //translation author
         val translation = translationService.getOneById(createdVersion.articleTranslationId)!!
-        userEmails += usersService.getById(translation.authorId!!)!!.username
+        userEmails += userService.getById(translation.authorId!!)!!.username
         //article author
-        userEmails += usersService.getById(articleService.getOneById(translation.articleId)!!.authorId!!)!!.username
+        userEmails += userService.getById(articleService.getOneById(translation.articleId)!!.authorId!!)!!.username
 
         //remove author of version
-        userEmails -= usersService.getById(createdVersion.authorId!!)!!.username
+        userEmails -= userService.getById(createdVersion.authorId!!)!!.username
 
         sendMail(
             *userEmails.toTypedArray(),
@@ -107,7 +109,7 @@ class MailServiceImpl @Autowired constructor(
 
     override fun sendArticleApprovedMail(article: ArticleDto) {
         //send to article author if he is not admin
-        val articleAuthor = usersService.getById(article.authorId!!)!!
+        val articleAuthor = userService.getById(article.authorId!!)!!
         if (!articleAuthor.isAdmin()) {
             sendMail(
                 articleAuthor.username,
@@ -123,7 +125,7 @@ class MailServiceImpl @Autowired constructor(
     override fun sendArticlePublishedMail(article: ArticleDto) {
         //send to article author if he is not admin and to admin
         val userEmails = mutableSetOf(adminEmailAddress)
-        val articleAuthor = usersService.getById(article.authorId!!)!!
+        val articleAuthor = userService.getById(article.authorId!!)!!
         if (!articleAuthor.isAdmin()) {
             userEmails += articleAuthor.username
         }
@@ -139,7 +141,7 @@ class MailServiceImpl @Autowired constructor(
 
     override fun sendTranslationApprovedMail(translation: ArticleTranslationDto) {
         //send to translation author if he is not admin
-        val author = usersService.getById(translation.authorId!!)!!
+        val author = userService.getById(translation.authorId!!)!!
         if (!author.isAdmin()) {
             sendMail(
                 author.username,
@@ -155,7 +157,7 @@ class MailServiceImpl @Autowired constructor(
     override fun sendTranslationPublishedMail(translation: ArticleTranslationDto) {
         //send to translation author if he is not admin and to admin
         val userEmails = mutableSetOf(adminEmailAddress)
-        val author = usersService.getById(translation.authorId!!)!!
+        val author = userService.getById(translation.authorId!!)!!
         if (!author.isAdmin()) {
             userEmails += author.username
         }
@@ -171,7 +173,7 @@ class MailServiceImpl @Autowired constructor(
 
     override fun sendVersionApprovedMail(version: ArticleTranslationVersionDto) {
         //send to article author if he is not admin
-        val author = usersService.getById(version.authorId!!)!!
+        val author = userService.getById(version.authorId!!)!!
         if (!author.isAdmin()) {
             val translation = translationService.getOneById(version.articleTranslationId)!!
             sendMail(
@@ -188,7 +190,7 @@ class MailServiceImpl @Autowired constructor(
     override fun sendVersionPublishedMail(version: ArticleTranslationVersionDto) {
         //send to version author if he is not admin and to admin
         val userEmails = mutableSetOf(adminEmailAddress)
-        val author = usersService.getById(version.authorId!!)!!
+        val author = userService.getById(version.authorId!!)!!
         if (!author.isAdmin()) {
             userEmails += author.username
         }
@@ -207,7 +209,7 @@ class MailServiceImpl @Autowired constructor(
         /**
          * second, minute, hour, day, month, day of week
          */
-        cron = "*/15 * * * * *"
+        cron = "*/30 * * * * *"
     )
     fun sendStatisticsEmail() {
         val currentDate = LocalDate.now()
@@ -218,13 +220,31 @@ class MailServiceImpl @Autowired constructor(
             endDate.toString()
         )
         //ExceptOfMentionedInArticle
-        val translationsCreatedToday = TODO()
+        //todo
+//        val translationsCreatedToday = translationService.getCreatedTranslationsBetweenDates(
+//            startDate.toString(),
+//            endDate.toString()
+//        )
         //ExceptOfMentionedIn translations
-        val versionsCreatedToday = TODO()
+//        val versionsCreatedToday = TODO()
 
-        val usersCreatedToday = TODO()
+        val numOfUsersCreatedToday = userService.countUsersCreatedBetweenDates(
+            startDate.toString(),
+            endDate.toString()
+        )
 
-        val commentsCreatedToday = TODO()
+        val articleIdsForCommentsCreatedToday = commentService.getArticleIdsForCommentsCreatedBetweenDates(
+            startDate.toString(),
+            endDate.toString()
+        )
+        val articleIdsAndCommentsCountForCommentsCreatedToday = commentService
+            .getArticleIdsAndCommentsCountForCommentsCreatedBetweenDates(
+                startDate.toString(),
+                endDate.toString()
+            )
+        println("articleIdsAndCommentsCountForCommentsCreatedToday: $articleIdsAndCommentsCountForCommentsCreatedToday")
+        val articlesForCommentsCreatedToday = articleService
+            .findAllByIdsAsDtoWithTranslations(articleIdsForCommentsCreatedToday)
     }
 
     private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {

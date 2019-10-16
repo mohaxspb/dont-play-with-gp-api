@@ -27,6 +27,9 @@ class ArticleServiceImpl @Autowired constructor(
     override fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto? =
         getOneById(id)?.toDto()?.withTranslations()?.withUsers()?.withTags()?.withCommentsCount()
 
+    override fun findAllByIdsAsDtoWithTranslations(ids: List<Long>): List<ArticleDto> =
+        articleRepository.findAllById(ids).map { it.toDto().withTranslations() }
+
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
 
