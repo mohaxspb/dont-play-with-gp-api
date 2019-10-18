@@ -16,8 +16,10 @@ import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
 import ru.kuchanov.gp.service.data.CommentService
 import ru.kuchanov.gp.util.getServerAddress
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.*
 import javax.mail.Message
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
@@ -269,6 +271,57 @@ class MailServiceImpl @Autowired constructor(
         val articlesForCommentsCreatedToday = articleService
             .findAllByIdsAsDtoWithTranslations(articleIdsForCommentsCreatedToday)
         println("articlesForCommentsCreatedToday: $articlesForCommentsCreatedToday")
+
+        val dateString = SimpleDateFormat("EEE, dd MMMMM yyyy").format(Date.from(startDate))
+        val createdArticlesAsString = articlesCreatedToday.joinToString(separator = "\n") { articleDto ->
+            "${articleDto.translations[0].title} by ${articleDto.author!!.fullName}: ${createArticleLink(articleDto.id)}"
+        }
+        val createdTranslationsAsString = translationsCreatedToday.joinToString(separator = "\n") {
+            "${it.title} by ${it.author!!.fullName}: ${createArticleLink(it.articleId, it.langId)}"
+        }
+        val createdVersionsAsString = versionsCreatedToday.joinToString(separator = "\n") {versionDto ->
+            val shortenedText = versionDto.text.substring(0, versionDto.text.length.takeIf { it<=100 }?.let { it-1 } ?: 100)
+            val translation = translationService.getOneById(versionDto.articleTranslationId)!!
+            "$shortenedText by ${versionDto.author!!.fullName}: ${createArticleLink(translation.articleId, translation.langId)}"
+        }
+        val createdCommentsAsString = articleIdsAndCommentsCountForCommentsCreatedToday.joinToString(separator = "\n") {articleIdAndCommentCount ->
+            val article = articlesForCommentsCreatedToday.find{it.id == articleIdAndCommentCount.getArticleId()}!!
+            "${article.translations[0].title} (${createArticleLink(article.id)}): ${articleIdAndCommentCount.getCommentsCount()}"
+        }
+
+        val text = """There is statistics for $dateString 
+                |Data:
+                |
+                |1. Articles created:
+                |$createdArticlesAsString
+                |
+                |
+                |2. Translations created:
+                |$createdTranslationsAsString
+                |
+                |
+                |3. Text versions created:
+                |$createdVersionsAsString
+                |
+                |
+                |==============================
+                |Activity:
+                |
+                |
+                |1. Users created: $numOfUsersCreatedToday
+                |
+                |
+                |2. Comments created:
+                |$createdCommentsAsString
+            """.trimMargin()
+
+        println(text)
+
+//        sendMail(
+//            adminEmailAddress,
+//            subj = "Statistics for $dateString",
+//            text = text
+//        )
     }
 
     private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {
