@@ -11,6 +11,8 @@ interface ArticleService {
 
     fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto?
 
+    fun findAllByIdsAsDtoWithTranslations(ids: List<Long>): List<ArticleDto>
+
     fun findAllByAuthorId(authorId: Long): List<Article>
 
     /**
@@ -34,6 +36,8 @@ interface ArticleService {
         withVersions: Boolean = false,
         onlyForCurrentDate: Boolean = true
     ): List<ArticleDto>
+
+    fun getCreatedArticlesBetweenDates(startDate: String, endDate: String):List<ArticleDto>
 
     fun save(article: Article): Article
 

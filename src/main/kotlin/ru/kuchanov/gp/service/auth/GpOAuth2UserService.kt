@@ -57,6 +57,7 @@ class GpOAuth2UserService @Autowired constructor(
         if (userRequest.clientRegistration.registrationId == VK.name.toLowerCase()) {
             val response = userAttributes["response"]
             println("GpOAuth2UserService response: ${response?.javaClass?.name}")
+            @Suppress("UNCHECKED_CAST")
             val responseTyped = response as? List<LinkedHashMap<String, Any?>?>
             println("GpOAuth2UserService response: ${responseTyped?.get(0)?.javaClass}")
 

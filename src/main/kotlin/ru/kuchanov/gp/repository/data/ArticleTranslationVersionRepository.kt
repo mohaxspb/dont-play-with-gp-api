@@ -14,6 +14,23 @@ interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslation
         published: Boolean = true
     ): ArticleTranslationVersion?
 
+    @Query(
+        """
+            SELECT * FROM article_translation_versions 
+            WHERE id NOT IN (:excludedIds) 
+            AND created >= CAST(:startDate AS timestamp) 
+            AND created <= CAST(:endDate AS timestamp) 
+            ORDER BY created
+        """,
+        nativeQuery = true
+    )
+    fun getCreatedVersionsBetweenDates(
+        startDate: String,
+        endDate: String,
+        //as we are not allowed to pass empty list to JPA query
+        excludedIds: List<Long> = listOf(0)
+    ): List<ArticleTranslationVersion>
+
     @Query("select articleTranslationId from ArticleTranslationVersion where id=:versionId")
     fun getTranslationIdById(versionId: Long): Long?
 

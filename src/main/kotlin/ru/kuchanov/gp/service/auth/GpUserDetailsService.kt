@@ -10,6 +10,10 @@ interface GpUserDetailsService : UserDetailsService {
 
     override fun loadUserByUsername(username: String): GpUser?
 
+    fun getAllById(ids: List<Long>): List<GpUser>
+
+    fun countUsersCreatedBetweenDates(startDate: String, endDate: String):Int
+
     fun getById(id: Long): GpUser?
     fun getByIdAsDto(id: Long): UserDto?
     fun getByProviderId(id: String, provider: GpConstants.SocialProvider): GpUser?

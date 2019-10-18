@@ -12,13 +12,15 @@ import ru.kuchanov.gp.model.dto.data.PublishVersionResultDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
+import ru.kuchanov.gp.service.mail.MailService
 import java.sql.Timestamp
 
 @RestController
 @RequestMapping("/" + GpConstants.ArticleTranslationVersionEndpoint.PATH + "/")
 class ArticleTranslationVersionController @Autowired constructor(
     val articleTranslationService: ArticleTranslationService,
-    val articleTranslationVersionService: ArticleTranslationVersionService
+    val articleTranslationVersionService: ArticleTranslationVersionService,
+    val mailService: MailService
 ) {
 
     @GetMapping
@@ -61,8 +63,12 @@ class ArticleTranslationVersionController @Autowired constructor(
                 authorId = author.id!!,
                 text = text
             )
-            val createdVersion = articleTranslationVersionService.save(newVersion)
-            return articleTranslationVersionService.getOneByIdAsDto(createdVersion.id!!)!!
+            val createdVersionId = articleTranslationVersionService.save(newVersion).id!!
+            val createdVersion = articleTranslationVersionService.getOneByIdAsDto(createdVersionId)!!
+
+            mailService.sendVersionCreatedMail(createdVersion)
+
+            return createdVersion
         } else {
             throw GpAccessDeniedException("You are not author or this translation, or translation is not published or you are not admin!")
         }
@@ -74,8 +80,8 @@ class ArticleTranslationVersionController @Autowired constructor(
         @RequestParam(value = "text") text: String,
         @AuthenticationPrincipal author: GpUser
     ): ArticleTranslationVersionDto {
-        val versionToEdit =
-            articleTranslationVersionService.getOneById(versionId) ?: throw ArticleTranslationVersionNotFoundException()
+        val versionToEdit = articleTranslationVersionService.getOneById(versionId)
+            ?: throw ArticleTranslationVersionNotFoundException()
 
         //check if user is admin or author of version, translation or article
         if (author.isAdmin()
@@ -114,7 +120,12 @@ class ArticleTranslationVersionController @Autowired constructor(
             articleTranslationVersion.approverId = user.id!!
             articleTranslationVersion.approvedDate = Timestamp(System.currentTimeMillis())
             articleTranslationVersionService.save(articleTranslationVersion)
-            return articleTranslationVersionService.getOneByIdAsDto(id)!!
+
+            val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
+            if (updatedVersion.approved) {
+                mailService.sendVersionApprovedMail(updatedVersion)
+            }
+            return updatedVersion
         } else {
             throw GpAccessDeniedException("You are not admin or author of this translation or article!")
         }
@@ -161,7 +172,9 @@ class ArticleTranslationVersionController @Autowired constructor(
             val updatedVersion = articleTranslationVersionService.getOneByIdAsDto(id)!!
             val unpublishedVersion =
                 alreadyPublishedVersion?.id?.let { articleTranslationVersionService.getOneByIdAsDto(it) }
-
+            if (updatedVersion.published) {
+                mailService.sendVersionPublishedMail(updatedVersion)
+            }
             return PublishVersionResultDto(updatedVersion = updatedVersion, unpublishedVersion = unpublishedVersion)
         } else {
             throw GpAccessDeniedException("You are not admin or author of this translation or article!")

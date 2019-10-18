@@ -18,9 +18,9 @@ class FacebookOAuth2UserInfo(
 
     override fun getImageUrl(): String? {
         if (attributes.containsKey("picture")) {
-            val pictureObj = attributes["picture"] as Map<String, Any>
+            val pictureObj = attributes["picture"] as Map<*, *>
             if (pictureObj.containsKey("data")) {
-                val dataObj = pictureObj["data"] as Map<String, Any>
+                val dataObj = pictureObj["data"] as Map<*, *>
                 if (dataObj.containsKey("url")) {
                     return dataObj["url"] as String
                 }

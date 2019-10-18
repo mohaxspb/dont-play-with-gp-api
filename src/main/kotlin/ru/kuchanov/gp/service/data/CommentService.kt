@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.service.data
 
 import ru.kuchanov.gp.bean.data.Comment
+import ru.kuchanov.gp.model.dto.data.ArticleIdAndCommentsCount
 import ru.kuchanov.gp.model.dto.data.CommentDto
 import javax.transaction.Transactional
 
@@ -23,4 +24,11 @@ interface CommentService {
 
     @Transactional
     fun deleteAllByArticleId(articleId: Long): Boolean
+
+    fun getArticleIdsForCommentsCreatedBetweenDates(startDate: String, endDate: String): List<Long>
+
+    fun getArticleIdsAndCommentsCountForCommentsCreatedBetweenDates(
+        startDate: String,
+        endDate: String
+    ): List<ArticleIdAndCommentsCount>
 }

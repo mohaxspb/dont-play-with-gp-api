@@ -11,6 +11,7 @@ import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.data.*
+import ru.kuchanov.gp.service.mail.MailService
 import java.sql.Timestamp
 
 @RestController
@@ -20,7 +21,8 @@ class ArticleTranslationController @Autowired constructor(
     val articleTranslationService: ArticleTranslationService,
     val articleTranslationVersionService: ArticleTranslationVersionService,
     val imageService: ImageService,
-    val languageService: LanguageService
+    val languageService: LanguageService,
+    val mailService: MailService
 ) {
 
     @GetMapping
@@ -85,7 +87,12 @@ class ArticleTranslationController @Autowired constructor(
         )
         articleTranslationVersionService.save(textVersion)
 
-        return articleTranslationService.getOneByIdAsDtoWithVersions(savedTranslation.id!!)!!
+        val createdTranslation = articleTranslationService
+            .getOneByIdAsDtoWithVersions(savedTranslation.id!!)!!
+
+        mailService.sendTranslationCreatedMail(createdTranslation)
+
+        return createdTranslation
     }
 
     @PostMapping(ArticleTranslationEndpoint.Method.EDIT)
@@ -151,7 +158,7 @@ class ArticleTranslationController @Autowired constructor(
                 if (approvedVersions.isEmpty()) {
                     throw VersionNotApprovedException()
                 }
-            } else{
+            } else {
                 if (articleTranslation.published) {
                     throw TranslationIsPublishedException("You can't disapprove published translation! Unpublish it first.")
                 }
@@ -160,7 +167,12 @@ class ArticleTranslationController @Autowired constructor(
             articleTranslation.approverId = user.id!!
             articleTranslation.approvedDate = Timestamp(System.currentTimeMillis())
             articleTranslationService.save(articleTranslation)
-            return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
+
+            val updatedTranslation = articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
+            if(updatedTranslation.approved) {
+                mailService.sendTranslationApprovedMail(updatedTranslation)
+            }
+            return updatedTranslation
         } else {
             throw GpAccessDeniedException("You are not admin or author of article!")
         }
@@ -192,7 +204,12 @@ class ArticleTranslationController @Autowired constructor(
             articleTranslation.publisherId = user.id!!
             articleTranslation.publishedDate = Timestamp(System.currentTimeMillis())
             articleTranslationService.save(articleTranslation)
-            return articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
+
+            val updatedTranslation = articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
+            if(updatedTranslation.published) {
+                mailService.sendTranslationPublishedMail(updatedTranslation)
+            }
+            return updatedTranslation
         } else {
             throw GpAccessDeniedException("You are not admin or author of article!")
         }

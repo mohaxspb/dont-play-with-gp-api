@@ -17,6 +17,7 @@ import ru.kuchanov.gp.model.dto.data.isUserAuthorOfSomething
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.*
+import ru.kuchanov.gp.service.mail.MailService
 import java.sql.Timestamp
 import java.util.*
 
@@ -29,7 +30,8 @@ class ArticleController @Autowired constructor(
     val userService: GpUserDetailsService,
     val languageService: LanguageService,
     val imageService: ImageService,
-    val tagService: TagService
+    val tagService: TagService,
+    val mailService: MailService
 ) {
 
     @GetMapping
@@ -60,7 +62,7 @@ class ArticleController @Autowired constructor(
         } else {
             return if (user.isAdmin()) {
                 article
-            } else if (!article.isUserAuthorOfSomething(user.id!!)) {
+            } else if (article.fromFuture && !article.isUserAuthorOfSomething(user.id!!)) {
                 throw ArticleNotAvailableYetException()
             } else {
                 article.filteredForUser(user)
@@ -173,8 +175,13 @@ class ArticleController @Autowired constructor(
             text = text
         )
         articleTranslationVersionService.save(textVersion)
+
+        val createdArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
+
+        mailService.sendArticleCreatedMail(createdArticle)
+
         //return dto.
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(articleInDb.id!!)!!
+        return createdArticle
     }
 
     @PostMapping(GpConstants.ArticleEndpoint.Method.EDIT)
@@ -238,7 +245,12 @@ class ArticleController @Autowired constructor(
         article.approverId = user.id!!
         article.approvedDate = Timestamp(System.currentTimeMillis())
         articleService.save(article)
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+        if (updatedArticle.approved) {
+            mailService.sendArticleApprovedMail(updatedArticle)
+        }
+        return updatedArticle
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -260,7 +272,12 @@ class ArticleController @Autowired constructor(
         article.publisherId = userId
         article.publishedDate = timestamp
         articleService.save(article)
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+        if (updatedArticle.published) {
+            mailService.sendArticlePublishedMail(updatedArticle)
+        }
+        return updatedArticle
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -280,7 +297,12 @@ class ArticleController @Autowired constructor(
 
         article.publishedDate = Timestamp(publishDate.time)
         articleService.save(article)
-        return articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+
+        val updatedArticle = articleService.getOneByIdAsDtoWithTranslationsAndVersions(id)!!
+        if (updatedArticle.published) {
+            mailService.sendArticlePublishedMail(updatedArticle)
+        }
+        return updatedArticle
     }
 
     private fun checkArticle(article: Article, userId: Long) {

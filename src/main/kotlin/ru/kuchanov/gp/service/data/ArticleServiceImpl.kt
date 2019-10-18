@@ -27,6 +27,9 @@ class ArticleServiceImpl @Autowired constructor(
     override fun getOneByIdAsDtoWithTranslationsAndVersions(id: Long): ArticleDto? =
         getOneById(id)?.toDto()?.withTranslations()?.withUsers()?.withTags()?.withCommentsCount()
 
+    override fun findAllByIdsAsDtoWithTranslations(ids: List<Long>): List<ArticleDto> =
+        articleRepository.findAllById(ids).map { it.toDto().withTranslations() }
+
     override fun findAllByAuthorId(authorId: Long): List<Article> =
         articleRepository.findAllByAuthorId(authorId)
 
@@ -89,6 +92,10 @@ class ArticleServiceImpl @Autowired constructor(
                     .withUsers()
                     .withCommentsCount()
             }
+
+    override fun getCreatedArticlesBetweenDates(startDate: String, endDate: String): List<ArticleDto> =
+        articleRepository.getCreatedArticlesBetweenDates(startDate, endDate)
+            .map { it.toDto().withTranslations().withUsers() }
 
     override fun save(article: Article): Article =
         articleRepository.save(article)
