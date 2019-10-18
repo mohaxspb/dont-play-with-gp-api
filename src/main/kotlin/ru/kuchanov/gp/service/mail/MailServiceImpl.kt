@@ -209,6 +209,7 @@ class MailServiceImpl @Autowired constructor(
         /**
          * second, minute, hour, day, month, day of week
          */
+        //fixme test use `0 5 0 * * *` (each day at 00:05)
         cron = "*/30 * * * * *"
     )
     fun sendStatisticsEmail() {
