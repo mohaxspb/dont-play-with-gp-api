@@ -6,7 +6,25 @@ import ru.kuchanov.gp.bean.data.ArticleTranslation
 
 
 interface ArticleTranslationRepository : JpaRepository<ArticleTranslation, Long> {
+
     fun findAllByArticleId(articleId: Long): List<ArticleTranslation>
+
+    @Query(
+        """
+            SELECT * FROM article_translations 
+            WHERE id NOT IN (:excludedIds) 
+            AND created >= CAST(:startDate AS timestamp) 
+            AND created <= CAST(:endDate AS timestamp) 
+            ORDER BY created
+        """,
+        nativeQuery = true
+    )
+    fun getCreatedTranslationsBetweenDates(
+        startDate: String,
+        endDate: String,
+        //as we are not allowed to pass empty list to JPA query
+        excludedIds: List<Long> = listOf(0)
+    ): List<ArticleTranslation>
 
     @Query("select articleId from ArticleTranslation where id=:id")
     fun getArticleIdById(id: Long): Long?

@@ -37,4 +37,11 @@ interface ArticleTranslationService {
      */
     @Transactional
     fun deleteAllByArticleId(articleId: Long): Boolean
+
+    fun getCreatedTranslationsBetweenDates(
+        startDate: String,
+        endDate: String,
+        //as we are not allowed to pass empty list to JPA query
+        excludedIds: List<Long> = listOf(0)
+    ): List<ArticleTranslationDto>
 }
