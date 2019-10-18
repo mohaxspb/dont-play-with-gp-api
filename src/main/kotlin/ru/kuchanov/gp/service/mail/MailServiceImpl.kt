@@ -211,36 +211,36 @@ class MailServiceImpl @Autowired constructor(
         /**
          * second, minute, hour, day, month, day of week
          */
-        //fixme test use `0 5 0 * * *` (each day at 00:05)
-        cron = "*/30 * * * * *"
+//        cron = "*/30 * * * * *"
+        cron = "0 5 0 * * *"
     )
-    fun sendStatisticsEmail() {
+    override fun sendStatisticsEmail() {
         val currentDate = LocalDate.now()
-//        val startDate = currentDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
-//        val endDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC)
-        //fixme test today
-        val startDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC)
-        val endDate = currentDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+        val startDate = currentDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+        val endDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC)
+        //to test today
+//        val startDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC)
+//        val endDate = currentDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
         val articlesCreatedToday = articleService.getCreatedArticlesBetweenDates(
             startDate.toString(),
             endDate.toString()
         )
-        println("articlesCreatedToday: $articlesCreatedToday")
+//        println("articlesCreatedToday: $articlesCreatedToday")
         val translationsFromCreatedArticles = articlesCreatedToday.map { articleDto ->
             articleDto.translations.sortedBy { it.created }[0]
         }
-        println("translationIdsFromCreatedArticles: $translationsFromCreatedArticles")
+//        println("translationIdsFromCreatedArticles: $translationsFromCreatedArticles")
         val versionIdsFromCreatedArticles = translationsFromCreatedArticles.map { translationDto ->
             translationDto.versions.sortedBy { it.created }[0].id
         }
-        println("versionIdsFromCreatedArticles: $versionIdsFromCreatedArticles")
+//        println("versionIdsFromCreatedArticles: $versionIdsFromCreatedArticles")
         //ExceptOfMentionedInArticle
         val translationsCreatedToday = translationService.getCreatedTranslationsBetweenDates(
             startDate.toString(),
             endDate.toString(),
             translationsFromCreatedArticles.map { it.id }
         )
-        println("translationsCreatedToday: $translationsCreatedToday")
+//        println("translationsCreatedToday: $translationsCreatedToday")
         val versionIdsFromCreatedTranslations = translationsCreatedToday.map { translation ->
             translation.versions.sortedBy { it.created }[0].id
         }
@@ -250,13 +250,13 @@ class MailServiceImpl @Autowired constructor(
             endDate.toString(),
             versionIdsFromCreatedTranslations.plus(versionIdsFromCreatedArticles)
         )
-        println("versionsCreatedToday: $versionsCreatedToday")
+//        println("versionsCreatedToday: $versionsCreatedToday")
 
         val numOfUsersCreatedToday = userService.countUsersCreatedBetweenDates(
             startDate.toString(),
             endDate.toString()
         )
-        println("numOfUsersCreatedToday: $numOfUsersCreatedToday")
+//        println("numOfUsersCreatedToday: $numOfUsersCreatedToday")
 
         val articleIdsForCommentsCreatedToday = commentService.getArticleIdsForCommentsCreatedBetweenDates(
             startDate.toString(),
@@ -267,10 +267,10 @@ class MailServiceImpl @Autowired constructor(
                 startDate.toString(),
                 endDate.toString()
             )
-        println("articleIdsAndCommentsCountForCommentsCreatedToday: $articleIdsAndCommentsCountForCommentsCreatedToday")
+//        println("articleIdsAndCommentsCountForCommentsCreatedToday: $articleIdsAndCommentsCountForCommentsCreatedToday")
         val articlesForCommentsCreatedToday = articleService
             .findAllByIdsAsDtoWithTranslations(articleIdsForCommentsCreatedToday)
-        println("articlesForCommentsCreatedToday: $articlesForCommentsCreatedToday")
+//        println("articlesForCommentsCreatedToday: $articlesForCommentsCreatedToday")
 
         val dateString = SimpleDateFormat("EEE, dd MMMMM yyyy").format(Date.from(startDate))
         val createdArticlesAsString = articlesCreatedToday.joinToString(separator = "\n") { articleDto ->
@@ -279,15 +279,21 @@ class MailServiceImpl @Autowired constructor(
         val createdTranslationsAsString = translationsCreatedToday.joinToString(separator = "\n") {
             "${it.title} by ${it.author!!.fullName}: ${createArticleLink(it.articleId, it.langId)}"
         }
-        val createdVersionsAsString = versionsCreatedToday.joinToString(separator = "\n") {versionDto ->
-            val shortenedText = versionDto.text.substring(0, versionDto.text.length.takeIf { it<=100 }?.let { it-1 } ?: 100)
+        val createdVersionsAsString = versionsCreatedToday.joinToString(separator = "\n") { versionDto ->
+            val shortenedText =
+                versionDto.text.substring(0, versionDto.text.length.takeIf { it <= 100 }?.let { it - 1 } ?: 100)
             val translation = translationService.getOneById(versionDto.articleTranslationId)!!
-            "$shortenedText by ${versionDto.author!!.fullName}: ${createArticleLink(translation.articleId, translation.langId)}"
+            "$shortenedText by ${versionDto.author!!.fullName}: ${createArticleLink(
+                translation.articleId,
+                translation.langId
+            )}"
         }
-        val createdCommentsAsString = articleIdsAndCommentsCountForCommentsCreatedToday.joinToString(separator = "\n") {articleIdAndCommentCount ->
-            val article = articlesForCommentsCreatedToday.find{it.id == articleIdAndCommentCount.getArticleId()}!!
-            "${article.translations[0].title} (${createArticleLink(article.id)}): ${articleIdAndCommentCount.getCommentsCount()}"
-        }
+        val createdCommentsAsString =
+            articleIdsAndCommentsCountForCommentsCreatedToday.joinToString(separator = "\n") { articleIdAndCommentCount ->
+                val article =
+                    articlesForCommentsCreatedToday.find { it.id == articleIdAndCommentCount.getArticleId() }!!
+                "${article.translations[0].title} (${createArticleLink(article.id)}): ${articleIdAndCommentCount.getCommentsCount()}"
+            }
 
         val text = """There is statistics for $dateString 
                 |Data:
@@ -315,13 +321,13 @@ class MailServiceImpl @Autowired constructor(
                 |$createdCommentsAsString
             """.trimMargin()
 
-        println(text)
+//        println(text)
 
-//        sendMail(
-//            adminEmailAddress,
-//            subj = "Statistics for $dateString",
-//            text = text
-//        )
+        sendMail(
+            adminEmailAddress,
+            subj = "Statistics for $dateString",
+            text = text
+        )
     }
 
     private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {

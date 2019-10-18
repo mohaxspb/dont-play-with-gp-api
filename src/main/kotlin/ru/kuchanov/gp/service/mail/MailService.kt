@@ -25,4 +25,6 @@ interface MailService {
     fun sendTranslationCreatedMail(createdTranslation: ArticleTranslationDto)
 
     fun sendVersionCreatedMail(createdVersion: ArticleTranslationVersionDto)
+
+    fun sendStatisticsEmail()
 }
