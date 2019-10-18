@@ -38,7 +38,7 @@ class ArticleTranslationServiceImpl @Autowired constructor(
                 //as we are not allowed to pass empty list to JPA query
                 excludedIds.ifEmpty { listOf(0) }
             )
-            .map { it.toDto().withUsers() }
+            .map { it.toDto().withVersions().withUsers() }
 
     override fun findAllByArticleIdAsDtoWithVersions(articleId: Long): List<ArticleTranslationDto> =
         articleTranslationRepository.findAllByArticleId(articleId).map { it.toDto().withVersions().withUsers() }

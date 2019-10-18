@@ -10,6 +10,13 @@ interface ArticleTranslationVersionService {
 
     fun getOneByIdAsDto(id: Long): ArticleTranslationVersionDto?
 
+    fun getCreatedVersionsBetweenDates(
+        startDate: String,
+        endDate: String,
+        //as we are not allowed to pass empty list to JPA query
+        excludedIds: List<Long> = listOf(0)
+    ): List<ArticleTranslationVersionDto>
+
     fun getPublishedByTranslationId(translationId: Long): ArticleTranslationVersion?
 
     fun findAllByArticleTranslationIdAsDto(articleTranslationId: Long): List<ArticleTranslationVersionDto>

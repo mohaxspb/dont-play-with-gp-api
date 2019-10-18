@@ -223,20 +223,30 @@ class MailServiceImpl @Autowired constructor(
             endDate.toString()
         )
         println("articlesCreatedToday: $articlesCreatedToday")
-        val translationIdsFromCreatedArticles = articlesCreatedToday.map { articleDto ->
-            articleDto.translations.sortedBy { it.created }[0].id
+        val translationsFromCreatedArticles = articlesCreatedToday.map { articleDto ->
+            articleDto.translations.sortedBy { it.created }[0]
         }
-        println("translationIdsFromCreatedArticles: $translationIdsFromCreatedArticles")
+        println("translationIdsFromCreatedArticles: $translationsFromCreatedArticles")
+        val versionIdsFromCreatedArticles = translationsFromCreatedArticles.map { translationDto ->
+            translationDto.versions.sortedBy { it.created }[0].id
+        }
+        println("versionIdsFromCreatedArticles: $versionIdsFromCreatedArticles")
         //ExceptOfMentionedInArticle
         val translationsCreatedToday = translationService.getCreatedTranslationsBetweenDates(
             startDate.toString(),
             endDate.toString(),
-            translationIdsFromCreatedArticles
+            translationsFromCreatedArticles.map { it.id }
         )
         println("translationsCreatedToday: $translationsCreatedToday")
-        //ExceptOfMentionedIn translations
-        //todo
-        val versionsCreatedToday = listOf<ArticleTranslationVersionDto>()
+        val versionIdsFromCreatedTranslations = translationsCreatedToday.map { translation ->
+            translation.versions.sortedBy { it.created }[0].id
+        }
+        //ExceptOfMentionedIn translations and versions from created articles
+        val versionsCreatedToday = versionService.getCreatedVersionsBetweenDates(
+            startDate.toString(),
+            endDate.toString(),
+            versionIdsFromCreatedTranslations.plus(versionIdsFromCreatedArticles)
+        )
         println("versionsCreatedToday: $versionsCreatedToday")
 
         val numOfUsersCreatedToday = userService.countUsersCreatedBetweenDates(

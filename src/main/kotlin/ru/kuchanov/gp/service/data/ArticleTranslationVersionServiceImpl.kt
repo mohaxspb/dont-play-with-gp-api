@@ -28,6 +28,20 @@ class ArticleTranslationVersionServiceImpl @Autowired constructor(
     override fun getOneByIdAsDto(id: Long): ArticleTranslationVersionDto? =
         getOneById(id)?.toDto()?.withUsers()
 
+    override fun getCreatedVersionsBetweenDates(
+        startDate: String,
+        endDate: String,
+        excludedIds: List<Long>
+    ): List<ArticleTranslationVersionDto> =
+        articleTranslationVersionRepository
+            .getCreatedVersionsBetweenDates(
+                startDate,
+                endDate,
+                //as we are not allowed to pass empty list to JPA query
+                excludedIds.ifEmpty { listOf(0) }
+            )
+            .map { it.toDto().withUsers() }
+
     override fun getPublishedByTranslationId(translationId: Long): ArticleTranslationVersion? =
         articleTranslationVersionRepository.findOneByArticleTranslationIdAndPublished(translationId)
 
