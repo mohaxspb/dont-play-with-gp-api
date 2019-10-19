@@ -29,7 +29,7 @@ plugins {
 }
 
 group = "ru.kuchanov.gp"
-version = "0.0.9"
+version = "0.1.1"
 
 repositories {
     mavenCentral()
