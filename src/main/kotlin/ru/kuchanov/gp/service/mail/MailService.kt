@@ -27,4 +27,6 @@ interface MailService {
     fun sendVersionCreatedMail(createdVersion: ArticleTranslationVersionDto)
 
     fun sendStatisticsEmail()
+
+    fun sendRegistrationEmail(email: String, password: String)
 }

@@ -19,6 +19,7 @@ import ru.kuchanov.gp.exception.OAuth2AuthenticationProcessingException
 import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.network.GitHubApi
 import ru.kuchanov.gp.service.data.LanguageService
+import ru.kuchanov.gp.service.mail.MailService
 import ru.kuchanov.gp.util.user.OAuth2UserInfoFactory
 
 @Service
@@ -26,6 +27,7 @@ class GpOAuth2UserService @Autowired constructor(
     val usersService: GpUserDetailsService,
     val usersAuthoritiesService: UsersAuthoritiesService,
     val languageService: LanguageService,
+    val mailService: MailService,
     val passwordGenerator: RandomValueStringGenerator,
     val passwordEncoder: PasswordEncoder,
     val facebookApi: FacebookApi,
@@ -159,7 +161,7 @@ class GpOAuth2UserService @Autowired constructor(
 
                 usersAuthoritiesService.save(UsersAuthorities(userId = newUser.id!!, authority = AuthorityType.USER))
 
-                //todo send email
+                mailService.sendRegistrationEmail(email, password)
 
                 return usersService.loadUserByUsername(oAuth2UserInfo.getEmail()!!)!!
             }
