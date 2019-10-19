@@ -1,10 +1,30 @@
-# controllers prefix
+# controllers prefix, on prod it sets via WAR file name.
 server:
   servlet:
     context-path: /api
 
-# db properties
 spring:
+  mail:
+    default-encoding: UTF-8
+    host: mail.YOUR_DOMAIN.com
+    port: 587
+    username: no-reply@YOUR_DOMAIN.com
+    password: "YOUR_EMAIL_PASSWORD"
+    properties.mail:
+      user: no-reply@YOUR_DOMAIN.com
+      from: no-reply@YOUR_DOMAIN.com
+      smtp:
+        #need this for EHLO check
+        localhost: YOUR_DOMAIN.com
+        auth: true
+        starttls.enable: true
+        connectiontimeout: 5000
+        timeout: 5000
+        writetimeout: 5000
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
   datasource:
     password: testtest
     platform: postgres
@@ -96,16 +116,9 @@ logging:
       hibernate.SQL: ERROR
       hibernate.type: ERROR
       springframework: INFO
-      springframework.web: TRACE
+      springframework.web: INFO
       springframework.web.filter.CommonsRequestLoggingFilter: TRACE
       root: ERROR
-      #      flywaydb: INFO
-      #      hibernate: ERROR
-      #      hibernate.SQL: TRACE
-      #      hibernate.type: ERROR
-      #      springframework: DEBUG
-    #      springframework.web: TRACE
-    #      springframework.web.filter.CommonsRequestLoggingFilter: TRACE
   pattern:
     console: '%d{HH:mm:ss.SSS} %msg%n'
 # misc
@@ -113,10 +126,14 @@ auth:
   logout:
     socialLogout: false
 my:
+  #mail:
+  mail:
+    admin:
+      address: admin@YOUR_DOMAIN.com
+  #db
   db:
     name: gp_db
-
 # front settings
 angular:
-  href: /
-  port: 4200
+  href: /en/
+  port: :4200
