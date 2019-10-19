@@ -1,4 +1,4 @@
-#API for https://dont-play-with-google.com on Spring.
+# API for https://dont-play-with-google.com on Spring.
 
 ### Some dev notes to build, execute and so on:
 
