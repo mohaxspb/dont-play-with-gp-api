@@ -207,6 +207,21 @@ class MailServiceImpl @Autowired constructor(
         )
     }
 
+    override fun sendRegistrationEmail(email: String, password: String) {
+        val text = """Hello! Welcome to "Don't play with Google!"
+            |
+            | Here is you password, which you can use to login to site. Also you could login using social networks profiles, if you use same email in it. 
+            |
+            |Your email: $email
+            |Your password: $password
+        """.trimMargin()
+        sendMail(
+            email,
+            subj = "Welcome to Don't play with Google!",
+            text = text
+        )
+    }
+
     @Scheduled(
         /**
          * second, minute, hour, day, month, day of week

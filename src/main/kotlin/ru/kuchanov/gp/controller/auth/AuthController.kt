@@ -17,6 +17,7 @@ import ru.kuchanov.gp.service.auth.AuthService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
 import ru.kuchanov.gp.service.data.LanguageService
+import ru.kuchanov.gp.service.mail.MailService
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -28,7 +29,8 @@ class AuthController @Autowired constructor(
     val authService: AuthService,
     val usersService: GpUserDetailsService,
     val usersAuthoritiesService: UsersAuthoritiesService,
-    val languageService: LanguageService
+    val languageService: LanguageService,
+    val mailService: MailService
 ) {
 
     @PostMapping(GpConstants.AuthEndpoint.Method.REGISTER)
@@ -69,8 +71,7 @@ class AuthController @Autowired constructor(
 
         usersAuthoritiesService.save(UsersAuthorities(userId = newUserInDb.id!!, authority = AuthorityType.USER))
 
-        //todo send email with password
-//        emailService.sendEmail(email, REGISTRATION_EMAIL_SUBJECT, "Your password is:\n$password")
+        mailService.sendRegistrationEmail(email, password)
 
         val auth = authService.generateAuthenticationForUsernameAndClientId(email, clientId)
 //        println("AuthController auth: $auth")
