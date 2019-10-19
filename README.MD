@@ -28,11 +28,11 @@
 
 10) To ignore changes in application-dev.yml execute:
 
-    ```git update-index --assume-unchanged PROJECT_ROOT\src\main\resources\application-dev.yml```
+    ```git update-index --assume-unchanged src\main\resources\application-dev.yml```
     
     to push changes execute:
     
-    ```git update-index --no-assume-unchanged PROJECT_ROOT\src\main\resources\application-dev.yml```
+    ```git update-index --no-assume-unchanged src\main\resources\application-dev.yml```
 
 11) On tomcat9 you [should add](https://stackoverflow.com/a/56874245/3212712) `/var/lib/tomcat9/image` folder to `/lib/systemd/system/tomcat9.service` so:
 
