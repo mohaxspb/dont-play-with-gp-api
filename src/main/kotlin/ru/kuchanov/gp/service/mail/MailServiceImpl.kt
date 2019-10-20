@@ -15,7 +15,6 @@ import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
 import ru.kuchanov.gp.service.data.CommentService
-import ru.kuchanov.gp.util.getServerAddress
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -35,7 +34,8 @@ class MailServiceImpl @Autowired constructor(
     val commentService: CommentService,
     @Value("\${my.mail.admin.address}") val adminEmailAddress: String,
     @Value("\${angular.port}") val angularServerPort: String,
-    @Value("\${angular.href}") val angularServerHref: String
+    @Value("\${angular.href}") val angularServerHref: String,
+    @Value("\${my.site.domain}") val domain: String
 ) : MailService {
 
     override fun sendMail(vararg to: String, subj: String, text: String) {
@@ -346,7 +346,7 @@ class MailServiceImpl @Autowired constructor(
     }
 
     private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {
-        val serverAddress = "${getServerAddress()}$angularServerPort$angularServerHref#"
+        val serverAddress = "https://$domain$angularServerPort$angularServerHref#"
         val articlePage = GpConstants.ArticleEndpoint.PATH
         var link = "$serverAddress/$articlePage/$articleId"
         translationLangId?.let {
