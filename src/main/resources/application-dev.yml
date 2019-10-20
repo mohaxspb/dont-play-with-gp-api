@@ -6,16 +6,16 @@ server:
 spring:
   mail:
     default-encoding: UTF-8
-    host: mail.YOUR_DOMAIN.com
+    host: mail.${my.site.domain}
     port: 587
-    username: no-reply@YOUR_DOMAIN.com
+    username: no-reply@${my.site.domain}
     password: "YOUR_EMAIL_PASSWORD"
     properties.mail:
-      user: no-reply@YOUR_DOMAIN.com
-      from: no-reply@YOUR_DOMAIN.com
+      user: no-reply@${my.site.domain}
+      from: no-reply@${my.site.domain}
       smtp:
         #need this for EHLO check
-        localhost: YOUR_DOMAIN.com
+        localhost: ${my.site.domain}
         auth: true
         starttls.enable: true
         connectiontimeout: 5000
@@ -129,10 +129,13 @@ my:
   #mail:
   mail:
     admin:
-      address: admin@YOUR_DOMAIN.com
+      address: admin@${my.site.domain}
   #db
   db:
     name: gp_db
+  #site
+  site:
+    domain: you-domain.com
 # front settings
 angular:
   href: /en/
