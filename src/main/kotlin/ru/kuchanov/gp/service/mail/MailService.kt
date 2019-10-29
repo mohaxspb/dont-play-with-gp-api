@@ -6,7 +6,7 @@ import ru.kuchanov.gp.model.dto.data.ArticleTranslationVersionDto
 
 interface MailService {
 
-    fun sendMail(vararg to: String, subj: String, text: String)
+    fun sendMail(vararg to: String, subj: String, text: String, sendAsHtml: Boolean = false)
 
     fun sendArticleApprovedMail(article: ArticleDto)
 

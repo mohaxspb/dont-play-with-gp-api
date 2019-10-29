@@ -38,12 +38,16 @@ class MailServiceImpl @Autowired constructor(
     @Value("\${my.site.domain}") val domain: String
 ) : MailService {
 
-    override fun sendMail(vararg to: String, subj: String, text: String) {
+    override fun sendMail(vararg to: String, subj: String, text: String, sendAsHtml: Boolean) {
         javaMailSender.send { mimeMessage: MimeMessage ->
             mimeMessage.setFrom()
             mimeMessage.setRecipients(Message.RecipientType.TO, to.map { InternetAddress(it) }.toTypedArray())
             mimeMessage.subject = subj
-            mimeMessage.setText(text)
+            if (sendAsHtml) {
+                mimeMessage.setText(text, "utf-8", "html")
+            } else {
+                mimeMessage.setText(text)
+            }
         }
     }
 
@@ -226,16 +230,15 @@ class MailServiceImpl @Autowired constructor(
         /**
          * second, minute, hour, day, month, day of week
          */
-//        cron = "*/30 * * * * *"
+//        cron = "*/30 * * * * *" //fi xme test
         cron = "0 5 0 * * *"
     )
     override fun sendStatisticsEmail() {
         val currentDate = LocalDate.now()
         val startDate = currentDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
         val endDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC)
-        //to test today
-//        val startDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC)
-//        val endDate = currentDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+//        val startDate = currentDate.atStartOfDay().toInstant(ZoneOffset.UTC) //FI XME to test today
+//        val endDate = currentDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC) //FI XME to test today
         val articlesCreatedToday = articleService.getCreatedArticlesBetweenDates(
             startDate.toString(),
             endDate.toString()
@@ -288,60 +291,71 @@ class MailServiceImpl @Autowired constructor(
 //        println("articlesForCommentsCreatedToday: $articlesForCommentsCreatedToday")
 
         val dateString = SimpleDateFormat("EEE, dd MMMMM yyyy").format(Date.from(startDate))
-        val createdArticlesAsString = articlesCreatedToday.joinToString(separator = "\n") { articleDto ->
-            "${articleDto.translations[0].title} by ${articleDto.author!!.fullName}: ${createArticleLink(articleDto.id)}"
+
+        val articlesAsHtml = articlesCreatedToday.joinToString(separator = "\n") { articleDto ->
+            "<li><a href=\"${createArticleLink(articleDto.id)}\">${articleDto.translations[0].title}</a> by ${articleDto.author!!.fullName}</li>"
         }
-        val createdTranslationsAsString = translationsCreatedToday.joinToString(separator = "\n") {
-            "${it.title} by ${it.author!!.fullName}: ${createArticleLink(it.articleId, it.langId)}"
+        val createdTranslationsAsHtml = translationsCreatedToday.joinToString(separator = "\n") {
+            "<li><a href=\"${createArticleLink(
+                it.articleId,
+                it.langId
+            )}\">${it.title}</a> by ${it.author!!.fullName}</li>"
         }
-        val createdVersionsAsString = versionsCreatedToday.joinToString(separator = "\n") { versionDto ->
+        val createdVersionsAsHtml = versionsCreatedToday.joinToString(separator = "\n") { versionDto ->
             val shortenedText =
                 versionDto.text.substring(0, versionDto.text.length.takeIf { it <= 100 }?.let { it - 1 } ?: 100)
             val translation = translationService.getOneById(versionDto.articleTranslationId)!!
-            "$shortenedText by ${versionDto.author!!.fullName}: ${createArticleLink(
-                translation.articleId,
-                translation.langId
-            )}"
+            val url = createArticleLink(translation.articleId, translation.langId)
+            "<li><a href=\"$url\">$shortenedText</a> by ${versionDto.author!!.fullName}</li>"
         }
-        val createdCommentsAsString =
+        val createdCommentsAsHtml =
             articleIdsAndCommentsCountForCommentsCreatedToday.joinToString(separator = "\n") { articleIdAndCommentCount ->
-                val article =
-                    articlesForCommentsCreatedToday.find { it.id == articleIdAndCommentCount.getArticleId() }!!
-                "${article.translations[0].title} (${createArticleLink(article.id)}): ${articleIdAndCommentCount.getCommentsCount()}"
+                val article = articlesForCommentsCreatedToday.find {
+                    it.id == articleIdAndCommentCount.getArticleId()
+                }!!
+                val articleTitle = article.translations[0].title
+                val articleUrl = createArticleLink(article.id)
+                "<li><a href=\"$articleUrl\">$articleTitle</a>: ${articleIdAndCommentCount.getCommentsCount()}</li>"
             }
+        val totalCommentsCount =
+            articleIdsAndCommentsCountForCommentsCreatedToday.sumBy { it.getCommentsCount().toInt() }
 
-        val text = """There is statistics for $dateString 
-                |Data:
-                |
-                |1. Articles created:
-                |$createdArticlesAsString
-                |
-                |
-                |2. Translations created:
-                |$createdTranslationsAsString
-                |
-                |
-                |3. Text versions created:
-                |$createdVersionsAsString
-                |
-                |
+        val text = """
+                |<h1>There is statistics for $dateString</h1> 
+                |<h3>Data:</h3>
+                |<ol>
+                |   <li>
+                |       Articles created: ${articlesCreatedToday.size}
+                |       <ul>$articlesAsHtml</ul>
+                |   </li>
+                |   <li>
+                |       Translations created: ${translationsCreatedToday.size}
+                |       <ul>$createdTranslationsAsHtml</ul>
+                |   </li>
+                |   <li>
+                |       Text versions created:
+                |       <ul>$createdVersionsAsHtml</ul>
+                |   </li>
+                |</ol>
                 |==============================
-                |Activity:
-                |
-                |
-                |1. Users created: $numOfUsersCreatedToday
-                |
-                |
-                |2. Comments created:
-                |$createdCommentsAsString
+                |<h3>Activity:</h3>
+                |<ol>
+                |   <li>Users created: $numOfUsersCreatedToday</li>
+                |   <li>
+                |        Comments created: $totalCommentsCount
+                |       <ul>$createdCommentsAsHtml</ul>
+                |   </li>
+                |</ol>
             """.trimMargin()
 
 //        println(text)
 
         sendMail(
             adminEmailAddress,
+//            "no-reply@dont-play-with-google.com", //fi xme test
             subj = "Statistics for $dateString",
-            text = text
+            text = text,
+            sendAsHtml = true
         )
     }
 
