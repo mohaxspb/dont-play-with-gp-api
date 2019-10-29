@@ -51,13 +51,8 @@ class ImageServiceImpl @Autowired constructor(
             throw ImageAlreadyExistsException()
         }
 
-        val fileDir = "${GpConstants.FilesPaths.IMAGE}/${userId}"
-        logger.info("fileDir: {}", fileDir)
-        println("fileDir: $fileDir")
-
-        val fullFileName = "$fileDir/$fileName"
-        logger.info("fullFileName: {}", fullFileName)
-        println("fullFileName: $fullFileName")
+        val fileDir = getFileDir(userId)
+        val fullFileName = getImageFullFileName(fileDir, fileName)
 
         val readableByteChannel = Channels.newChannel(image.inputStream)
         Files.createDirectories(Paths.get(fileDir))
@@ -77,6 +72,12 @@ class ImageServiceImpl @Autowired constructor(
         return file?.let { IOUtils.toByteArray(FileInputStream(file)) }
     }
 
+    override fun getUrlByUserIdAndFileName(userId: Long, imageName: String): String? {
+        val fileDir = "${GpConstants.FilesPaths.IMAGE}/${userId}"
+        val file = File(fileDir).listFiles()?.find { it.nameWithoutExtension == imageName || it.name == imageName }
+        return file?.let { getImageFullFileName(getFileDir(userId), file.name) }
+    }
+
     override fun deleteByUserIdAndFileName(userId: Long, fileName: String): Boolean {
         val user = userService.getById(userId) ?: throw UserNotFoundException()
         if (user.isAdmin()) {
@@ -85,4 +86,11 @@ class ImageServiceImpl @Autowired constructor(
             throw GpAccessDeniedException()
         }
     }
+
+    private fun getImageFullFileName(fileDir: String, fileName: String): String {
+        return "$fileDir/$fileName"
+    }
+
+    private fun getFileDir(userId: Long) =
+        "${GpConstants.FilesPaths.IMAGE}/${userId}"
 }
