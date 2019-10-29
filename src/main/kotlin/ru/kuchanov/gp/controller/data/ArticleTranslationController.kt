@@ -66,8 +66,10 @@ class ArticleTranslationController @Autowired constructor(
             throw ArticleTranslationAlreadyException()
         }
         val authorId = author.id!!
+        val article = articleService.getOneById(articleId) ?: throw ArticleNotFoundException()
         //save image
         val imageUrl = imageFile?.let { imageService.saveImage(authorId, imageFile, imageFileName) }
+            ?: imageFileName?.let { imageService.getUrlByUserIdAndFileName(article.authorId!!, it) }
 
         //save article translation
         val newTranslation = ArticleTranslation(
@@ -169,7 +171,7 @@ class ArticleTranslationController @Autowired constructor(
             articleTranslationService.save(articleTranslation)
 
             val updatedTranslation = articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
-            if(updatedTranslation.approved) {
+            if (updatedTranslation.approved) {
                 mailService.sendTranslationApprovedMail(updatedTranslation)
             }
             return updatedTranslation
@@ -206,7 +208,7 @@ class ArticleTranslationController @Autowired constructor(
             articleTranslationService.save(articleTranslation)
 
             val updatedTranslation = articleTranslationService.getOneByIdAsDtoWithVersions(id)!!
-            if(updatedTranslation.published) {
+            if (updatedTranslation.published) {
                 mailService.sendTranslationPublishedMail(updatedTranslation)
             }
             return updatedTranslation
