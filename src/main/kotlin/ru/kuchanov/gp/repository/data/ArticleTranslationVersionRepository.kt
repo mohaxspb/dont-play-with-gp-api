@@ -43,6 +43,7 @@ interface ArticleTranslationVersionRepository : JpaRepository<ArticleTranslation
     )
     fun countVersionsByVersionId(versionId: Long): Int
 
+    //fixme error: more than 1 article_translation_id
     @Query(
         """
             select count(*) from article_translation_versions 
