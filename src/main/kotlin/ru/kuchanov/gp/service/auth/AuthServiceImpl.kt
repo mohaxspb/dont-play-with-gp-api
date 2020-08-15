@@ -37,7 +37,7 @@ class AuthServiceImpl @Autowired constructor(
         val approved = true
         val scope: MutableSet<String> = clientDetails.scope
         val resourceIds: MutableSet<String> = clientDetails.resourceIds
-        val redirectUri = null
+        val redirectUri = clientDetails.registeredRedirectUri.firstOrNull() ?: "/test/"
         val responseTypes = setOf<String>()
         val extensionProperties = HashMap<String, Serializable>()
 

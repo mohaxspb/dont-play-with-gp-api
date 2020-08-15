@@ -6,14 +6,12 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 val flywayVersion = "5.2.4"
 
 plugins {
-    //updated at 16.07.2019
-    val kotlinVersion = "1.3.41"
+    val kotlinVersion = "1.4.0-rc"
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.jpa") version kotlinVersion
 
-    //updated at 16.07.2019
-    val springVersion = "2.1.6.RELEASE"
+    val springVersion = "2.3.3.RELEASE"
     id("org.springframework.boot") version springVersion
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
     // Required for Kotlin integration for spring
@@ -33,8 +31,9 @@ version = "0.1.3"
 
 repositories {
     mavenCentral()
-
     jcenter()
+    maven ("https://dl.bintray.com/kotlin/kotlin-eap")
+    maven ("https://kotlin.bintray.com/kotlinx")
 }
 
 dependencies {
@@ -45,7 +44,7 @@ dependencies {
 
     //spring
     implementation("org.springframework.boot:spring-boot-starter-web")
-    runtime("org.springframework.boot:spring-boot-starter-tomcat")
+    runtimeOnly("org.springframework.boot:spring-boot-starter-tomcat")
     //info
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     //email
@@ -65,7 +64,6 @@ dependencies {
     //spring END
 
     //DB
-    //updated at 16.07.2019
     implementation("org.postgresql:postgresql:42.2.6")
     //DB migration
     implementation("org.flywaydb:flyway-core:$flywayVersion")

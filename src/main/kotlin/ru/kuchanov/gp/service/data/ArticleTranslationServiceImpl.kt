@@ -36,7 +36,7 @@ class ArticleTranslationServiceImpl @Autowired constructor(
                 startDate,
                 endDate,
                 //as we are not allowed to pass empty list to JPA query
-                excludedIds.ifEmpty { listOf(0) }
+                excludedIds.ifEmpty { listOf(0L) }
             )
             .map { it.toDto().withVersions().withUsers() }
 
