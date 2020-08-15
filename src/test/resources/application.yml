@@ -39,21 +39,21 @@ spring:
           google:
             clientId: PASTE_HERE_YOUR_OWN_GOOGLE_API_CLIENT_ID
             clientSecret: PASTE_HERE_YOUR_OWN_GOOGLE_API_CLIENT_SECRET
-            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope:
               - email
               - profile
           facebook:
             clientId: PASTE_HERE_YOUR_OWN_FACEBOOK_API_CLIENT_ID
             clientSecret: PASTE_HERE_YOUR_OWN_FACEBOOK_API_CLIENT_SECRET
-            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope:
               - email
               - public_profile
           github:
             clientId: PASTE_HERE_YOUR_OWN_GITHUB_API_CLIENT_ID
             clientSecret: PASTE_HERE_YOUR_OWN_GITHUB_API_CLIENT_SECRET
-            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope:
               - user:email
               - read:user
@@ -61,7 +61,7 @@ spring:
             clientName: VK
             clientId: PASTE_HERE_YOUR_OWN_VK_API_CLIENT_ID
             clientSecret: PASTE_HERE_YOUR_OWN_VK_API_CLIENT_SECRET
-            redirectUriTemplate: "{baseUrl}/oauth2/callback/{registrationId}"
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
             tokenName: code
             authenticationScheme: query
             clientAuthenticationScheme: form

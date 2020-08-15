@@ -333,7 +333,7 @@ class MailServiceImpl @Autowired constructor(
                 |       <ul>$createdTranslationsAsHtml</ul>
                 |   </li>
                 |   <li>
-                |       Text versions created:
+                |       Text versions created: ${versionsCreatedToday.size}
                 |       <ul>$createdVersionsAsHtml</ul>
                 |   </li>
                 |</ol>
