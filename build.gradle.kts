@@ -99,6 +99,5 @@ tasks.withType<BootRun> {
 tasks.withType<BootWar> {
     project.logger.lifecycle("property " + project.hasProperty("suffix"))
     //we need to specify context path here if we use war file in external tomcat
-    baseName = "api"
-    version = ""
+    archiveFileName.set("api.${archiveExtension.get()}")
 }
