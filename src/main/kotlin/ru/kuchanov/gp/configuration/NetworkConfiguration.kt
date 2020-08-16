@@ -18,25 +18,32 @@ class NetworkConfiguration {
 
     //okHttp + retrofit
     @Bean
-    fun loggingInterceptor(): HttpLoggingInterceptor = HttpLoggingInterceptor { println("OkHttp: $it") }
+    fun loggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor(
+            object : HttpLoggingInterceptor.Logger {
+                override fun log(message: String) {
+                    println("OkHttp: $message")
+                }
+            }
+        )
             .setLevel(HttpLoggingInterceptor.Level.BODY)
 
     @Bean
     fun okHttpClient(): OkHttpClient = OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor())
-            .connectTimeout(OK_HTTP_CONNECT_TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(OK_HTTP_READ_TIMEOUT, TimeUnit.SECONDS)
-            .writeTimeout(OK_HTTP_WRITE_TIMEOUT, TimeUnit.SECONDS)
-            .build()
+        .addInterceptor(loggingInterceptor())
+        .connectTimeout(OK_HTTP_CONNECT_TIMEOUT, TimeUnit.SECONDS)
+        .readTimeout(OK_HTTP_READ_TIMEOUT, TimeUnit.SECONDS)
+        .writeTimeout(OK_HTTP_WRITE_TIMEOUT, TimeUnit.SECONDS)
+        .build()
 
     @Bean
     fun callAdapterFactory(): RxJava2CallAdapterFactory = RxJava2CallAdapterFactory.create()
 
     @Bean
     fun objectMapper(): ObjectMapper = ObjectMapper()
-            .registerKotlinModule()
-            .enable(SerializationFeature.INDENT_OUTPUT)
-            .setDateFormat(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
+        .registerKotlinModule()
+        .enable(SerializationFeature.INDENT_OUTPUT)
+        .setDateFormat(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
 
     @Bean
     fun converterFactory(): Converter.Factory = JacksonConverterFactory.create(objectMapper())

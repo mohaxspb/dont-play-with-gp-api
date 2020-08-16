@@ -2,8 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootWar
 import org.springframework.boot.gradle.tasks.run.BootRun
 
-//updated at 16.07.2019
-val flywayVersion = "5.2.4"
+val flywayVersion = "6.5.4"
 
 plugins {
     val kotlinVersion = "1.4.0-rc"
@@ -13,14 +12,14 @@ plugins {
 
     val springVersion = "2.3.3.RELEASE"
     id("org.springframework.boot") version springVersion
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    id("io.spring.dependency-management") version "1.0.10.RELEASE"
     // Required for Kotlin integration for spring
     // See https://kotlinlang.org/docs/reference/compiler-plugins.html#kotlin-spring-compiler-plugin
     id("org.jetbrains.kotlin.plugin.allopen") version kotlinVersion
     //fixes no-arg constructor errors
     id("org.jetbrains.kotlin.plugin.noarg") version kotlinVersion
 
-    val flywayVersion = "5.2.4"
+    val flywayVersion = "6.5.4"
     id("org.flywaydb.flyway") version flywayVersion
 
     id("war")
@@ -54,9 +53,9 @@ dependencies {
     //security
     implementation("org.springframework.boot:spring-boot-starter-security")
     //oauth2
-    implementation("org.springframework.security.oauth:spring-security-oauth2:2.3.6.RELEASE")
+    implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
     implementation("org.springframework.security:spring-security-oauth2-client")
-    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.6.RELEASE")
+    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.3.3.RELEASE")
     //logs
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     //testing
@@ -64,24 +63,24 @@ dependencies {
     //spring END
 
     //DB
-    implementation("org.postgresql:postgresql:42.2.6")
+    implementation("org.postgresql:postgresql:42.2.15")
     //DB migration
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
     //rx
-    implementation("io.reactivex.rxjava2:rxjava:2.2.1")
-    implementation("io.reactivex.rxjava2:rxkotlin:2.2.0")
+    implementation("io.reactivex.rxjava2:rxjava:2.2.19")
+    implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
 
     //Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.4.0") { exclude(module = "okhttp") }
-    implementation("com.squareup.okhttp3:okhttp:3.11.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:3.11.0")
-    implementation("com.squareup.retrofit2:converter-jackson:2.4.0")
-    implementation("com.squareup.retrofit2:adapter-rxjava2:2.4.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0") { exclude(module = "okhttp") }
+    implementation("com.squareup.okhttp3:okhttp:4.8.1")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.8.1")
+    implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
+    implementation("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.6")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.2")
 
-    implementation("commons-io:commons-io:2.6")
+    implementation("commons-io:commons-io:2.7")
 }
 
 tasks.withType<KotlinCompile> {
