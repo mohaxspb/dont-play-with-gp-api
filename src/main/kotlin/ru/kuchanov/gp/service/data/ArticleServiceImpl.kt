@@ -93,6 +93,20 @@ class ArticleServiceImpl @Autowired constructor(
                     .withCommentsCount()
             }
 
+    override fun getPublishedArticlesCount(
+        published: Boolean,
+        approved: Boolean,
+        onlyForCurrentDate: Boolean
+    ): Int =
+        articleRepository.getPublishedArticlesCount(
+            published,
+            approved,
+            if (onlyForCurrentDate)
+                Timestamp(System.currentTimeMillis()).toString()
+            else
+                Timestamp(Calendar.getInstance().apply { add(Calendar.YEAR, 100) }.timeInMillis).toString()
+        )
+
     override fun getCreatedArticlesBetweenDates(startDate: String, endDate: String): List<ArticleDto> =
         articleRepository.getCreatedArticlesBetweenDates(startDate, endDate)
             .map { it.toDto().withTranslations().withUsers() }

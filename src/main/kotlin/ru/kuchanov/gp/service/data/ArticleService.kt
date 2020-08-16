@@ -37,6 +37,12 @@ interface ArticleService {
         onlyForCurrentDate: Boolean = true
     ): List<ArticleDto>
 
+    fun getPublishedArticlesCount(
+        published: Boolean = true,
+        approved: Boolean = true,
+        onlyForCurrentDate: Boolean = true
+    ): Int
+
     fun getCreatedArticlesBetweenDates(startDate: String, endDate: String):List<ArticleDto>
 
     fun save(article: Article): Article
