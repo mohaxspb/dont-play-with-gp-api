@@ -12,6 +12,7 @@ import ru.kuchanov.gp.bean.auth.UserNotFoundException
 import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.bean.data.*
 import ru.kuchanov.gp.model.dto.data.ArticleDto
+import ru.kuchanov.gp.model.dto.data.FeedDto
 import ru.kuchanov.gp.model.dto.data.filteredForUser
 import ru.kuchanov.gp.model.dto.data.isUserAuthorOfSomething
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
@@ -80,9 +81,9 @@ class ArticleController @Autowired constructor(
         @RequestParam(value = "withVersions", defaultValue = "false") withVersions: Boolean = false,
         @RequestParam(value = "onlyForCurrentDate", defaultValue = "true") onlyForCurrentDate: Boolean = true,
         @AuthenticationPrincipal user: GpUser?
-    ): List<ArticleDto> {
+    ): FeedDto {
         if ((published && approved && onlyForCurrentDate) || user?.isAdmin() == true) {
-            return articleService.getPublishedArticles(
+            val articles = articleService.getPublishedArticles(
                 offset,
                 limit,
                 published,
@@ -91,6 +92,12 @@ class ArticleController @Autowired constructor(
                 withVersions,
                 onlyForCurrentDate
             )
+            val articlesCount = articleService.getPublishedArticlesCount(
+                published,
+                approved,
+                onlyForCurrentDate
+            )
+            return FeedDto(articles, articlesCount)
         } else {
             throw GpAccessDeniedException("Only admins can see not published or approved articles or articles from future!")
         }

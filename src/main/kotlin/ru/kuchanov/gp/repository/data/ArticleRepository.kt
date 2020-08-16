@@ -30,6 +30,21 @@ interface ArticleRepository : JpaRepository<Article, Long> {
 
     @Query(
         """
+            SELECT count(*) FROM articles 
+            WHERE published= :published 
+            AND approved= :approved 
+            AND published_date <= CAST( :publishDate AS timestamp) 
+        """,
+        nativeQuery = true
+    )
+    fun getPublishedArticlesCount(
+        published: Boolean = true,
+        approved: Boolean = true,
+        publishDate: String
+    ): Int
+
+    @Query(
+        """
             SELECT * FROM articles 
             WHERE created >= CAST( :startDate AS timestamp) 
             AND created <= CAST( :endDate AS timestamp) 
