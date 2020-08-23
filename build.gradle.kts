@@ -5,7 +5,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 val flywayVersion = "6.5.4"
 
 plugins {
-    val kotlinVersion = "1.4.0-rc"
+    val kotlinVersion = "1.4.0"
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.jpa") version kotlinVersion
