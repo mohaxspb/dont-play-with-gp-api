@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootWar
 import org.springframework.boot.gradle.tasks.run.BootRun
 
-val flywayVersion = "6.5.4"
+val flywayVersion = "7.1.1"
 
 plugins {
     val kotlinVersion = "1.4.0"
@@ -10,7 +10,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.jpa") version kotlinVersion
 
-    val springVersion = "2.3.3.RELEASE"
+    val springVersion = "2.3.5.RELEASE"
     id("org.springframework.boot") version springVersion
     id("io.spring.dependency-management") version "1.0.10.RELEASE"
     // Required for Kotlin integration for spring
@@ -19,14 +19,14 @@ plugins {
     //fixes no-arg constructor errors
     id("org.jetbrains.kotlin.plugin.noarg") version kotlinVersion
 
-    val flywayVersion = "6.5.4"
+    val flywayVersion = "7.1.1"
     id("org.flywaydb.flyway") version flywayVersion
 
     id("war")
 }
 
 group = "ru.kuchanov.gp"
-version = "0.1.4"
+version = "0.1.5"
 
 repositories {
     mavenCentral()
@@ -55,7 +55,7 @@ dependencies {
     //oauth2
     implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
     implementation("org.springframework.security:spring-security-oauth2-client")
-    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.3.3.RELEASE")
+    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.3.4.RELEASE")
     //logs
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     //testing
@@ -73,8 +73,8 @@ dependencies {
 
     //Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0") { exclude(module = "okhttp") }
-    implementation("com.squareup.okhttp3:okhttp:4.8.1")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.8.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
     implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
     implementation("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
 
