@@ -5,7 +5,11 @@ import org.springframework.web.bind.annotation.ResponseStatus
 
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
-class ImageNotFoundException(msg: String = "Image not found!") : RuntimeException(msg)
+class ImageNotFoundException(
+    override val message: String? = "Image not found!"
+) : RuntimeException(message)
 
 @ResponseStatus(value = HttpStatus.CONFLICT)
-class ImageAlreadyExistsException(msg: String = "Image with this name already exists!") : RuntimeException(msg)
+class ImageAlreadyExistsException(
+    override val message: String? = "Image with this name already exists!"
+) : RuntimeException(message)
