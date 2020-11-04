@@ -9,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile
 import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.UserNotFoundException
 import ru.kuchanov.gp.bean.auth.isAdmin
-import ru.kuchanov.gp.exception.ImageAlreadyExistsException
 import ru.kuchanov.gp.model.error.GpAccessDeniedException
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import java.io.File
@@ -39,17 +38,11 @@ class ImageServiceImpl @Autowired constructor(
         }
         logger.info("extension: {}", extension)
         println("extension: $extension")
-        val fileName = if (imageName != null) {
-            val correctedImageName = FilenameUtils.removeExtension(imageName)
-            correctedImageName + if (extension.isNotBlank()) ".$extension" else ""
-        } else {
-            image.name
-        }
+        val imageNameWithoutExtension = FilenameUtils.removeExtension(imageName ?: image.name)
+        val fileName = imageNameWithoutExtension + "-" + System.currentTimeMillis() +
+                if (extension.isNotBlank()) ".$extension" else ""
         logger.info("fileName: {}", fileName)
         println("fileName: $fileName")
-        if (getByUserIdAndFileName(userId, imageName ?: image.name) != null) {
-            throw ImageAlreadyExistsException()
-        }
 
         val fileDir = getFileDir(userId)
         val fullFileName = getImageFullFileName(fileDir, fileName)

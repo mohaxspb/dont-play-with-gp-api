@@ -9,5 +9,6 @@ interface ImageService {
     fun getByUserIdAndFileName(userId: Long, imageName: String): ByteArray?
 
     fun deleteByUserIdAndFileName(userId: Long, fileName: String): Boolean
+
     fun getUrlByUserIdAndFileName(userId: Long, imageName: String): String?
 }

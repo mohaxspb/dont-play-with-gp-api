@@ -151,7 +151,6 @@ class ArticleController @Autowired constructor(
         val authorId = author.id!!
         //save image
         val imageUrl = image?.let { imageService.saveImage(authorId, image, imageName) }
-
         //save article
         val article = Article(
             authorId = authorId,
@@ -187,7 +186,6 @@ class ArticleController @Autowired constructor(
 
         mailService.sendArticleCreatedMail(createdArticle)
 
-        //return dto.
         return createdArticle
     }
 
