@@ -2,12 +2,8 @@ package ru.kuchanov.gp.controller.data
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import ru.kuchanov.gp.GpConstants
-import ru.kuchanov.gp.bean.auth.GpUser
-import ru.kuchanov.gp.exception.ImageNotFoundException
 import ru.kuchanov.gp.service.data.ImageService
 
 @RestController
@@ -21,26 +17,12 @@ class ImageController @Autowired constructor(
         "Image endpoint"
 
     /**
-     * returns URL to image
+     * Used to show images on site by URL
      */
-    @PostMapping(GpConstants.ImageEndpoint.Method.ADD)
-    fun addImage(
-        @RequestParam("image") image: MultipartFile,
-        @RequestParam("imageName") imageName: String,
-        @AuthenticationPrincipal user: GpUser
-    ): String =
-        imageService.saveImage(user.id!!, image, imageName)
-
-    @DeleteMapping("{userId}/{fileName:.+}")
-    fun delete(
-        @PathVariable(value = "userId") userId: Long,
-        @PathVariable(value = "fileName") fileName: String
-    ): Boolean =
-        imageService.deleteByUserIdAndFileName(userId, fileName)
-
     @ResponseBody
     @GetMapping(
-        value = ["{userId}/{fileName:.+}"], produces = [
+        value = ["{userId}/{fileName:.+}"],
+        produces = [
             MediaType.IMAGE_JPEG_VALUE,
             MediaType.IMAGE_PNG_VALUE,
             MediaType.IMAGE_GIF_VALUE
@@ -52,3 +34,8 @@ class ImageController @Autowired constructor(
     ): ByteArray =
         imageService.getByUserIdAndFileName(userId, fileName) ?: throw ImageNotFoundException()
 }
+
+@ResponseStatus(value = org.springframework.http.HttpStatus.NOT_FOUND)
+class ImageNotFoundException(
+    override val message: String? = "Image not found in!"
+) : RuntimeException(message)
