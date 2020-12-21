@@ -21,4 +21,27 @@ class IndexController @Autowired constructor(
 
     @GetMapping(IndexEndpoint.Method.TEST)
     fun test() = "Test method called!"
+
+    @GetMapping(IndexEndpoint.Method.ARTICLES_LIST)
+    fun articlesList(@RequestParam(value = "startArticleId") startArticleId: Long): String {
+        val articles = articleService.getPublishedArticlesAfterId(startArticleId)
+
+        val articlesListAsStrings = articles.mapIndexed { index, articleDto ->
+            """
+                <p>
+                ${articleDto.publishedDate}<br/>
+                ${index + 1}. ${articleDto.translations[0].title}<br/>
+                ${articleDto.translations[0].shortDescription?.let { "$it<br/>" } ?: ""}
+                ${urlService.createArticleLink(articleId = articleDto.id)}
+                </p>
+               """.trimIndent()
+        }
+
+        return """
+            <p>Очередная подборка новостей по теме чата за последнее время:</p>
+           
+            
+            ${articlesListAsStrings.joinToString(separator = "")}
+        """.trimIndent()
+    }
 }
