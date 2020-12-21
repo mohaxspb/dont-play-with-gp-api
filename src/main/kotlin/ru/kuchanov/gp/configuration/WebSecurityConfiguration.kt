@@ -132,7 +132,8 @@ class WebSecurityConfiguration @Autowired constructor(
         http
             .authorizeRequests()
             .antMatchers(
-                "/",
+                GpConstants.IndexEndpoint.PATH,
+                GpConstants.IndexEndpoint.PATH + GpConstants.IndexEndpoint.Method.ARTICLES_LIST,
                 "/error",
                 "/users/",
                 "/language/",
