@@ -6,6 +6,16 @@ object GpConstants {
 
     const val TARGET_URL_PARAMETER = "targetUrlParameter"
 
+    object IndexEndpoint {
+        const val PATH = "/"
+
+        object Method {
+            const val ROOT = ""
+            const val TEST = "test"
+            const val ARTICLES_LIST = "articlesList"
+        }
+    }
+
     object UsersEndpoint {
         const val PATH = "users"
 
