@@ -42,6 +42,10 @@ class ArticleServiceImpl @Autowired constructor(
     override fun existsByIdAndAuthorId(id: Long, authorId: Long): Boolean =
         articleRepository.existsByIdAndAuthorId(id, authorId)
 
+    override fun getPublishedArticlesAfterId(articleId: Long): List<ArticleDto> =
+        articleRepository.getPublishedArticlesAfterId(articleId)
+            .map { it.toDto().withTranslations() }
+
     override fun getPublishedArticles(
         offset: Int,
         limit: Int,

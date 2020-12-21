@@ -9,6 +9,19 @@ interface ArticleRepository : JpaRepository<Article, Long> {
 
     fun findAllByAuthorId(authorId: Long): List<Article>
 
+    /**
+     * Returns articles list, published after provided article id (inclusive)
+     */
+    @Query(
+        """
+            SELECT * FROM articles 
+            WHERE id >= :startArticleId 
+            AND published= TRUE 
+        """,
+        nativeQuery = true
+    )
+    fun getPublishedArticlesAfterId(startArticleId: Long): List<Article>
+
     @Query(
         """
             SELECT * FROM articles 

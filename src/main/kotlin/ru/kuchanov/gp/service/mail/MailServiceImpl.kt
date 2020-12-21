@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.bean.auth.isAdmin
 import ru.kuchanov.gp.model.dto.data.ArticleDto
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
@@ -15,6 +14,7 @@ import ru.kuchanov.gp.service.data.ArticleService
 import ru.kuchanov.gp.service.data.ArticleTranslationService
 import ru.kuchanov.gp.service.data.ArticleTranslationVersionService
 import ru.kuchanov.gp.service.data.CommentService
+import ru.kuchanov.gp.service.util.UrlService
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -23,7 +23,6 @@ import javax.mail.Message
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
-@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
 class MailServiceImpl @Autowired constructor(
     val javaMailSender: JavaMailSender,
@@ -32,10 +31,8 @@ class MailServiceImpl @Autowired constructor(
     val versionService: ArticleTranslationVersionService,
     val userService: GpUserDetailsService,
     val commentService: CommentService,
-    @Value("\${my.mail.admin.address}") val adminEmailAddress: String,
-    @Value("\${angular.port}") val angularServerPort: String,
-    @Value("\${angular.href}") val angularServerHref: String,
-    @Value("\${my.site.domain}") val domain: String
+    val urlService: UrlService,
+    @Value("\${my.mail.admin.address}") val adminEmailAddress: String
 ) : MailService {
 
     override fun sendMail(vararg to: String, subj: String, text: String, sendAsHtml: Boolean) {
@@ -57,7 +54,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "New article created!",
             text = """New article created! ${createdArticle.translations[0].title} by ${createdArticle.author!!.fullName}
                 |                
-                |You can visit it here: ${createArticleLink(createdArticle.id)}
+                |You can visit it here: ${urlService.createArticleLink(createdArticle.id)}
             """.trimMargin()
         )
     }
@@ -81,7 +78,12 @@ class MailServiceImpl @Autowired constructor(
             subj = "New Translation created!",
             text = """New Translation created! ${createdTranslation.title} by ${createdTranslation.author!!.fullName}
                 |                
-                |You can visit it here: ${createArticleLink(createdTranslation.articleId, createdTranslation.langId)}
+                |You can visit it here: ${
+                urlService.createArticleLink(
+                    createdTranslation.articleId,
+                    createdTranslation.langId
+                )
+            }
             """.trimMargin()
         )
     }
@@ -108,7 +110,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "New text version created!",
             text = """New text version created! ${translation.title} by ${createdVersion.author!!.fullName}
                |
-               |You can visit it here:  ${createArticleLink(translation.articleId, translation.langId)}
+               |You can visit it here:  ${urlService.createArticleLink(translation.articleId, translation.langId)}
             """.trimMargin()
         )
     }
@@ -122,7 +124,7 @@ class MailServiceImpl @Autowired constructor(
                 subj = "Your article approved!",
                 text = """Your article "${article.translations[0].title}" approved!
                 |                
-                |You can visit it here: ${createArticleLink(article.id)}
+                |You can visit it here: ${urlService.createArticleLink(article.id)}
             """.trimMargin()
             )
         }
@@ -140,7 +142,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "Your article published!",
             text = """Your article "${article.translations[0].title}" published!
                 |                
-                |You can visit it here: ${createArticleLink(article.id)}
+                |You can visit it here: ${urlService.createArticleLink(article.id)}
             """.trimMargin()
         )
     }
@@ -154,7 +156,7 @@ class MailServiceImpl @Autowired constructor(
                 subj = "Your translation approved!",
                 text = """Your translation "${translation.title}" approved!
                 |                
-                |You can visit it here: ${createArticleLink(translation.articleId, translation.langId)}
+                |You can visit it here: ${urlService.createArticleLink(translation.articleId, translation.langId)}
             """.trimMargin()
             )
         }
@@ -172,7 +174,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "Your translation published!",
             text = """Your translation "${translation.title}" published!
                 |                
-                |You can visit it here: ${createArticleLink(translation.articleId, translation.langId)}
+                |You can visit it here: ${urlService.createArticleLink(translation.articleId, translation.langId)}
             """.trimMargin()
         )
     }
@@ -187,7 +189,7 @@ class MailServiceImpl @Autowired constructor(
                 subj = "Your text version approved!",
                 text = """Your text version for "${translation.title}" approved! 
                 |                
-                |You can visit it here: ${createArticleLink(translation.articleId)}
+                |You can visit it here: ${urlService.createArticleLink(translation.articleId)}
             """.trimMargin()
             )
         }
@@ -206,7 +208,7 @@ class MailServiceImpl @Autowired constructor(
             subj = "Your text version published!",
             text = """Your text version for "${translation.title}" published! 
                 |                
-                |You can visit it here: ${createArticleLink(translation.articleId)}
+                |You can visit it here: ${urlService.createArticleLink(translation.articleId)}
             """.trimMargin()
         )
     }
@@ -293,19 +295,21 @@ class MailServiceImpl @Autowired constructor(
         val dateString = SimpleDateFormat("EEE, dd MMMMM yyyy").format(Date.from(startDate))
 
         val articlesAsHtml = articlesCreatedToday.joinToString(separator = "\n") { articleDto ->
-            "<li><a href=\"${createArticleLink(articleDto.id)}\">${articleDto.translations[0].title}</a> by ${articleDto.author!!.fullName}</li>"
+            "<li><a href=\"${urlService.createArticleLink(articleDto.id)}\">${articleDto.translations[0].title}</a> by ${articleDto.author!!.fullName}</li>"
         }
         val createdTranslationsAsHtml = translationsCreatedToday.joinToString(separator = "\n") {
-            "<li><a href=\"${createArticleLink(
-                it.articleId,
-                it.langId
-            )}\">${it.title}</a> by ${it.author!!.fullName}</li>"
+            "<li><a href=\"${
+                urlService.createArticleLink(
+                    it.articleId,
+                    it.langId
+                )
+            }\">${it.title}</a> by ${it.author!!.fullName}</li>"
         }
         val createdVersionsAsHtml = versionsCreatedToday.joinToString(separator = "\n") { versionDto ->
             val shortenedText =
                 versionDto.text.substring(0, versionDto.text.length.takeIf { it <= 100 }?.let { it - 1 } ?: 100)
             val translation = translationService.getOneById(versionDto.articleTranslationId)!!
-            val url = createArticleLink(translation.articleId, translation.langId)
+            val url = urlService.createArticleLink(translation.articleId, translation.langId)
             "<li><a href=\"$url\">$shortenedText</a> by ${versionDto.author!!.fullName}</li>"
         }
         val createdCommentsAsHtml =
@@ -314,7 +318,7 @@ class MailServiceImpl @Autowired constructor(
                     it.id == articleIdAndCommentCount.getArticleId()
                 }!!
                 val articleTitle = article.translations[0].title
-                val articleUrl = createArticleLink(article.id)
+                val articleUrl = urlService.createArticleLink(article.id)
                 "<li><a href=\"$articleUrl\">$articleTitle</a>: ${articleIdAndCommentCount.getCommentsCount()}</li>"
             }
         val totalCommentsCount =
@@ -357,15 +361,5 @@ class MailServiceImpl @Autowired constructor(
             text = text,
             sendAsHtml = true
         )
-    }
-
-    private fun createArticleLink(articleId: Long, translationLangId: Long? = null): String {
-        val serverAddress = "https://$domain$angularServerPort$angularServerHref#"
-        val articlePage = GpConstants.ArticleEndpoint.PATH
-        var link = "$serverAddress/$articlePage/$articleId"
-        translationLangId?.let {
-            link += "?langId=$it"
-        }
-        return link
     }
 }
