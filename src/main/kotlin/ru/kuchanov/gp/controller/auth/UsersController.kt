@@ -3,7 +3,7 @@ package ru.kuchanov.gp.controller.auth
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import ru.kuchanov.gp.GpConstants
+import ru.kuchanov.gp.GpConstants.UsersEndpoint
 import ru.kuchanov.gp.bean.auth.*
 import ru.kuchanov.gp.bean.data.LanguageNotFoundError
 import ru.kuchanov.gp.model.dto.UserDto
@@ -12,7 +12,7 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.data.LanguageService
 
 @RestController
-@RequestMapping("/" + GpConstants.UsersEndpoint.PATH + "/")
+@RequestMapping("/" + UsersEndpoint.PATH + "/")
 class UsersController @Autowired constructor(
     val gpUserDetailsService: GpUserDetailsService,
     val languageService: LanguageService
@@ -24,12 +24,12 @@ class UsersController @Autowired constructor(
     @GetMapping("test")
     fun test() = "Test method called!"
 
-    @GetMapping(GpConstants.UsersEndpoint.Method.ME)
+    @GetMapping(UsersEndpoint.Method.ME)
     fun showMe(
         @AuthenticationPrincipal user: GpUser
     ): UserDto = gpUserDetailsService.getByIdAsDto(user.id!!) ?: throw UserNotFoundException()
 
-    @DeleteMapping(GpConstants.UsersEndpoint.Method.DELETE + "/{id}")
+    @DeleteMapping(UsersEndpoint.Method.DELETE + "/{id}")
     fun deleteUserById(
         @AuthenticationPrincipal user: GpUser,
         @PathVariable(value = "id") id: Long
@@ -41,7 +41,7 @@ class UsersController @Autowired constructor(
         }
     }
 
-    @PostMapping(GpConstants.UsersEndpoint.Method.UPDATE)
+    @PostMapping(UsersEndpoint.Method.UPDATE)
     fun update(
         @AuthenticationPrincipal user: GpUser,
         @RequestParam(value = "userId") userId: Long,
