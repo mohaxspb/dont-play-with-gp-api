@@ -29,7 +29,6 @@ class IndexController @Autowired constructor(
         val articlesListAsStrings = articles.mapIndexed { index, articleDto ->
             """
                 <p>
-                ${articleDto.publishedDate}<br/>
                 ${index + 1}. ${articleDto.translations[0].title}<br/>
                 ${articleDto.translations[0].shortDescription?.let { "$it<br/>" } ?: ""}
                 ${urlService.createArticleLink(articleId = articleDto.id)}
