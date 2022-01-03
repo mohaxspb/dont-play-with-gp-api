@@ -1,6 +1,7 @@
 package ru.kuchanov.gp.controller
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -12,8 +13,9 @@ import ru.kuchanov.gp.service.util.UrlService
 @RestController
 @RequestMapping(IndexEndpoint.PATH)
 class IndexController @Autowired constructor(
-    val articleService: ArticleService,
-    val urlService: UrlService
+    private val articleService: ArticleService,
+    private val urlService: UrlService,
+    private val passwordEncoder: PasswordEncoder,
 ) {
 
     @GetMapping(IndexEndpoint.Method.ROOT)
@@ -21,6 +23,10 @@ class IndexController @Autowired constructor(
 
     @GetMapping(IndexEndpoint.Method.TEST)
     fun test() = "Test method called!"
+
+    @GetMapping("/encrypt")
+    fun encrypt(@RequestParam(value = "target") target: String): String =
+        passwordEncoder.encode(target)
 
     @GetMapping(IndexEndpoint.Method.ARTICLES_LIST)
     fun articlesList(@RequestParam(value = "startArticleId") startArticleId: Long): String {
