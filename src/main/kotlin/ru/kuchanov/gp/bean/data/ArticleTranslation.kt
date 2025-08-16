@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import ru.kuchanov.gp.model.dto.data.ArticleTranslationDto
 import java.io.Serializable
 import java.sql.Timestamp
-import javax.persistence.*
+import jakarta.persistence.*
 
 @Entity
 @Table(name = "article_translations")

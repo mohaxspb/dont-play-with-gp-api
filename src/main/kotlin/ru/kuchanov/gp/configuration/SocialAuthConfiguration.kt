@@ -79,11 +79,11 @@ class SocialAuthConfiguration {
     /**
      * we need it, as vk returns email with access_token, so we must pass it to additional params
      */
-    private fun socialTokenResponseConverter() =
-        Converter<Map<String, String>, OAuth2AccessTokenResponse> { source ->
+    private fun socialTokenResponseConverter(): Converter<Map<String, Any>, OAuth2AccessTokenResponse> =
+        Converter<Map<String, Any>, OAuth2AccessTokenResponse> { source ->
             println("tokenResponseConverter convert: $source")
 
-            val vkAccessToken = source[OAuth2ParameterNames.ACCESS_TOKEN]
+            val vkAccessToken = source[OAuth2ParameterNames.ACCESS_TOKEN].toString()
             val params = mutableMapOf<String, Any?>()
             params["email"] = source["email"]
             params["id"] = source["user_id"]
@@ -106,7 +106,8 @@ class SocialAuthConfiguration {
 
             val oAuth2AccessTokenResponseHttpMessageConverter =
                 OAuth2AccessTokenResponseHttpMessageConverter().apply {
-                    setTokenResponseConverter(socialTokenResponseConverter())
+//                    socialTokenResponseConverter(socialTokenResponseConverter())
+                    setAccessTokenResponseConverter(socialTokenResponseConverter())
                 }
 
             setRestOperations(

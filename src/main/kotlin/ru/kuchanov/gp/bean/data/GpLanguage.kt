@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ResponseStatus
 import java.io.Serializable
 import java.sql.Timestamp
-import javax.persistence.*
+import jakarta.persistence.*
 
 /**
  * @see [https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]

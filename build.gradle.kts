@@ -5,21 +5,21 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 val flywayVersion = "7.1.1"
 
 plugins {
-    val kotlinVersion = "1.4.0"
+    val kotlinVersion = "2.1.20"
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.jpa") version kotlinVersion
 
-    val springVersion = "2.3.5.RELEASE"
+    val springVersion = "3.5.4"
     id("org.springframework.boot") version springVersion
-    id("io.spring.dependency-management") version "1.0.10.RELEASE"
+    id("io.spring.dependency-management") version "1.1.7"
     // Required for Kotlin integration for spring
     // See https://kotlinlang.org/docs/reference/compiler-plugins.html#kotlin-spring-compiler-plugin
     id("org.jetbrains.kotlin.plugin.allopen") version kotlinVersion
     //fixes no-arg constructor errors
     id("org.jetbrains.kotlin.plugin.noarg") version kotlinVersion
 
-    val flywayVersion = "7.1.1"
+    val flywayVersion = "11.0.0"
     id("org.flywaydb.flyway") version flywayVersion
 
     id("war")
@@ -84,7 +84,7 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 
 //to be able to run with task args to define correct properties file

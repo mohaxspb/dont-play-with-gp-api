@@ -1,10 +1,10 @@
 package ru.kuchanov.gp.filter
 
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter
-import javax.servlet.FilterChain
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.FilterChain
+import jakarta.servlet.ServletRequest
+import jakarta.servlet.ServletResponse
+import jakarta.servlet.http.HttpServletRequest
 
 class GpOAuth2AuthenticationProcessingFilter: OAuth2AuthenticationProcessingFilter() {
 

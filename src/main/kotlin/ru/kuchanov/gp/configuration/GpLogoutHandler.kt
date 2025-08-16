@@ -1,18 +1,19 @@
 package ru.kuchanov.gp.configuration
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.stereotype.Component
-import org.springframework.util.Base64Utils
 import ru.kuchanov.gp.bean.auth.GpUser
 import ru.kuchanov.gp.network.FacebookApi
 import ru.kuchanov.gp.network.GitHubApi
 import ru.kuchanov.gp.network.GoogleApi
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 @Component
 class GpLogoutHandler @Autowired constructor(
@@ -69,10 +70,11 @@ class GpLogoutHandler @Autowired constructor(
         }
     }
 
+    @OptIn(ExperimentalEncodingApi::class)
     private fun logoutFromGithub(githubToken: String?) {
         if (githubToken != null) {
             val authorization =
-                "Basic " + String(Base64Utils.encode("$githubClientId:$githubClientSecret".toByteArray()))
+                "Basic " + Base64.encode("$githubClientId:$githubClientSecret".toByteArray())
             val githubLogoutResult =
                 githubApi
                     .logout(

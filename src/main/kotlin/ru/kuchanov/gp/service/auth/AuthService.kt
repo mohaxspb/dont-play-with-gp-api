@@ -2,7 +2,7 @@ package ru.kuchanov.gp.service.auth
 
 import org.springframework.security.oauth2.common.OAuth2AccessToken
 import org.springframework.security.oauth2.provider.OAuth2Authentication
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 interface AuthService {
 

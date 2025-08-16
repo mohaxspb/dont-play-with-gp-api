@@ -1,5 +1,7 @@
 package ru.kuchanov.gp
 
+import jakarta.servlet.http.HttpSessionEvent
+import jakarta.servlet.http.HttpSessionListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
@@ -9,8 +11,6 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Bean
 import org.springframework.scheduling.annotation.EnableScheduling
-import javax.servlet.http.HttpSessionEvent
-import javax.servlet.http.HttpSessionListener
 
 
 @SpringBootApplication

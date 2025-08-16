@@ -1,5 +1,7 @@
 package ru.kuchanov.gp.controller.auth
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.common.OAuth2AccessToken
@@ -18,8 +20,6 @@ import ru.kuchanov.gp.service.auth.GpUserDetailsService
 import ru.kuchanov.gp.service.auth.UsersAuthoritiesService
 import ru.kuchanov.gp.service.data.LanguageService
 import ru.kuchanov.gp.service.mail.MailService
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 @RestController
 @RequestMapping("/" + GpConstants.AuthEndpoint.PATH + "/")

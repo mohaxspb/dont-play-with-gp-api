@@ -3,7 +3,7 @@ package ru.kuchanov.gp.bean.auth
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.sql.Timestamp
-import javax.persistence.*
+import jakarta.persistence.*
 
 @Entity
 @Table(name = "oauth_client_token")

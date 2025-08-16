@@ -32,7 +32,7 @@ import ru.kuchanov.gp.bean.auth.AuthorityType
 import ru.kuchanov.gp.filter.GpOAuth2AuthenticationProcessingFilter
 import ru.kuchanov.gp.service.auth.GpClientDetailsService
 import ru.kuchanov.gp.service.auth.GpUserDetailsService
-import javax.servlet.Filter
+import jakarta.servlet.Filter
 
 
 @Configuration
@@ -46,7 +46,7 @@ class WebSecurityConfiguration @Autowired constructor(
     val userDetailsService: GpUserDetailsService,
     val loginSuccessHandler: SimpleUrlAuthenticationSuccessHandler,
     val logoutHandler: LogoutHandler
-) : WebSecurityConfigurerAdapter() {
+) {
 
     @Autowired
     private lateinit var accessTokenResponseClient: OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
@@ -90,10 +90,14 @@ class WebSecurityConfiguration @Autowired constructor(
             setPasswordEncoder(passwordEncoder())
         }
 
-    @Primary
+        @Primary
     @Bean
-    override fun authenticationManagerBean(): AuthenticationManager =
-        super.authenticationManagerBean()
+    fun authenticationManagerBean(): AuthenticationManager =authenticationConfiguration.getAuthenticationManager();
+
+//    @Primary
+//    @Bean
+//    override fun authenticationManagerBean(): AuthenticationManager =
+//        super.authenticationManagerBean()
 
     @Bean
     fun oauth2authenticationManager(): OAuth2AuthenticationManager =

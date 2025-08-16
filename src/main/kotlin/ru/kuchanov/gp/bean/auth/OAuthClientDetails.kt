@@ -8,10 +8,7 @@ import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.ClientRegistrationException
 import org.springframework.web.bind.annotation.ResponseStatus
 import java.sql.Timestamp
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
+import jakarta.persistence.*
 
 //todo refactor it with database table (I mean refactor table field names)
 @Entity

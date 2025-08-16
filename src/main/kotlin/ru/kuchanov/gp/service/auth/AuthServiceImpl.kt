@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service
 import ru.kuchanov.gp.bean.auth.UserNotFoundException
 import java.io.Serializable
 import java.util.*
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 
 @Service

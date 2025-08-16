@@ -1,5 +1,6 @@
 package ru.kuchanov.gp.bean.auth
 
+import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.springframework.http.HttpStatus
@@ -12,7 +13,6 @@ import ru.kuchanov.gp.GpConstants
 import ru.kuchanov.gp.model.dto.AuthorityDto
 import ru.kuchanov.gp.model.dto.UserDto
 import java.sql.Timestamp
-import javax.persistence.*
 
 @Entity
 @Table(name = "users")

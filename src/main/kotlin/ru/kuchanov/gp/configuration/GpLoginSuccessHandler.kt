@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler
 import org.springframework.stereotype.Component
 import ru.kuchanov.gp.GpConstants.TARGET_URL_PARAMETER
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 
 @Component
