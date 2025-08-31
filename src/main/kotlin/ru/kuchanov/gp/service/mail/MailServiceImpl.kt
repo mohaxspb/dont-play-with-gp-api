@@ -1,5 +1,6 @@
 package ru.kuchanov.gp.service.mail
 
+import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
@@ -32,19 +33,26 @@ class MailServiceImpl @Autowired constructor(
     val userService: GpUserDetailsService,
     val commentService: CommentService,
     val urlService: UrlService,
+    val logger: Logger,
     @Value("\${my.mail.admin.address}") val adminEmailAddress: String
 ) : MailService {
 
     override fun sendMail(vararg to: String, subj: String, text: String, sendAsHtml: Boolean) {
-        javaMailSender.send { mimeMessage: MimeMessage ->
-            mimeMessage.setFrom()
-            mimeMessage.setRecipients(Message.RecipientType.TO, to.map { InternetAddress(it) }.toTypedArray())
-            mimeMessage.subject = subj
-            if (sendAsHtml) {
-                mimeMessage.setText(text, "utf-8", "html")
-            } else {
-                mimeMessage.setText(text)
+        try {
+            javaMailSender.send { mimeMessage: MimeMessage ->
+                mimeMessage.setFrom()
+                mimeMessage.setRecipients(Message.RecipientType.TO, to.map { InternetAddress(it) }.toTypedArray())
+                mimeMessage.subject = subj
+                if (sendAsHtml) {
+                    mimeMessage.setText(text, "utf-8", "html")
+                } else {
+                    mimeMessage.setText(text)
+                }
             }
+        } catch (e: Throwable) {
+            val message = "Error while send mail: ${e.message}"
+            logger.error(message)
+            e.printStackTrace()
         }
     }
 
