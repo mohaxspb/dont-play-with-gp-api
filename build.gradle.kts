@@ -63,7 +63,7 @@ dependencies {
     //spring END
 
     //DB
-    implementation("org.postgresql:postgresql:42.2.15")
+    implementation("org.postgresql:postgresql:42.2.18")
     //DB migration
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
